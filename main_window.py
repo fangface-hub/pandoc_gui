@@ -100,9 +100,10 @@ def load_profile(name: str) -> dict:
 def init_default_profile():
     """デフォルトプロファイルを初期化する."""
     default_data = {
-        "input_path": None,
-        "output_dir": None,
         "filters": [],
+        "css_file": None,
+        "embed_css": True,
+        "output_format": "html",
     }
     path = PROFILE_DIR / "default.json"
     if not path.exists():
@@ -122,7 +123,7 @@ class MainWindow(tk.Tk):
         init_default_profile()
 
         self.input_path = None
-        self.output_dir = None
+        self.output_path = None
 
         # ダイアログ用の前回選択パス
         self.last_input_dir = Path(__file__).parent
@@ -288,30 +289,33 @@ class MainWindow(tk.Tk):
         folder = filedialog.askdirectory(initialdir=str(self.last_output_dir))
         if not folder:
             return
-        self.output_dir = Path(folder)
-        self.last_output_dir = self.output_dir
-        self.logger.info("出力先: %s", self.output_dir)
+        self.output_path = Path(folder)
+        self.last_output_dir = self.output_path
+        self.logger.info("出力先: %s", self.output_path)
 
     def select_output(self):
         """出力先を選択する（入力形式に応じて動的に変更）."""
         if self.input_type_var.get() == "file":
-            # 入力がファイルの場合は出力フォルダを選択
-            folder = filedialog.askdirectory(
-                initialdir=str(self.last_output_dir))
-            if not folder:
+            # 入力がファイルの場合は出力ファイルを選択
+            file = filedialog.asksaveasfilename(
+                initialdir=str(self.last_output_dir),
+                defaultextension=f".{self.output_format}",
+                filetypes=[(f"{self.output_format.upper()}ファイル",
+                            f"*.{self.output_format}"), ("すべてのファイル", "*.*")])
+            if not file:
                 return
-            self.output_dir = Path(folder)
-            self.last_output_dir = self.output_dir
-            self.logger.info("出力先フォルダ: %s", self.output_dir)
+            self.output_path = Path(file)
+            self.last_output_dir = self.output_path.parent
+            self.logger.info("出力先ファイル: %s", self.output_path)
         else:
             # 入力がフォルダの場合は出力フォルダを選択
             folder = filedialog.askdirectory(
                 initialdir=str(self.last_output_dir))
             if not folder:
                 return
-            self.output_dir = Path(folder)
-            self.last_output_dir = self.output_dir
-            self.logger.info("出力先フォルダ: %s", self.output_dir)
+            self.output_path = Path(folder)
+            self.last_output_dir = self.output_path
+            self.logger.info("出力先フォルダ: %s", self.output_path)
 
     def toggle_filter_window(self):
         """フィルター管理ウィンドウを開く."""
@@ -368,8 +372,6 @@ class MainWindow(tk.Tk):
     def save_profile(self):
         """プロファイルを保存する."""
         data = {
-            "input_path": to_relative_path(self.input_path),
-            "output_dir": to_relative_path(self.output_dir),
             "filters": [to_relative_path(f) for f in self.enabled_filters],
             "css_file": to_relative_path(self.css_file),
             "embed_css": self.embed_css,
@@ -385,8 +387,6 @@ class MainWindow(tk.Tk):
             self.logger.warning("プロファイルが存在しません")
             return
 
-        self.input_path = from_relative_path(data["input_path"])
-        self.output_dir = from_relative_path(data["output_dir"])
         self.enabled_filters = [
             from_relative_path(p) for p in data.get("filters", []) if p
         ]
@@ -401,7 +401,7 @@ class MainWindow(tk.Tk):
 
     def run_pandoc(self):
         """Pandocを実行する."""
-        if not self.input_path or not self.output_dir:
+        if not self.input_path or not self.output_path:
             self.logger.error("入力と出力先を選んでください")
             return
 
@@ -415,7 +415,11 @@ class MainWindow(tk.Tk):
         ext = format_ext_map.get(self.output_format, ".html")
 
         if self.input_path.is_file():
-            output_file = self.output_dir / (self.input_path.stem + ext)
+            # 入力がファイルの場合、output_pathがファイルかフォルダかで処理を分ける
+            if self.output_path.suffix:  # 拡張子がある=ファイルとして指定された
+                output_file = self.output_path
+            else:  # フォルダとして指定された
+                output_file = self.output_path / (self.input_path.stem + ext)
             cmd = ["pandoc", str(self.input_path), "-o", str(output_file)]
 
         else:
@@ -429,6 +433,12 @@ class MainWindow(tk.Tk):
         if (self.output_format != "docx" and self.css_file
                 and self.css_file.exists()):
             cmd.extend(["--css", str(self.css_file)])
+
+        # PDF変換時は日本語対応のPDFエンジンを使用
+        if self.output_format == "pdf":
+            cmd.extend(["--pdf-engine=lualatex"])
+            # 日本語対応のLaTeXテンプレート変数を設定
+            cmd.extend(["-V", "documentclass=ltjsarticle"])
 
         # スタンドアロン形式（HTML, PDF, EPUB）
         if self.output_format in ["html", "pdf", "epub"]:
