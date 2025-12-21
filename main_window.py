@@ -448,6 +448,10 @@ class MainWindow(tk.Tk):
         if self.output_format in ["html", "pdf", "epub"]:
             cmd.append("--standalone")
 
+            # HTML出力時は数式レンダリングにMathJaxを使用
+            if self.output_format == "html":
+                cmd.append("--mathjax")
+
             # 埋め込みモードの場合はリソースも埋め込む
             if self.css_file and self.css_file.exists() and self.embed_css:
                 cmd.append("--embed-resources")
