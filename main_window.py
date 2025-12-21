@@ -12,6 +12,7 @@ from tkinter import filedialog, ttk
 
 from css_window import CSSWindow
 from filter_window import FilterWindow
+from i18n import I18n
 from log_window import LogWindow
 
 PROFILE_DIR = Path("profiles")
@@ -104,6 +105,7 @@ def init_default_profile():
         "css_file": None,
         "embed_css": True,
         "output_format": "html",
+        "language": None,  # None = auto-detect
     }
     path = PROFILE_DIR / "default.json"
     if not path.exists():
@@ -117,10 +119,16 @@ class MainWindow(tk.Tk):
     def __init__(self):
         """初期化."""
         super().__init__()
-        self.title("Pandoc GUI")
 
         # デフォルトプロファイルを初期化
         init_default_profile()
+
+        # 言語設定を読み込む
+        profile_data = load_profile("default")
+        lang = profile_data.get("language") if profile_data else None
+        self.i18n = I18n(lang)
+
+        self.title(self.i18n.t("app_title"))
 
         self.input_path = None
         self.output_path = None
@@ -153,11 +161,14 @@ class MainWindow(tk.Tk):
         self.embed_css = True
         self.output_format = "html"
 
+        # 言語選択メニュー
+        self._create_menu()
+
         # ログウィンドウトグルボタン
         log_toggle_frame = tk.Frame(self, padx=5, pady=5)
         log_toggle_frame.pack(fill=tk.X, padx=5, pady=5)
         self.log_button = tk.Button(log_toggle_frame,
-                                    text="ログウィンドウを表示",
+                                    text=self.i18n.t("log_window_show"),
                                     command=self.toggle_log_window)
         self.log_button.pack(fill=tk.X)
 
@@ -165,7 +176,7 @@ class MainWindow(tk.Tk):
         filter_button_frame = tk.Frame(self, padx=5, pady=5)
         filter_button_frame.pack(fill=tk.X, padx=5, pady=5)
         self.filter_button = tk.Button(filter_button_frame,
-                                       text="フィルター管理を開く",
+                                       text=self.i18n.t("filter_management"),
                                        command=self.open_filter_window)
         self.filter_button.pack(fill=tk.X)
 
@@ -173,13 +184,13 @@ class MainWindow(tk.Tk):
         css_button_frame = tk.Frame(self, padx=5, pady=5)
         css_button_frame.pack(fill=tk.X, padx=5, pady=5)
         self.css_button = tk.Button(css_button_frame,
-                                    text="CSS設定を開く",
+                                    text=self.i18n.t("css_settings"),
                                     command=self.open_css_window)
         self.css_button.pack(fill=tk.X)
 
         # CSS設定表示ラベル
         self.css_info_label = tk.Label(self,
-                                       text="CSS: 未設定",
+                                       text=self.i18n.t("css_info_not_set"),
                                        fg="gray",
                                        font=("Arial", 9))
         self.css_info_label.pack(fill=tk.X, padx=5, pady=2)
@@ -187,27 +198,33 @@ class MainWindow(tk.Tk):
         # -------------------------
         # 入出力
         # -------------------------
-        io_frame = tk.LabelFrame(self, text="入出力", padx=5, pady=5)
+        io_frame = tk.LabelFrame(self,
+                                 text=self.i18n.t("input_output"),
+                                 padx=5,
+                                 pady=5)
         io_frame.pack(fill=tk.X, padx=5, pady=5)
 
         self.input_type_var = tk.StringVar(value="file")
         tk.Radiobutton(io_frame,
-                       text="ファイル",
+                       text=self.i18n.t("file"),
                        variable=self.input_type_var,
                        value="file").pack(anchor=tk.W)
         tk.Radiobutton(io_frame,
-                       text="フォルダ",
+                       text=self.i18n.t("folder"),
                        variable=self.input_type_var,
                        value="folder").pack(anchor=tk.W)
-        tk.Button(io_frame, text="入力選択",
+        tk.Button(io_frame,
+                  text=self.i18n.t("select_input"),
                   command=self.select_input).pack(fill=tk.X, pady=2)
-        tk.Button(io_frame, text="出力選択",
+        tk.Button(io_frame,
+                  text=self.i18n.t("select_output"),
                   command=self.select_output).pack(fill=tk.X, pady=2)
 
         # 出力形式
         format_sub_frame = tk.Frame(io_frame)
         format_sub_frame.pack(fill=tk.X, pady=5)
-        tk.Label(format_sub_frame, text="出力形式:").pack(side=tk.LEFT, padx=5)
+        tk.Label(format_sub_frame,
+                 text=self.i18n.t("output_format")).pack(side=tk.LEFT, padx=5)
 
         self.format_var = tk.StringVar(value="html")
         format_options = ["html", "pdf", "docx", "epub"]
@@ -223,17 +240,23 @@ class MainWindow(tk.Tk):
         # -------------------------
         # プロファイル
         # -------------------------
-        profile_frame = tk.LabelFrame(self, text="プロファイル", padx=5, pady=5)
+        profile_frame = tk.LabelFrame(self,
+                                      text=self.i18n.t("profile"),
+                                      padx=5,
+                                      pady=5)
         profile_frame.pack(fill=tk.X, padx=5, pady=5)
 
-        tk.Label(profile_frame, text="プロファイル名:").pack(side=tk.LEFT, padx=5)
+        tk.Label(profile_frame,
+                 text=self.i18n.t("profile_name")).pack(side=tk.LEFT, padx=5)
         self.profile_var = tk.StringVar(value="default")
         tk.Entry(profile_frame, textvariable=self.profile_var,
                  width=15).pack(side=tk.LEFT, padx=5)
 
-        tk.Button(profile_frame, text="保存",
+        tk.Button(profile_frame,
+                  text=self.i18n.t("save"),
                   command=self.save_profile).pack(side=tk.LEFT, padx=2)
-        tk.Button(profile_frame, text="読み込み",
+        tk.Button(profile_frame,
+                  text=self.i18n.t("load"),
                   command=self.load_profile).pack(side=tk.LEFT, padx=2)
 
         # -------------------------
@@ -242,7 +265,7 @@ class MainWindow(tk.Tk):
         exec_frame = tk.Frame(self, padx=5, pady=5)
         exec_frame.pack(fill=tk.X, padx=5, pady=5)
         tk.Button(exec_frame,
-                  text="変換実行",
+                  text=self.i18n.t("run_conversion"),
                   command=self.run_pandoc,
                   bg="#4CAF50",
                   fg="white",
@@ -255,30 +278,69 @@ class MainWindow(tk.Tk):
         # ウィンドウクローズで子プロセスを終了させる
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
+    def _create_menu(self):
+        """メニューバーを作成する."""
+        menubar = tk.Menu(self)
+        self.config(menu=menubar)
+
+        # 言語メニュー
+        language_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label=self.i18n.t("language"), menu=language_menu)
+
+        available_languages = self.i18n.get_available_languages()
+        for lang in available_languages:
+            language_menu.add_command(
+                label=lang["name"],
+                command=lambda lang_code=lang["code"]: (
+                    self.change_language(lang_code)))
+
+    def change_language(self, lang_code):
+        """言語を変更してプロファイルに保存.
+
+        Parameters
+        ----------
+        lang_code : str
+            言語コード
+        """
+        # プロファイルに保存
+        profile_data = load_profile("default") or {}
+        profile_data["language"] = lang_code
+        save_profile("default", profile_data)
+
+        # 再起動が必要であることを通知
+        from tkinter import messagebox
+        messagebox.showinfo(self.i18n.t("language_settings"),
+                            self.i18n.t("restart_required"))
+
     def toggle_log_window(self):
         """ログウィンドウの表示・非表示を切り替える."""
         if self.log_window and self.log_window.winfo_viewable():
             self.log_window.withdraw()
-            self.log_button.config(text="ログウィンドウを表示")
+            self.log_button.config(text=self.i18n.t("log_window_show"))
             return
         self.log_window.deiconify()
-        self.log_button.config(text="ログウィンドウを非表示")
+        self.log_button.config(text=self.i18n.t("log_window_hide"))
 
     def select_input(self):
         """入力を選択する(ファイルまたはフォルダ)."""
         if self.input_type_var.get() == "file":
             file = filedialog.askopenfilename(
-                filetypes=[("Markdown", "*.md"), ("HTML", "*.html;*.htm"),
-                           ("LaTeX", "*.tex"), ("reStructuredText", "*.rst"),
-                           ("Org-mode", "*.org"), ("Textile", "*.textile"),
-                           ("DocBook", "*.xml"), ("EPUB", "*.epub"),
-                           ("Word", "*.docx"), ("すべてのファイル", "*.*")],
+                filetypes=[(self.i18n.t("markdown_files"), "*.md"),
+                           (self.i18n.t("html_files"), "*.html;*.htm"),
+                           (self.i18n.t("latex_files"), "*.tex"),
+                           (self.i18n.t("rst_files"), "*.rst"),
+                           (self.i18n.t("org_files"), "*.org"),
+                           (self.i18n.t("textile_files"), "*.textile"),
+                           (self.i18n.t("docbook_files"), "*.xml"),
+                           (self.i18n.t("epub_files"), "*.epub"),
+                           (self.i18n.t("word_files"), "*.docx"),
+                           (self.i18n.t("all_files"), "*.*")],
                 initialdir=str(self.last_input_dir))
             if not file:
                 return
             self.input_path = Path(file)
             self.last_input_dir = self.input_path.parent
-            self.logger.info("入力ファイル: %s", self.input_path)
+            self.logger.info(self.i18n.t("input_file", path=self.input_path))
             return
 
         folder = filedialog.askdirectory(initialdir=str(self.last_input_dir))
@@ -286,7 +348,7 @@ class MainWindow(tk.Tk):
             return
         self.input_path = Path(folder)
         self.last_input_dir = self.input_path
-        self.logger.info("入力フォルダ: %s", self.input_path)
+        self.logger.info(self.i18n.t("input_folder", path=self.input_path))
 
     def select_output_dir(self):
         """出力先フォルダを選択する."""
@@ -295,7 +357,7 @@ class MainWindow(tk.Tk):
             return
         self.output_path = Path(folder)
         self.last_output_dir = self.output_path
-        self.logger.info("出力先: %s", self.output_path)
+        self.logger.info(self.i18n.t("output_folder", path=self.output_path))
 
     def select_output(self):
         """出力先を選択する（入力形式に応じて動的に変更）."""
@@ -310,7 +372,7 @@ class MainWindow(tk.Tk):
                 return
             self.output_path = Path(file)
             self.last_output_dir = self.output_path.parent
-            self.logger.info("出力先ファイル: %s", self.output_path)
+            self.logger.info(self.i18n.t("output_file", path=self.output_path))
         else:
             # 入力がフォルダの場合は出力フォルダを選択
             folder = filedialog.askdirectory(
@@ -319,7 +381,8 @@ class MainWindow(tk.Tk):
                 return
             self.output_path = Path(folder)
             self.last_output_dir = self.output_path
-            self.logger.info("出力先フォルダ: %s", self.output_path)
+            self.logger.info(self.i18n.t("output_folder",
+                                         path=self.output_path))
 
     def toggle_filter_window(self):
         """フィルター管理ウィンドウを開く."""
@@ -333,7 +396,7 @@ class MainWindow(tk.Tk):
 
         if result is not None:
             self.enabled_filters = result
-            self.logger.info("フィルター設定が更新されました")
+            self.logger.info(self.i18n.t("filter_settings_updated"))
 
     def open_css_window(self):
         """CSS設定ウィンドウをモーダルで開いて結果を取得する."""
@@ -345,17 +408,22 @@ class MainWindow(tk.Tk):
             self.css_file = result["css_file"]
             self.embed_css = result["embed_mode"]
             self._update_css_info_label()
-            self.logger.info("CSS設定が更新されました")
+            self.logger.info(self.i18n.t("css_settings_updated"))
 
     def _update_css_info_label(self):
         """CSS設定情報ラベルを更新する."""
         if not self.css_file:
-            self.css_info_label.config(text="CSS: 未設定", fg="gray")
+            self.css_info_label.config(text=self.i18n.t("css_info_not_set"),
+                                       fg="gray")
             return
 
-        mode_text = "埋め込み" if self.embed_css else "外部スタイル"
-        self.css_info_label.config(
-            text=f"CSS: {self.css_file.name} ({mode_text})", fg="black")
+        mode_text = self.i18n.t(
+            "css_mode_embed") if self.embed_css else self.i18n.t(
+                "css_mode_external")
+        self.css_info_label.config(text=self.i18n.t("css_info_set",
+                                                    filename=self.css_file.name,
+                                                    mode=mode_text),
+                                   fg="black")
 
     def _on_format_changed(self):
         """出力形式が変更されたときの処理."""
@@ -382,13 +450,14 @@ class MainWindow(tk.Tk):
             "output_format": self.output_format,
         }
         save_profile(self.profile_var.get(), data)
-        self.logger.info("プロファイル '%s' を保存しました", self.profile_var.get())
+        self.logger.info(
+            self.i18n.t("profile_saved", name=self.profile_var.get()))
 
     def load_profile(self):
         """プロファイルを読み込む."""
         data = load_profile(self.profile_var.get())
         if not data:
-            self.logger.warning("プロファイルが存在しません")
+            self.logger.warning(self.i18n.t("profile_not_found"))
             return
 
         self.enabled_filters = [
@@ -401,12 +470,13 @@ class MainWindow(tk.Tk):
         self._update_css_info_label()
         self._on_format_changed()
 
-        self.logger.info("プロファイル '%s' を読み込みました", self.profile_var.get())
+        self.logger.info(
+            self.i18n.t("profile_loaded", name=self.profile_var.get()))
 
     def run_pandoc(self):
         """Pandocを実行する."""
         if not self.input_path or not self.output_path:
-            self.logger.error("入力と出力先を選んでください")
+            self.logger.error(self.i18n.t("error_no_input_output"))
             return
 
         # 出力形式に応じた拡張子マップ
@@ -427,7 +497,7 @@ class MainWindow(tk.Tk):
             cmd = ["pandoc", str(self.input_path), "-o", str(output_file)]
 
         else:
-            self.logger.error("フォルダ一括処理は省略（必要なら追加可能）")
+            self.logger.error(self.i18n.t("error_folder_batch"))
             return
 
         for f in self.enabled_filters:
@@ -456,7 +526,7 @@ class MainWindow(tk.Tk):
             if self.css_file and self.css_file.exists() and self.embed_css:
                 cmd.append("--embed-resources")
 
-        self.logger.info("実行コマンド: %s", " ".join(cmd))
+        self.logger.info(self.i18n.t("command_execution", cmd=" ".join(cmd)))
 
         # 長時間処理でもUIをブロックしないようスレッドで実行
         threading.Thread(target=self._run_pandoc_thread,
@@ -479,10 +549,14 @@ class MainWindow(tk.Tk):
             if stdout:
                 self.logger.debug("pandoc stdout: %s", stdout)
             if returncode != 0:
-                self.logger.error("変換失敗 (code=%s): %s", returncode, stderr)
+                self.logger.error(
+                    self.i18n.t("conversion_failed",
+                                code=returncode,
+                                error=stderr))
                 return
 
-            self.logger.info("変換完了: %s", output_file)
+            self.logger.info(self.i18n.t("conversion_success",
+                                         path=output_file))
 
         except subprocess.TimeoutExpired:
             self.logger.error("pandoc 実行がタイムアウトしました")
@@ -496,7 +570,7 @@ class MainWindow(tk.Tk):
 
     def on_close(self):
         """アプリ終了時に実行中プロセスを終了させてからウィンドウを破棄する."""
-        self.logger.info("アプリケーションを終了します...")
+        self.logger.info(self.i18n.t("app_closing"))
         proc = None
         with self.proc_lock:
             proc = self.current_proc

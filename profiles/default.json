@@ -6,5 +6,6 @@
   ],
   "css_file": null,
   "embed_css": true,
-  "output_format": "html"
+  "output_format": "html",
+  "language": "en"
 }

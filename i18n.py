@@ -1,0 +1,107 @@
+# -*- coding: utf-8 -*-
+"""国際化(i18n)モジュール."""
+import json
+import locale
+from pathlib import Path
+
+
+class I18n:
+    """国際化クラス."""
+
+    def __init__(self, lang=None):
+        """初期化.
+
+        Parameters
+        ----------
+        lang : str, optional
+            言語コード（'ja', 'en'等）。Noneの場合はシステムロケールから自動検出
+        """
+        if lang is None:
+            lang = self._detect_system_language()
+        self.lang = lang
+        self.translations = {}
+        self.load_translations()
+
+    def _detect_system_language(self):
+        """システムのロケールから言語を検出.
+
+        Returns
+        -------
+        str
+            言語コード（'ja', 'en'等）
+        """
+        try:
+            sys_locale = locale.getdefaultlocale()[0]
+            if sys_locale:
+                # 'ja_JP' -> 'ja', 'en_US' -> 'en'
+                lang = sys_locale.split('_')[0]
+                # サポートされている言語かチェック
+                if (Path(__file__).parent / "locales" /
+                        f"{lang}.json").exists():
+                    return lang
+        except (ValueError, IndexError):
+            pass
+        # デフォルトは英語
+        return 'en'
+
+    def load_translations(self):
+        """翻訳ファイルを読み込む."""
+        locale_file = Path(__file__).parent / "locales" / f"{self.lang}.json"
+        if locale_file.exists():
+            with open(locale_file, 'r', encoding='utf-8') as f:
+                self.translations = json.load(f)
+        else:
+            # フォールバック: 英語を読み込む
+            fallback_file = Path(__file__).parent / "locales" / "en.json"
+            if fallback_file.exists():
+                with open(fallback_file, 'r', encoding='utf-8') as f:
+                    self.translations = json.load(f)
+
+    def t(self, key, **kwargs):
+        """翻訳を取得.
+
+        Parameters
+        ----------
+        key : str
+            翻訳キー
+        **kwargs
+            フォーマット用のパラメータ
+
+        Returns
+        -------
+        str
+            翻訳されたテキスト
+        """
+        text = self.translations.get(key, key)
+        return text.format(**kwargs) if kwargs else text
+
+    def change_language(self, lang):
+        """言語を変更.
+
+        Parameters
+        ----------
+        lang : str
+            新しい言語コード
+        """
+        self.lang = lang
+        self.load_translations()
+
+    def get_available_languages(self):
+        """利用可能な言語のリストを取得.
+
+        Returns
+        -------
+        list of dict
+            [{"code": "en", "name": "English"}, {"code": "ja", "name": "日本語"}]
+        """
+        locales_dir = Path(__file__).parent / "locales"
+        languages = []
+
+        for locale_file in locales_dir.glob("*.json"):
+            lang_code = locale_file.stem
+            with open(locale_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                lang_name = data.get("language_name", lang_code)
+                languages.append({"code": lang_code, "name": lang_name})
+
+        return sorted(languages, key=lambda x: x["code"])
