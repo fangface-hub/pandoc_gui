@@ -12,7 +12,7 @@ class TestTextHandler(unittest.TestCase):
 
     def test_emit(self):
         """ログメッセージの出力テスト."""
-        widget = Mock()
+        widget = MagicMock()  # Mock → MagicMock
         handler = TextHandler(widget)
         handler.setFormatter(logging.Formatter("%(message)s"))
 
