@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>tmppz_8ohh5</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+  <style type="text/css">:root {--step--2: 0.64rem;--step--1: 0.8rem;--step-0: 1rem;--step-1: 1.25rem;--step-2: 1.563rem;--step-3: 1.953rem;--step-4: 2.441rem;--step-5: 3.052rem;}h1 {font-size: var(--step-5);font-weight: 600;margin-top: 1.5em;margin-bottom: 0.75em;}h2 {font-size: var(--step-4);font-weight: 600;margin-top: 1.5em;margin-bottom: 0.75em;}h3 {font-size: var(--step-3);font-weight: 600;margin-top: 1.5em;margin-bottom: 0.75em;}h4 {font-size: var(--step-2);font-weight: 600;margin-top: 1.5em;margin-bottom: 0.75em;}h5 {font-size: var(--step-1);font-weight: 600;margin-top: 1.5em;margin-bottom: 0.75em;}h6 {font-size: var(--step-0);font-weight: 600;margin-top: 1.5em;margin-bottom: 0.75em;}body {font-size: var(--step-0);font-family:"MyricaM M", "Migu 1M", "Ricty Diminished","MeiryoKe_Console", "Consolas", "Menlo", "Ubuntu Mono","DejaVu Sans Mono", "Liberation Mono",monospace;line-height: 1.6;padding: 2rem;max-width: 1280px;margin: auto;background: #f8f9fa;color: #24292e;}code {font-size: var(--step-0);font-family:"MyricaM M", "Migu 1M", "Ricty Diminished","MeiryoKe_Console", "Consolas", "Menlo", "Ubuntu Mono","DejaVu Sans Mono", "Liberation Mono",monospace;color: black;background: lightyellow;padding: 2px 4px;border-radius: 4px;}pre code {font-size: var(--step-0);font-family:"MyricaM M", "Migu 1M", "Ricty Diminished","MeiryoKe_Console", "Consolas", "Menlo", "Ubuntu Mono","DejaVu Sans Mono", "Liberation Mono",monospace;color: black;background: lightyellow;padding: 0.5rem;display: block;border-radius: 6px;overflow-x: auto;}.sourceCode {font-size: var(--step-0);font-family:"MyricaM M", "Migu 1M", "Ricty Diminished","MeiryoKe_Console", "Consolas", "Menlo", "Ubuntu Mono","DejaVu Sans Mono", "Liberation Mono",monospace;color: black;background: lightyellow;padding: 0.5rem;display: block;border-radius: 6px;overflow-x: auto;}table {font-size: var(--step-0);border-collapse: collapse;margin: 1em 0;}table th {font-size: var(--step-0);background: lightgreen;border: 1px solid #000; padding: 0.5em 1em;}table td {font-size: var(--step-0);border: 1px solid #000; padding: 0.5em 1em;}blockquote {font-size: var(--step-0);border-left: 4px solid lightgray;padding-left: 1em;color: #6c757d;margin: 1em 0;}a:link {font-size: var(--step-0);color: #0066cc; }a:visited {font-size: var(--step-0);color: #551a8b; }a:hover {font-size: var(--step-0);color: #cc0000; }a:active {font-size: var(--step-0);color: #ff6600; }ul, ol {font-size: var(--step-0);padding-left: 2em;}hr {border: none;border-top: 1px solid #dee2e6;margin: 2em 0;}</style>
+</head>
+<body>
+<h1 id="pandocgui-도움말">PandocGUI 도움말</h1>
+<h2 id="개요">개요</h2>
+<p>PandocGUI는 Pandoc을 사용하여 Markdown 파일을 HTML 및 기타 형식으로
+변환하는 간단한 GUI 도구입니다. Lua 필터를 사용하여 Mermaid 및
+PlantUML과 같은 다이어그램을 자동으로 생성할 수 있습니다.</p>
+<h2 id="주요-기능">주요 기능</h2>
+<ul>
+<li><strong>파일/폴더 변환</strong>: 단일 파일 변환 또는 폴더의 여러
+파일 일괄 처리</li>
+<li><strong>Lua 필터</strong>: diagram.lua와 같은 필터를 적용하여
+다이어그램 생성</li>
+<li><strong>CSS 스타일</strong>: 사용자 정의 스타일시트 적용(내장/외부
+링크)</li>
+<li><strong>프로필 관리</strong>: 자주 사용하는 설정 저장 및 로드</li>
+<li><strong>제외 패턴</strong>: 폴더 변환 중 특정 파일 건너뛰기</li>
+<li><strong>로그 표시</strong>: 변환 진행 상황 및 오류 모니터링</li>
+</ul>
+<h2 id="기본-사용법">기본 사용법</h2>
+<h3 id="입력-선택">1. 입력 선택</h3>
+<p><strong>파일을 변환하려면:</strong></p>
+<ol type="1">
+<li>“파일 선택” 버튼 클릭</li>
+<li>변환할 Markdown 파일(.md) 선택</li>
+</ol>
+<p><strong>폴더를 일괄 변환하려면:</strong></p>
+<ol type="1">
+<li>“폴더 선택” 버튼 클릭</li>
+<li>Markdown 파일이 포함된 폴더 선택</li>
+<li>하위 폴더의 파일도 자동으로 처리됩니다</li>
+</ol>
+<h3 id="출력-대상-설정">2. 출력 대상 설정</h3>
+<ol type="1">
+<li>“출력 대상 선택” 버튼 클릭</li>
+<li>변환된 파일을 저장할 폴더 선택</li>
+</ol>
+<h3 id="필터-구성">3. 필터 구성</h3>
+<p><strong>사전 설정 필터 추가:</strong></p>
+<ol type="1">
+<li>“사전 설정 필터” 드롭다운에서 선택</li>
+<li>“추가” 버튼 클릭</li>
+</ol>
+<p><strong>사용자 필터 추가:</strong></p>
+<ol type="1">
+<li>“찾아보기” 버튼을 클릭하여 <code>.lua</code> 파일 선택</li>
+<li>“추가” 버튼 클릭</li>
+</ol>
+<p><strong>필터 순서 변경:</strong></p>
+<ul>
+<li>필터 목록에서 항목 선택</li>
+<li>“↑” “↓” 버튼을 사용하여 순서 조정</li>
+</ul>
+<p><strong>필터 제거:</strong></p>
+<ul>
+<li>필터 목록에서 항목 선택</li>
+<li>“삭제” 버튼 클릭</li>
+</ul>
+<h3 id="css-스타일-구성">4. CSS 스타일 구성</h3>
+<ol type="1">
+<li>“CSS 스타일시트 설정” 버튼 클릭</li>
+<li>CSS 파일 선택</li>
+<li>적용 방법 선택:
+<ul>
+<li><strong>내장</strong>: CSS를 HTML 파일 내에 내장</li>
+<li><strong>외부 링크</strong>: 별도 파일로 출력하고 HTML에서 링크</li>
+</ul></li>
+</ol>
+<h3 id="제외-패턴-구성폴더-변환용">5. 제외 패턴 구성(폴더 변환용)</h3>
+<p>폴더 변환 중 특정 파일을 건너뛰려면:</p>
+<ol type="1">
+<li>“제외 패턴 관리” 버튼 클릭</li>
+<li>제외 패턴 창이 열림</li>
+<li>패턴 입력(한 줄에 하나씩)</li>
+<li>“확인” 클릭</li>
+</ol>
+<p><strong>패턴 예시:</strong></p>
+<pre class="text"><code>*.tmp
+__pycache__
+.git
+test_*
+*_backup
+node_modules</code></pre>
+<h3 id="변환-실행">6. 변환 실행</h3>
+<ol type="1">
+<li>모든 설정 확인</li>
+<li>“변환 실행” 버튼 클릭</li>
+<li>로그 창에서 진행 상황 확인</li>
+</ol>
+<h2 id="프로필-기능">프로필 기능</h2>
+<p>자주 사용하는 설정 조합을 프로필로 저장할 수 있습니다.</p>
+<h3 id="프로필-저장">프로필 저장</h3>
+<ol type="1">
+<li>설정 조정</li>
+<li>“프로필 저장” 버튼 클릭</li>
+<li>프로필 이름 입력</li>
+<li>“확인” 클릭</li>
+</ol>
+<h3 id="프로필-로드">프로필 로드</h3>
+<ol type="1">
+<li>“프로필 로드” 버튼 클릭</li>
+<li>목록에서 프로필 선택</li>
+<li>“확인” 클릭</li>
+</ol>
+<p>저장된 프로필은 <code>profiles/</code> 폴더에 JSON 형식으로
+저장됩니다.</p>
+<h2 id="plantuml-java-구성">PlantUML / Java 구성</h2>
+<p>PlantUML 다이어그램을 사용할 때 경로는 다음 우선 순위로
+검색됩니다:</p>
+<h3 id="plantuml-jar-파일">PlantUML JAR 파일</h3>
+<ol type="1">
+<li>문서의 YAML 메타데이터 <code>plantuml_jar</code></li>
+<li>환경 변수 <code>PLANTUML_JAR</code></li>
+<li>기본값 <code>plantuml.jar</code></li>
+</ol>
+<h3 id="java-실행-파일">Java 실행 파일</h3>
+<ol type="1">
+<li>문서의 YAML 메타데이터 <code>java_path</code></li>
+<li>환경 변수 <code>JAVA_PATH</code></li>
+<li>환경 변수 <code>JAVA_HOME\bin\java</code></li>
+<li>PATH의 <code>java</code></li>
+</ol>
+<h3 id="환경-변수-구성-예시">환경 변수 구성 예시</h3>
+<p><strong>PowerShell:</strong></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="va">$env</span><span class="op">:</span><span class="va">PLANTUML_JAR</span> <span class="op">=</span> <span class="st">&#39;C:\tools\plantuml.jar&#39;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="va">$env</span><span class="op">:</span><span class="va">JAVA_PATH</span> <span class="op">=</span> <span class="st">&#39;C:\Program Files\Java\jdk-17\bin\java.exe&#39;</span></span></code></pre></div>
+<p><strong>명령 프롬프트:</strong></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bat"><code class="sourceCode dosbat"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">PLANTUML_JAR</span>=C:\tools\plantuml.jar</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">JAVA_PATH</span>=C:\Program Files\Java\jdk-17\bin\java.exe</span></code></pre></div>
+<h3 id="yaml-메타데이터에서-지정">YAML 메타데이터에서 지정</h3>
+<p>Markdown 파일 시작 부분에 추가:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_jar</span><span class="kw">:</span><span class="at"> C:\tools\plantuml.jar</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">java_path</span><span class="kw">:</span><span class="at"> C:\Program Files\Java\jdk-17\bin\java.exe</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<h2 id="문제-해결">문제 해결</h2>
+<h3 id="변환-실패">변환 실패</h3>
+<p><strong>확인 사항:</strong></p>
+<ul>
+<li>Pandoc이 설치되어 있고 PATH에 추가되어 있습니까?</li>
+<li>입력 파일이 올바른 Markdown 형식입니까?</li>
+<li>출력 폴더에 쓰기 권한이 있습니까?</li>
+</ul>
+<p><strong>로그 확인:</strong></p>
+<ul>
+<li>GUI 로그 창에서 오류 메시지 확인</li>
+<li><code>pandoc.log</code> 파일에서 세부 정보 확인</li>
+</ul>
+<h3 id="다이어그램이-생성되지-않음">다이어그램이 생성되지 않음</h3>
+<p><strong>Mermaid 다이어그램의 경우:</strong></p>
+<ul>
+<li><code>mmdc</code>(mermaid-cli)가 설치되어 있는지 확인</li>
+<li>명령 프롬프트에서 <code>mmdc --version</code>을 실행하여 확인</li>
+</ul>
+<p><strong>PlantUML 다이어그램의 경우:</strong></p>
+<ul>
+<li><code>plantuml.jar</code>이 존재하는지 확인</li>
+<li>Java가 설치되어 있는지 확인</li>
+<li>환경 변수 또는 YAML 메타데이터에서 경로 지정</li>
+</ul>
+<h3 id="필터가-적용되지-않음">필터가 적용되지 않음</h3>
+<p><strong>확인 사항:</strong></p>
+<ul>
+<li>필터가 올바르게 추가되었습니까? (필터 목록 확인)</li>
+<li>Lua 파일이 올바른 경로에 존재합니까?</li>
+<li>필터 순서가 적절합니까? (diagram.lua는 특정 순서가 필요할 수
+있음)</li>
+</ul>
+<h3 id="제외-패턴이-작동하지-않음">제외 패턴이 작동하지 않음</h3>
+<p><strong>확인 사항:</strong></p>
+<ul>
+<li>패턴 구문이 올바릅니까? (와일드카드 <code>*</code> 사용)</li>
+<li>패턴이 파일 이름 또는 폴더 이름과 일치합니까?</li>
+<li>제외 패턴 창에서 “확인”을 클릭하여 저장했습니까?</li>
+</ul>
+<h2 id="자주-묻는-질문">자주 묻는 질문</h2>
+<h3 id="q-어떤-파일-형식으로-변환할-수-있습니까">Q: 어떤 파일 형식으로
+변환할 수 있습니까?</h3>
+<p>A: Pandoc이 지원하는 모든 형식으로 변환할 수 있습니다. 주요 형식은
+다음과 같습니다:</p>
+<ul>
+<li>HTML</li>
+<li>PDF(LaTeX 필요)</li>
+<li>DOCX(Word)</li>
+<li>EPUB</li>
+<li>기타 다수</li>
+</ul>
+<p>출력 형식은 Pandoc 옵션으로 지정할 수 있습니다(향후 버전에서 지원
+예정).</p>
+<h3 id="q-여러-css-파일을-사용할-수-있습니까">Q: 여러 CSS 파일을 사용할
+수 있습니까?</h3>
+<p>A: 현재 버전은 하나의 CSS 파일만 지원합니다. 여러 스타일이 필요한
+경우 CSS 파일을 결합하세요.</p>
+<h3 id="q-폴더-변환-시-파일-구조가-유지됩니까">Q: 폴더 변환 시 파일
+구조가 유지됩니까?</h3>
+<p>A: 예, 입력 폴더의 하위 폴더 구조는 출력 대상에서 유지됩니다.</p>
+<h3 id="q-변환을-취소할-수-있습니까">Q: 변환을 취소할 수 있습니까?</h3>
+<p>A: 창을 닫아 변환 프로세스를 안전하게 종료할 수 있습니다. 처리 중인
+파일은 완료되지만 나머지 파일은 취소됩니다.</p>
+<h2 id="로그-파일">로그 파일</h2>
+<p>변환 세부 정보는 다음 로그 파일에 기록됩니다:</p>
+<ul>
+<li><strong>위치</strong>: <code>pandoc.log</code>(실행 파일과 같은
+폴더)</li>
+<li><strong>내용</strong>: Pandoc 출력, 오류 메시지, 필터 실행 결과</li>
+</ul>
+<p>문제가 발생하면 이 로그 파일을 확인하세요.</p>
+<h2 id="부록-필터-정보">부록: 필터 정보</h2>
+<h3 id="사전-설정-필터">사전 설정 필터</h3>
+<p><code>filters/</code> 폴더에 배치된 Lua 필터는 자동으로
+감지됩니다.</p>
+<p><strong>diagram.lua:</strong></p>
+<ul>
+<li>Mermaid, PlantUML 등의 코드 블록을 다이어그램으로 변환</li>
+</ul>
+<p><strong>md2html.lua:</strong></p>
+<ul>
+<li>Markdown 내에서 추가 처리 수행</li>
+</ul>
+<p><strong>wikilink.lua:</strong></p>
+<ul>
+<li>Wiki 형식 링크 변환</li>
+</ul>
+<h3 id="사용자-정의-필터-추가">사용자 정의 필터 추가</h3>
+<ol type="1">
+<li>임의의 위치에 <code>.lua</code> 파일 생성</li>
+<li>“사용자 필터” 섹션의 “찾아보기” 버튼 클릭</li>
+<li>생성한 Lua 파일 선택</li>
+<li>“추가” 버튼 클릭</li>
+</ol>
+<h2 id="지원-정보">지원 정보</h2>
+<p>문제가 해결되지 않으면 다음 정보와 함께 보고하세요:</p>
+<ul>
+<li>사용 중인 PandocGUI 버전</li>
+<li>Pandoc 버전(<code>pandoc --version</code>)</li>
+<li>오류 메시지(로그 창 또는 <code>pandoc.log</code>에서)</li>
+<li>수행한 단계</li>
+<li>샘플 입력 파일(가능한 경우)</li>
+</ul>
+<hr />
+<p><strong>PandocGUI</strong> - Pandoc용 간단한 GUI 프론트엔드<br />
+버전 1.0</p>
+</body>
+</html>

@@ -1,0 +1,4 @@
+[project]
+name = "pandoc-gui"
+version = "1.0.0"
+description = "A GUI application for document conversion using Pandoc"

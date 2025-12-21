@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>tmp_dxl27wb</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+  <style type="text/css">:root {--step--2: 0.64rem;--step--1: 0.8rem;--step-0: 1rem;--step-1: 1.25rem;--step-2: 1.563rem;--step-3: 1.953rem;--step-4: 2.441rem;--step-5: 3.052rem;}h1 {font-size: var(--step-5);font-weight: 600;margin-top: 1.5em;margin-bottom: 0.75em;}h2 {font-size: var(--step-4);font-weight: 600;margin-top: 1.5em;margin-bottom: 0.75em;}h3 {font-size: var(--step-3);font-weight: 600;margin-top: 1.5em;margin-bottom: 0.75em;}h4 {font-size: var(--step-2);font-weight: 600;margin-top: 1.5em;margin-bottom: 0.75em;}h5 {font-size: var(--step-1);font-weight: 600;margin-top: 1.5em;margin-bottom: 0.75em;}h6 {font-size: var(--step-0);font-weight: 600;margin-top: 1.5em;margin-bottom: 0.75em;}body {font-size: var(--step-0);font-family:"MyricaM M", "Migu 1M", "Ricty Diminished","MeiryoKe_Console", "Consolas", "Menlo", "Ubuntu Mono","DejaVu Sans Mono", "Liberation Mono",monospace;line-height: 1.6;padding: 2rem;max-width: 1280px;margin: auto;background: #f8f9fa;color: #24292e;}code {font-size: var(--step-0);font-family:"MyricaM M", "Migu 1M", "Ricty Diminished","MeiryoKe_Console", "Consolas", "Menlo", "Ubuntu Mono","DejaVu Sans Mono", "Liberation Mono",monospace;color: black;background: lightyellow;padding: 2px 4px;border-radius: 4px;}pre code {font-size: var(--step-0);font-family:"MyricaM M", "Migu 1M", "Ricty Diminished","MeiryoKe_Console", "Consolas", "Menlo", "Ubuntu Mono","DejaVu Sans Mono", "Liberation Mono",monospace;color: black;background: lightyellow;padding: 0.5rem;display: block;border-radius: 6px;overflow-x: auto;}.sourceCode {font-size: var(--step-0);font-family:"MyricaM M", "Migu 1M", "Ricty Diminished","MeiryoKe_Console", "Consolas", "Menlo", "Ubuntu Mono","DejaVu Sans Mono", "Liberation Mono",monospace;color: black;background: lightyellow;padding: 0.5rem;display: block;border-radius: 6px;overflow-x: auto;}table {font-size: var(--step-0);border-collapse: collapse;margin: 1em 0;}table th {font-size: var(--step-0);background: lightgreen;border: 1px solid #000; padding: 0.5em 1em;}table td {font-size: var(--step-0);border: 1px solid #000; padding: 0.5em 1em;}blockquote {font-size: var(--step-0);border-left: 4px solid lightgray;padding-left: 1em;color: #6c757d;margin: 1em 0;}a:link {font-size: var(--step-0);color: #0066cc; }a:visited {font-size: var(--step-0);color: #551a8b; }a:hover {font-size: var(--step-0);color: #cc0000; }a:active {font-size: var(--step-0);color: #ff6600; }ul, ol {font-size: var(--step-0);padding-left: 2em;}hr {border: none;border-top: 1px solid #dee2e6;margin: 2em 0;}</style>
+</head>
+<body>
+<h1 id="pandocgui-hilfe">PandocGUI Hilfe</h1>
+<h2 id="überblick">Überblick</h2>
+<p>PandocGUI ist ein einfaches GUI-Tool zur Konvertierung von
+Markdown-Dateien in HTML und andere Formate mit Pandoc. Es kann
+automatisch Diagramme wie Mermaid und PlantUML mithilfe von Lua-Filtern
+generieren.</p>
+<h2 id="hauptfunktionen">Hauptfunktionen</h2>
+<ul>
+<li><strong>Datei-/Ordnerkonvertierung</strong>: Einzelne Dateien
+konvertieren oder mehrere Dateien in Ordnern stapelweise
+verarbeiten</li>
+<li><strong>Lua-Filter</strong>: Filter wie diagram.lua anwenden, um
+Diagramme zu generieren</li>
+<li><strong>CSS-Stile</strong>: Benutzerdefinierte Stylesheets anwenden
+(eingebettet/externer Link)</li>
+<li><strong>Profilverwaltung</strong>: Häufig verwendete Einstellungen
+speichern und laden</li>
+<li><strong>Ausschlussmuster</strong>: Bestimmte Dateien bei der
+Ordnerkonvertierung überspringen</li>
+<li><strong>Protokollanzeige</strong>: Konvertierungsfortschritt und
+Fehler überwachen</li>
+</ul>
+<h2 id="grundlegende-verwendung">Grundlegende Verwendung</h2>
+<h3 id="eingabe-auswählen">1. Eingabe auswählen</h3>
+<p><strong>Um eine Datei zu konvertieren:</strong></p>
+<ol type="1">
+<li>Klicken Sie auf die Schaltfläche “Dateiauswahl”</li>
+<li>Wählen Sie die zu konvertierende Markdown-Datei (.md)</li>
+</ol>
+<p><strong>Um einen Ordner stapelweise zu konvertieren:</strong></p>
+<ol type="1">
+<li>Klicken Sie auf die Schaltfläche “Ordnerauswahl”</li>
+<li>Wählen Sie den Ordner mit Markdown-Dateien</li>
+<li>Dateien in Unterordnern werden automatisch verarbeitet</li>
+</ol>
+<h3 id="ausgabeziel-festlegen">2. Ausgabeziel festlegen</h3>
+<ol type="1">
+<li>Klicken Sie auf die Schaltfläche “Ausgabeziel auswählen”</li>
+<li>Wählen Sie den Ordner zum Speichern konvertierter Dateien</li>
+</ol>
+<h3 id="filter-konfigurieren">3. Filter konfigurieren</h3>
+<p><strong>Voreingestellte Filter hinzufügen:</strong></p>
+<ol type="1">
+<li>Wählen Sie aus dem Dropdown-Menü “Voreingestellte Filter”</li>
+<li>Klicken Sie auf die Schaltfläche “Hinzufügen”</li>
+</ol>
+<p><strong>Benutzerfilter hinzufügen:</strong></p>
+<ol type="1">
+<li>Klicken Sie auf die Schaltfläche “Durchsuchen”, um eine
+<code>.lua</code>-Datei auszuwählen</li>
+<li>Klicken Sie auf die Schaltfläche “Hinzufügen”</li>
+</ol>
+<p><strong>Filterreihenfolge ändern:</strong></p>
+<ul>
+<li>Wählen Sie ein Element in der Filterliste</li>
+<li>Verwenden Sie die Schaltflächen “↑” “↓”, um die Reihenfolge
+anzupassen</li>
+</ul>
+<p><strong>Filter entfernen:</strong></p>
+<ul>
+<li>Wählen Sie ein Element in der Filterliste</li>
+<li>Klicken Sie auf die Schaltfläche “Löschen”</li>
+</ul>
+<h3 id="css-stile-konfigurieren">4. CSS-Stile konfigurieren</h3>
+<ol type="1">
+<li>Klicken Sie auf die Schaltfläche “CSS-Stylesheet-Einstellungen”</li>
+<li>Wählen Sie eine CSS-Datei</li>
+<li>Wählen Sie die Anwendungsmethode:
+<ul>
+<li><strong>Einbetten</strong>: CSS in die HTML-Datei einbetten</li>
+<li><strong>Externer Link</strong>: Als separate Datei ausgeben und von
+HTML verlinken</li>
+</ul></li>
+</ol>
+<h3 id="ausschlussmuster-konfigurieren-für-ordnerkonvertierung">5.
+Ausschlussmuster konfigurieren (für Ordnerkonvertierung)</h3>
+<p>Um bestimmte Dateien bei der Ordnerkonvertierung zu überspringen:</p>
+<ol type="1">
+<li>Klicken Sie auf die Schaltfläche “Ausschlussmuster verwalten”</li>
+<li>Das Ausschlussmusterfenster öffnet sich</li>
+<li>Geben Sie Muster ein (eins pro Zeile)</li>
+<li>Klicken Sie auf “OK”</li>
+</ol>
+<p><strong>Musterbeispiele:</strong></p>
+<pre class="text"><code>*.tmp
+__pycache__
+.git
+test_*
+*_backup
+node_modules</code></pre>
+<h3 id="konvertierung-ausführen">6. Konvertierung ausführen</h3>
+<ol type="1">
+<li>Überprüfen Sie alle Einstellungen</li>
+<li>Klicken Sie auf die Schaltfläche “Konvertierung ausführen”</li>
+<li>Überprüfen Sie den Fortschritt im Protokollfenster</li>
+</ol>
+<h2 id="profilfunktion">Profilfunktion</h2>
+<p>Sie können häufig verwendete Einstellungskombinationen als Profile
+speichern.</p>
+<h3 id="profil-speichern">Profil speichern</h3>
+<ol type="1">
+<li>Passen Sie die Einstellungen an</li>
+<li>Klicken Sie auf die Schaltfläche “Profil speichern”</li>
+<li>Geben Sie einen Profilnamen ein</li>
+<li>Klicken Sie auf “OK”</li>
+</ol>
+<h3 id="profil-laden">Profil laden</h3>
+<ol type="1">
+<li>Klicken Sie auf die Schaltfläche “Profil laden”</li>
+<li>Wählen Sie ein Profil aus der Liste</li>
+<li>Klicken Sie auf “OK”</li>
+</ol>
+<p>Gespeicherte Profile werden im Ordner <code>profiles/</code> im
+JSON-Format gespeichert.</p>
+<h2 id="plantuml-java-konfiguration">PlantUML / Java-Konfiguration</h2>
+<p>Bei der Verwendung von PlantUML-Diagrammen werden Pfade in der
+folgenden Prioritätsreihenfolge gesucht:</p>
+<h3 id="plantuml-jar-datei">PlantUML JAR-Datei</h3>
+<ol type="1">
+<li>YAML-Metadaten <code>plantuml_jar</code> im Dokument</li>
+<li>Umgebungsvariable <code>PLANTUML_JAR</code></li>
+<li>Standardwert <code>plantuml.jar</code></li>
+</ol>
+<h3 id="java-executable">Java-Executable</h3>
+<ol type="1">
+<li>YAML-Metadaten <code>java_path</code> im Dokument</li>
+<li>Umgebungsvariable <code>JAVA_PATH</code></li>
+<li>Umgebungsvariable <code>JAVA_HOME\bin\java</code></li>
+<li><code>java</code> aus PATH</li>
+</ol>
+<h3 id="beispiele-für-umgebungsvariablenkonfiguration">Beispiele für
+Umgebungsvariablenkonfiguration</h3>
+<p><strong>PowerShell:</strong></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="va">$env</span><span class="op">:</span><span class="va">PLANTUML_JAR</span> <span class="op">=</span> <span class="st">&#39;C:\tools\plantuml.jar&#39;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="va">$env</span><span class="op">:</span><span class="va">JAVA_PATH</span> <span class="op">=</span> <span class="st">&#39;C:\Program Files\Java\jdk-17\bin\java.exe&#39;</span></span></code></pre></div>
+<p><strong>Eingabeaufforderung:</strong></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bat"><code class="sourceCode dosbat"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">PLANTUML_JAR</span>=C:\tools\plantuml.jar</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">JAVA_PATH</span>=C:\Program Files\Java\jdk-17\bin\java.exe</span></code></pre></div>
+<h3 id="spezifikation-in-yaml-metadaten">Spezifikation in
+YAML-Metadaten</h3>
+<p>Fügen Sie am Anfang der Markdown-Datei hinzu:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_jar</span><span class="kw">:</span><span class="at"> C:\tools\plantuml.jar</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">java_path</span><span class="kw">:</span><span class="at"> C:\Program Files\Java\jdk-17\bin\java.exe</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<h2 id="fehlerbehebung">Fehlerbehebung</h2>
+<h3 id="konvertierung-schlägt-fehl">Konvertierung schlägt fehl</h3>
+<p><strong>Überprüfen:</strong></p>
+<ul>
+<li>Ist Pandoc installiert und zu PATH hinzugefügt?</li>
+<li>Ist die Eingabedatei im korrekten Markdown-Format?</li>
+<li>Haben Sie Schreibberechtigung für den Ausgabeordner?</li>
+</ul>
+<p><strong>Protokolle überprüfen:</strong></p>
+<ul>
+<li>Überprüfen Sie Fehlermeldungen im GUI-Protokollfenster</li>
+<li>Überprüfen Sie Details in der <code>pandoc.log</code>-Datei</li>
+</ul>
+<h3 id="diagramme-werden-nicht-generiert">Diagramme werden nicht
+generiert</h3>
+<p><strong>Für Mermaid-Diagramme:</strong></p>
+<ul>
+<li>Überprüfen Sie, ob <code>mmdc</code> (mermaid-cli) installiert
+ist</li>
+<li>Führen Sie <code>mmdc --version</code> in der Eingabeaufforderung
+zur Bestätigung aus</li>
+</ul>
+<p><strong>Für PlantUML-Diagramme:</strong></p>
+<ul>
+<li>Überprüfen Sie, ob <code>plantuml.jar</code> existiert</li>
+<li>Überprüfen Sie, ob Java installiert ist</li>
+<li>Geben Sie den Pfad in Umgebungsvariablen oder YAML-Metadaten an</li>
+</ul>
+<h3 id="filter-werden-nicht-angewendet">Filter werden nicht
+angewendet</h3>
+<p><strong>Überprüfen:</strong></p>
+<ul>
+<li>Sind Filter korrekt hinzugefügt? (Überprüfen Sie die
+Filterliste)</li>
+<li>Existieren Lua-Dateien mit korrekten Pfaden?</li>
+<li>Ist die Filterreihenfolge angemessen? (diagram.lua kann eine
+bestimmte Reihenfolge erfordern)</li>
+</ul>
+<h3 id="ausschlussmuster-funktionieren-nicht">Ausschlussmuster
+funktionieren nicht</h3>
+<p><strong>Überprüfen:</strong></p>
+<ul>
+<li>Ist die Mustersyntax korrekt? (Verwenden Sie Platzhalter
+<code>*</code>)</li>
+<li>Stimmt das Muster mit Datei- oder Ordnernamen überein?</li>
+<li>Haben Sie durch Klicken auf “OK” im Ausschlussmusterfenster
+gespeichert?</li>
+</ul>
+<h2 id="häufig-gestellte-fragen">Häufig gestellte Fragen</h2>
+<h3 id="f-in-welche-dateiformate-kann-ich-konvertieren">F: In welche
+Dateiformate kann ich konvertieren?</h3>
+<p>A: Sie können in alle von Pandoc unterstützten Formate konvertieren.
+Hauptformate sind:</p>
+<ul>
+<li>HTML</li>
+<li>PDF (erfordert LaTeX)</li>
+<li>DOCX (Word)</li>
+<li>EPUB</li>
+<li>Viele andere</li>
+</ul>
+<p>Das Ausgabeformat kann mit Pandoc-Optionen angegeben werden (geplant
+für zukünftige Versionen).</p>
+<h3 id="f-kann-ich-mehrere-css-dateien-verwenden">F: Kann ich mehrere
+CSS-Dateien verwenden?</h3>
+<p>A: Die aktuelle Version unterstützt nur eine CSS-Datei. Wenn Sie
+mehrere Stile benötigen, kombinieren Sie bitte CSS-Dateien.</p>
+<h3 id="f-wird-die-dateistruktur-bei-der-ordnerkonvertierung-beibehalten">F:
+Wird die Dateistruktur bei der Ordnerkonvertierung beibehalten?</h3>
+<p>A: Ja, die Unterordnerstruktur des Eingabeordners wird im Ausgabeziel
+beibehalten.</p>
+<h3 id="f-kann-ich-die-konvertierung-abbrechen">F: Kann ich die
+Konvertierung abbrechen?</h3>
+<p>A: Sie können den Konvertierungsprozess sicher beenden, indem Sie das
+Fenster schließen. Die Datei in Bearbeitung wird abgeschlossen, aber die
+verbleibenden Dateien werden abgebrochen.</p>
+<h2 id="protokolldatei">Protokolldatei</h2>
+<p>Details zur Konvertierung werden in den folgenden Protokolldateien
+aufgezeichnet:</p>
+<ul>
+<li><strong>Speicherort</strong>: <code>pandoc.log</code> (im selben
+Ordner wie die ausführbare Datei)</li>
+<li><strong>Inhalt</strong>: Pandoc-Ausgabe, Fehlermeldungen,
+Filterergebnisse</li>
+</ul>
+<p>Wenn Probleme auftreten, überprüfen Sie bitte diese
+Protokolldatei.</p>
+<h2 id="anhang-über-filter">Anhang: Über Filter</h2>
+<h3 id="voreingestellte-filter">Voreingestellte Filter</h3>
+<p>Lua-Filter im Ordner <code>filters/</code> werden automatisch
+erkannt.</p>
+<p><strong>diagram.lua:</strong></p>
+<ul>
+<li>Konvertiert Code-Blöcke wie Mermaid, PlantUML in Diagramme</li>
+</ul>
+<p><strong>md2html.lua:</strong></p>
+<ul>
+<li>Führt zusätzliche Verarbeitung innerhalb von Markdown aus</li>
+</ul>
+<p><strong>wikilink.lua:</strong></p>
+<ul>
+<li>Konvertiert Wiki-formatierte Links</li>
+</ul>
+<h3 id="hinzufügen-benutzerdefinierter-filter">Hinzufügen
+benutzerdefinierter Filter</h3>
+<ol type="1">
+<li>Erstellen Sie eine <code>.lua</code>-Datei an einem beliebigen
+Ort</li>
+<li>Klicken Sie auf die Schaltfläche “Durchsuchen” im Abschnitt
+“Benutzerfilter”</li>
+<li>Wählen Sie die erstellte Lua-Datei aus</li>
+<li>Klicken Sie auf die Schaltfläche “Hinzufügen”</li>
+</ol>
+<h2 id="support-informationen">Support-Informationen</h2>
+<p>Wenn Probleme nicht gelöst werden, melden Sie dies bitte mit den
+folgenden Informationen:</p>
+<ul>
+<li>PandocGUI-Version, die Sie verwenden</li>
+<li>Pandoc-Version (<code>pandoc --version</code>)</li>
+<li>Fehlermeldungen (aus Protokollfenster oder
+<code>pandoc.log</code>)</li>
+<li>Ausgeführte Schritte</li>
+<li>Beispieleingabedatei (falls möglich)</li>
+</ul>
+<hr />
+<p><strong>PandocGUI</strong> - Einfaches GUI-Frontend für Pandoc<br />
+Version 1.0</p>
+</body>
+</html>

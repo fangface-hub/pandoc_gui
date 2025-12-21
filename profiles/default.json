@@ -1,0 +1,18 @@
+{
+  "filters": [
+    "filters\\md2html.lua",
+    "filters\\diaglam.lua",
+    "filters\\wikilink.lua"
+  ],
+  "exclude_patterns": [
+    ".obsidian",
+    ".git",
+    ".markdownlint.json"
+  ],
+  "css_file": "stylesheets\\default.css",
+  "embed_css": true,
+  "output_format": "html",
+  "java_path": null,
+  "plantuml_jar": null,
+  "language": "en"
+}
