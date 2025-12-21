@@ -137,7 +137,7 @@ class MainWindow(tk.Tk):
         self.logger.setLevel(logging.INFO)
 
         # ローテーション付きファイルログ
-        file_handler = RotatingFileHandler("pandoc.log",
+        file_handler = RotatingFileHandler("pandoc_gui.log",
                                            maxBytes=1024 * 1024,
                                            backupCount=5,
                                            encoding="utf-8")
@@ -267,9 +267,13 @@ class MainWindow(tk.Tk):
     def select_input(self):
         """入力を選択する(ファイルまたはフォルダ)."""
         if self.input_type_var.get() == "file":
-            file = filedialog.askopenfilename(filetypes=[("Markdown", "*.md")],
-                                              initialdir=str(
-                                                  self.last_input_dir))
+            file = filedialog.askopenfilename(
+                filetypes=[("Markdown", "*.md"), ("HTML", "*.html;*.htm"),
+                           ("LaTeX", "*.tex"), ("reStructuredText", "*.rst"),
+                           ("Org-mode", "*.org"), ("Textile", "*.textile"),
+                           ("DocBook", "*.xml"), ("EPUB", "*.epub"),
+                           ("Word", "*.docx"), ("すべてのファイル", "*.*")],
+                initialdir=str(self.last_input_dir))
             if not file:
                 return
             self.input_path = Path(file)
