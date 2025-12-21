@@ -31,7 +31,8 @@ class I18n:
             言語コード（'ja', 'en'等）
         """
         try:
-            sys_locale = locale.getdefaultlocale()[0]
+            # locale.getdefaultlocale()の代わりにgetlocale()を使用
+            sys_locale = locale.getlocale()[0]
             if sys_locale:
                 # 'ja_JP' -> 'ja', 'en_US' -> 'en'
                 lang = sys_locale.split('_')[0]
