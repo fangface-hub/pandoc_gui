@@ -1,0 +1,9 @@
+{
+  "input_path": null,
+  "output_dir": null,
+  "filters": [
+    "filters\\diaglam.lua",
+    "filters\\md2html.lua",
+    "filters\\wikilink.lua"
+  ]
+}
