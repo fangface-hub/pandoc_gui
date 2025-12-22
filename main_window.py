@@ -5,6 +5,7 @@ import logging
 import platform
 import shutil
 import subprocess
+import tempfile
 import threading
 import tkinter as tk
 from logging.handlers import RotatingFileHandler
@@ -125,6 +126,8 @@ def init_default_profile():
         "embed_css": True,
         "output_format": "html",
         "language": None,  # None = auto-detect
+        "java_path": None,
+        "plantuml_jar": None,
     }
     path = PROFILE_DIR / "default.json"
     if not path.exists():
@@ -162,6 +165,10 @@ class MainWindow(tk.Tk):
         self.last_input_dir = Path(__file__).parent
         self.last_output_dir = Path(__file__).parent
         self.last_filter_dir = Path(__file__).parent
+
+        # Java/PlantUML設定
+        self.java_path = None
+        self.plantuml_jar = None
 
         # -------------------------
         # ログ設定
@@ -219,6 +226,45 @@ class MainWindow(tk.Tk):
                                        fg="gray",
                                        font=("Arial", 9))
         self.css_info_label.pack(fill=tk.X, padx=5, pady=2)
+
+        # -------------------------
+        # Java/PlantUML設定
+        # -------------------------
+        plantuml_frame = tk.LabelFrame(self,
+                                       text=self.i18n.t("plantuml_settings"),
+                                       padx=5,
+                                       pady=5)
+        plantuml_frame.pack(fill=tk.X, padx=5, pady=5)
+
+        # Java Path
+        java_frame = tk.Frame(plantuml_frame)
+        java_frame.pack(fill=tk.X, pady=2)
+        tk.Label(java_frame,
+                 text=self.i18n.t("java_path"),
+                 width=12,
+                 anchor=tk.W).pack(side=tk.LEFT, padx=2)
+        self.java_path_var = tk.StringVar()
+        tk.Entry(java_frame, textvariable=self.java_path_var,
+                 width=40).pack(side=tk.LEFT, padx=2, fill=tk.X, expand=True)
+        tk.Button(java_frame,
+                  text="...",
+                  command=self.select_java_path,
+                  width=3).pack(side=tk.LEFT, padx=2)
+
+        # PlantUML JAR
+        jar_frame = tk.Frame(plantuml_frame)
+        jar_frame.pack(fill=tk.X, pady=2)
+        tk.Label(jar_frame,
+                 text=self.i18n.t("plantuml_jar"),
+                 width=12,
+                 anchor=tk.W).pack(side=tk.LEFT, padx=2)
+        self.plantuml_jar_var = tk.StringVar()
+        tk.Entry(jar_frame, textvariable=self.plantuml_jar_var,
+                 width=40).pack(side=tk.LEFT, padx=2, fill=tk.X, expand=True)
+        tk.Button(jar_frame,
+                  text="...",
+                  command=self.select_plantuml_jar,
+                  width=3).pack(side=tk.LEFT, padx=2)
 
         # -------------------------
         # 入出力
@@ -302,6 +348,35 @@ class MainWindow(tk.Tk):
 
         # ウィンドウクローズで子プロセスを終了させる
         self.protocol("WM_DELETE_WINDOW", self.on_close)
+
+    def select_java_path(self):
+        """Javaの実行ファイルを選択する.
+
+        Select Java executable file.
+        """
+        file = filedialog.askopenfilename(title=self.i18n.t("select_java_path"),
+                                          filetypes=[("Executable files",
+                                                      "*.exe"),
+                                                     ("All files", "*.*")],
+                                          initialdir=str(self.last_input_dir))
+        if file:
+            self.java_path_var.set(file)
+            self.java_path = Path(file)
+            self.logger.info(self.i18n.t("java_path_selected", path=file))
+
+    def select_plantuml_jar(self):
+        """PlantUML JARファイルを選択する.
+
+        Select PlantUML JAR file.
+        """
+        file = filedialog.askopenfilename(
+            title=self.i18n.t("select_plantuml_jar"),
+            filetypes=[("JAR files", "*.jar"), ("All files", "*.*")],
+            initialdir=str(self.last_input_dir))
+        if file:
+            self.plantuml_jar_var.set(file)
+            self.plantuml_jar = Path(file)
+            self.logger.info(self.i18n.t("plantuml_jar_selected", path=file))
 
     def _create_menu(self):
         """メニューバーを作成する.
@@ -526,6 +601,8 @@ class MainWindow(tk.Tk):
             "css_file": to_relative_path(self.css_file),
             "embed_css": self.embed_css,
             "output_format": self.output_format,
+            "java_path": to_relative_path(self.java_path),
+            "plantuml_jar": to_relative_path(self.plantuml_jar),
         }
         save_profile(self.profile_var.get(), data)
         self.logger.info(
@@ -548,11 +625,86 @@ class MainWindow(tk.Tk):
         self.embed_css = data.get("embed_css", True)
         self.output_format = data.get("output_format", "html")
         self.format_var.set(self.output_format)
+
+        # Java/PlantUML設定を読み込む
+        self.java_path = from_relative_path(data.get("java_path"))
+        self.plantuml_jar = from_relative_path(data.get("plantuml_jar"))
+        if self.java_path:
+            self.java_path_var.set(str(self.java_path))
+        else:
+            self.java_path_var.set("")
+        if self.plantuml_jar:
+            self.plantuml_jar_var.set(str(self.plantuml_jar))
+        else:
+            self.plantuml_jar_var.set("")
+
         self._update_css_info_label()
         self._on_format_changed()
 
         self.logger.info(
             self.i18n.t("profile_loaded", name=self.profile_var.get()))
+
+    def _create_metadata_file(self, input_file):
+        """Java/PlantUML設定用の一時メタデータファイルを作成する.
+
+        Create temporary metadata file for Java/PlantUML settings.
+
+        Parameters
+        ----------
+        input_file : Path
+            入力ファイルパス (Input file path)
+
+        Returns
+        -------
+        Path or None
+            一時メタデータファイルのパス、設定が不要な場合はNone
+            (Path to temporary metadata file, or None if not needed)
+        """
+        # Java/PlantUML設定が両方未設定の場合は何もしない
+        java_path_str = self.java_path_var.get().strip()
+        plantuml_jar_str = self.plantuml_jar_var.get().strip()
+
+        if not java_path_str and not plantuml_jar_str:
+            return None
+
+        # 一時ファイルを作成
+        temp_fd, temp_path = tempfile.mkstemp(suffix='.md', text=True)
+        temp_file = Path(temp_path)
+
+        try:
+            with open(temp_fd, 'w', encoding='utf-8') as f:
+                # YAMLメタデータを書き込む
+                f.write("---\n")
+                if java_path_str:
+                    # Windowsパスのバックスラッシュをエスケープ
+                    escaped_path = java_path_str.replace('\\', '\\\\')
+                    f.write(f"java_path: \"{escaped_path}\"\n")
+                if plantuml_jar_str:
+                    escaped_path = plantuml_jar_str.replace('\\', '\\\\')
+                    f.write(f"plantuml_jar: \"{escaped_path}\"\n")
+                f.write("---\n\n")
+
+                # 元のファイル内容を追記
+                with open(input_file, 'r', encoding='utf-8') as input_f:
+                    content = input_f.read()
+                    # 元のファイルに既にYAMLメタデータがある場合は削除
+                    if content.startswith('---\n'):
+                        parts = content.split('---\n', 2)
+                        if len(parts) >= 3:
+                            content = parts[2]
+                    f.write(content)
+
+            self.logger.info(
+                self.i18n.t("temp_metadata_created", path=temp_file))
+            return temp_file
+
+        except (OSError, IOError) as e:
+            self.logger.error(self.i18n.t("temp_metadata_failed", error=str(e)))
+            try:
+                temp_file.unlink()
+            except (OSError, IOError):
+                pass
+            return None
 
     def run_pandoc(self):
         """Pandocを実行する.
@@ -595,7 +747,11 @@ class MainWindow(tk.Tk):
         output_file : Path
             出力ファイルパス (Output file path)
         """
-        cmd = ["pandoc", str(input_file), "-o", str(output_file)]
+        # Java/PlantUML設定がある場合は一時メタデータファイルを作成
+        temp_metadata_file = self._create_metadata_file(input_file)
+        actual_input = temp_metadata_file if temp_metadata_file else input_file
+
+        cmd = ["pandoc", str(actual_input), "-o", str(output_file)]
 
         for f in self.enabled_filters:
             cmd.extend(["--lua-filter", str(f)])
@@ -627,7 +783,7 @@ class MainWindow(tk.Tk):
 
         # 長時間処理でもUIをブロックしないようスレッドで実行
         threading.Thread(target=self._run_pandoc_thread,
-                         args=(cmd, output_file),
+                         args=(cmd, output_file, temp_metadata_file),
                          daemon=True).start()
 
     def _run_folder_conversion(self, input_folder, output_folder, ext):
@@ -687,6 +843,63 @@ class MainWindow(tk.Tk):
                                         error=str(e)))
 
         self.logger.info(self.i18n.t("folder_conversion_complete"))
+
+    def _run_pandoc_thread(self, cmd, output_file, temp_metadata_file=None):
+        """バックグラウンドで pandoc を実行し、ログ出力を行う.
+
+        Execute pandoc in background and output logs.
+
+        Parameters
+        ----------
+        cmd : list
+            実行するコマンド (Command to execute)
+        output_file : Path
+            出力ファイルパス (Output file path)
+        temp_metadata_file : Path, optional
+            一時メタデータファイルのパス (Path to temporary metadata file)
+        """
+        try:
+            proc = subprocess.Popen(cmd,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE,
+                                    text=True,
+                                    encoding="utf-8",
+                                    errors="replace")
+
+            with self.proc_lock:
+                self.current_proc = proc
+
+            stdout_text, stderr_text = proc.communicate()
+
+            with self.proc_lock:
+                self.current_proc = None
+
+            if proc.returncode == 0:
+                self.logger.info(
+                    self.i18n.t("conversion_success", path=output_file))
+                if stdout_text.strip():
+                    self.logger.info("STDOUT:\n%s", stdout_text)
+            else:
+                self.logger.error(
+                    self.i18n.t("conversion_failed", code=proc.returncode))
+                if stderr_text.strip():
+                    self.logger.error("STDERR:\n%s", stderr_text)
+        except (OSError, ValueError, subprocess.SubprocessError) as e:
+            self.logger.exception(self.i18n.t("pandoc_execution_error",
+                                              error=e))
+        finally:
+            # 一時メタデータファイルを削除
+            if temp_metadata_file and temp_metadata_file.exists():
+                try:
+                    temp_metadata_file.unlink()
+                    self.logger.info(
+                        self.i18n.t("temp_metadata_deleted",
+                                    path=temp_metadata_file))
+                except (OSError, IOError) as e:
+                    self.logger.warning(
+                        self.i18n.t("temp_metadata_delete_failed",
+                                    path=temp_metadata_file,
+                                    error=str(e)))
 
     def on_close(self):
         """アプリ終了時に実行中プロセスを終了させてからウィンドウを破棄する.

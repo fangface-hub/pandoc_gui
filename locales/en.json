@@ -81,5 +81,16 @@
   "converting_file": "Converting: {input} → {output}",
   "copied_file": "Copied: {path}",
   "copy_failed": "Copy failed: {path} - {error}",
-  "folder_conversion_complete": "Folder conversion completed"
+  "folder_conversion_complete": "Folder conversion completed",
+  "plantuml_settings": "PlantUML Settings",
+  "java_path": "Java Executable",
+  "plantuml_jar": "PlantUML JAR",
+  "select_java_path": "Select Java Executable",
+  "select_plantuml_jar": "Select PlantUML JAR File",
+  "java_path_selected": "Java path selected: {path}",
+  "plantuml_jar_selected": "PlantUML JAR selected: {path}",
+  "temp_metadata_created": "Temporary metadata file created: {path}",
+  "temp_metadata_failed": "Failed to create temporary metadata file: {error}",
+  "temp_metadata_deleted": "Temporary metadata file deleted: {path}",
+  "temp_metadata_delete_failed": "Failed to delete temporary metadata file: {path} - {error}"
 }

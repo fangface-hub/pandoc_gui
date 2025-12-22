@@ -81,5 +81,16 @@
   "converting_file": "変換中: {input} → {output}",
   "copied_file": "コピー完了: {path}",
   "copy_failed": "コピー失敗: {path} - {error}",
-  "folder_conversion_complete": "フォルダ変換が完了しました"
+  "folder_conversion_complete": "フォルダ変換が完了しました",
+  "plantuml_settings": "PlantUML設定",
+  "java_path": "Java実行ファイル",
+  "plantuml_jar": "PlantUML JAR",
+  "select_java_path": "Java実行ファイルを選択",
+  "select_plantuml_jar": "PlantUML JARファイルを選択",
+  "java_path_selected": "Javaパスを選択: {path}",
+  "plantuml_jar_selected": "PlantUML JARを選択: {path}",
+  "temp_metadata_created": "一時メタデータファイルを作成: {path}",
+  "temp_metadata_failed": "一時メタデータファイルの作成に失敗: {error}",
+  "temp_metadata_deleted": "一時メタデータファイルを削除: {path}",
+  "temp_metadata_delete_failed": "一時メタデータファイルの削除に失敗: {path} - {error}"
 }
