@@ -24,14 +24,16 @@ SCRIPT_DIR = Path(__file__).parent
 def to_relative_path(path: Path) -> str:
     """パスをスクリプトディレクトリ基準の相対パスに変換.
 
+    Convert path to relative path based on script directory.
+
     Parameters
     ----------
     path : Path
-        変換するパス
+        変換するパス (Path to convert)
     Returns
     -------
     str
-        相対パスまたは絶対パス
+        相対パスまたは絶対パス (Relative path or absolute path)
     """
     if not path:
         return None
@@ -47,14 +49,16 @@ def to_relative_path(path: Path) -> str:
 def from_relative_path(path_str: str) -> Path:
     """相対パスをスクリプトディレクトリ基準で解決.
 
+    Resolve relative path based on script directory.
+
     Parameters
     ----------
     path_str : str
-        パス文字列
+        パス文字列 (Path string)
     Returns
     -------
     Path
-        解決されたパス
+        解決されたパス (Resolved path)
     """
     if not path_str:
         return None
@@ -67,12 +71,14 @@ def from_relative_path(path_str: str) -> Path:
 def save_profile(name: str, data: dict):
     """プロファイル保存/読み込み.
 
+    Save/load profile.
+
     Parameters
     ----------
     name : str
-        名称
+        名称 (Name)
     data : dict
-        辞書データ
+        辞書データ (Dictionary data)
     """
     path = PROFILE_DIR / f"{name}.json"
     with open(path, "w", encoding="utf-8") as f:
@@ -82,14 +88,17 @@ def save_profile(name: str, data: dict):
 def load_profile(name: str) -> dict:
     """プロファイル保存/読み込み.
 
+    Save/load profile.
+
     Parameters
     ----------
     name : str
-        名称
+        名称 (Name)
     Returns
     -------
     dict or None
         プロファイルデータ、またはファイルが存在しない場合はNone
+        (Profile data, or None if file does not exist)
     """
     path = PROFILE_DIR / f"{name}.json"
     if not path.exists():
@@ -99,7 +108,10 @@ def load_profile(name: str) -> dict:
 
 
 def init_default_profile():
-    """デフォルトプロファイルを初期化する."""
+    """デフォルトプロファイルを初期化する.
+
+    Initialize default profile.
+    """
     default_data = {
         "filters": [],
         "css_file": None,
@@ -114,10 +126,16 @@ def init_default_profile():
 
 
 class MainWindow(tk.Tk):
-    """Pandoc GUIアプリケーションのメインクラス."""
+    """Pandoc GUIアプリケーションのメインクラス.
+
+    Main class for Pandoc GUI application.
+    """
 
     def __init__(self):
-        """初期化."""
+        """初期化.
+
+        Initialize.
+        """
         super().__init__()
 
         # デフォルトプロファイルを初期化
@@ -279,7 +297,10 @@ class MainWindow(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def _create_menu(self):
-        """メニューバーを作成する."""
+        """メニューバーを作成する.
+
+        Create menu bar.
+        """
         menubar = tk.Menu(self)
         self.config(menu=menubar)
 
@@ -289,18 +310,19 @@ class MainWindow(tk.Tk):
 
         available_languages = self.i18n.get_available_languages()
         for lang in available_languages:
-            language_menu.add_command(
-                label=lang["name"],
-                command=lambda lang_code=lang["code"]: (
-                    self.change_language(lang_code)))
+            language_menu.add_command(label=lang["name"],
+                                      command=lambda lang_code=lang["code"]:
+                                      (self.change_language(lang_code)))
 
     def change_language(self, lang_code):
         """言語を変更してプロファイルに保存.
 
+        Change language and save to profile.
+
         Parameters
         ----------
         lang_code : str
-            言語コード
+            言語コード (Language code)
         """
         # プロファイルに保存
         profile_data = load_profile("default") or {}
@@ -313,7 +335,10 @@ class MainWindow(tk.Tk):
                             self.i18n.t("restart_required"))
 
     def toggle_log_window(self):
-        """ログウィンドウの表示・非表示を切り替える."""
+        """ログウィンドウの表示・非表示を切り替える.
+
+        Toggle log window visibility.
+        """
         if self.log_window and self.log_window.winfo_viewable():
             self.log_window.withdraw()
             self.log_button.config(text=self.i18n.t("log_window_show"))
@@ -322,7 +347,10 @@ class MainWindow(tk.Tk):
         self.log_button.config(text=self.i18n.t("log_window_hide"))
 
     def select_input(self):
-        """入力を選択する(ファイルまたはフォルダ)."""
+        """入力を選択する(ファイルまたはフォルダ).
+
+        Select input (file or folder).
+        """
         if self.input_type_var.get() == "file":
             file = filedialog.askopenfilename(
                 filetypes=[(self.i18n.t("markdown_files"), "*.md"),
@@ -351,7 +379,10 @@ class MainWindow(tk.Tk):
         self.logger.info(self.i18n.t("input_folder", path=self.input_path))
 
     def select_output_dir(self):
-        """出力先フォルダを選択する."""
+        """出力先フォルダを選択する.
+
+        Select output folder.
+        """
         folder = filedialog.askdirectory(initialdir=str(self.last_output_dir))
         if not folder:
             return
@@ -360,7 +391,10 @@ class MainWindow(tk.Tk):
         self.logger.info(self.i18n.t("output_folder", path=self.output_path))
 
     def select_output(self):
-        """出力先を選択する（入力形式に応じて動的に変更）."""
+        """出力先を選択する（入力形式に応じて動的に変更）.
+
+        Select output destination (dynamically changes according to input type).
+        """
         if self.input_type_var.get() == "file":
             # 入力がファイルの場合は出力ファイルを選択
             file = filedialog.asksaveasfilename(
@@ -385,11 +419,17 @@ class MainWindow(tk.Tk):
                                          path=self.output_path))
 
     def toggle_filter_window(self):
-        """フィルター管理ウィンドウを開く."""
+        """フィルター管理ウィンドウを開く.
+
+        Open filter management window.
+        """
         self.open_filter_window()
 
     def open_filter_window(self):
-        """フィルター管理ウィンドウをモーダルで開いて結果を取得する."""
+        """フィルター管理ウィンドウをモーダルで開いて結果を取得する.
+
+        Open filter management window as modal and get results.
+        """
         filter_window = FilterWindow(self)
         filter_window.set_filters(self.enabled_filters)
         result = filter_window.show_modal()
@@ -399,7 +439,10 @@ class MainWindow(tk.Tk):
             self.logger.info(self.i18n.t("filter_settings_updated"))
 
     def open_css_window(self):
-        """CSS設定ウィンドウをモーダルで開いて結果を取得する."""
+        """CSS設定ウィンドウをモーダルで開いて結果を取得する.
+
+        Open CSS settings window as modal and get results.
+        """
         css_window = CSSWindow(self)
         css_window.set_css_config(self.css_file, self.embed_css)
         result = css_window.show_modal()
@@ -411,7 +454,10 @@ class MainWindow(tk.Tk):
             self.logger.info(self.i18n.t("css_settings_updated"))
 
     def _update_css_info_label(self):
-        """CSS設定情報ラベルを更新する."""
+        """CSS設定情報ラベルを更新する.
+
+        Update CSS settings information label.
+        """
         if not self.css_file:
             self.css_info_label.config(text=self.i18n.t("css_info_not_set"),
                                        fg="gray")
@@ -426,7 +472,10 @@ class MainWindow(tk.Tk):
                                    fg="black")
 
     def _on_format_changed(self):
-        """出力形式が変更されたときの処理."""
+        """出力形式が変更されたときの処理.
+
+        Process when output format is changed.
+        """
         self.output_format = self.format_var.get()
         # DOCXはCSS非対応なので、CSS設定ボタンを非活性にする
         if self.output_format == "docx":
@@ -438,11 +487,17 @@ class MainWindow(tk.Tk):
                 self.css_info_label.config(fg="black")
 
     def show_filter_window(self):
-        """フィルター管理ウィンドウを表示する."""
+        """フィルター管理ウィンドウを表示する.
+
+        Show filter management window.
+        """
         self.open_filter_window()
 
     def save_profile(self):
-        """プロファイルを保存する."""
+        """プロファイルを保存する.
+
+        Save profile.
+        """
         data = {
             "filters": [to_relative_path(f) for f in self.enabled_filters],
             "css_file": to_relative_path(self.css_file),
@@ -454,7 +509,10 @@ class MainWindow(tk.Tk):
             self.i18n.t("profile_saved", name=self.profile_var.get()))
 
     def load_profile(self):
-        """プロファイルを読み込む."""
+        """プロファイルを読み込む.
+
+        Load profile.
+        """
         data = load_profile(self.profile_var.get())
         if not data:
             self.logger.warning(self.i18n.t("profile_not_found"))
@@ -474,7 +532,10 @@ class MainWindow(tk.Tk):
             self.i18n.t("profile_loaded", name=self.profile_var.get()))
 
     def run_pandoc(self):
-        """Pandocを実行する."""
+        """Pandocを実行する.
+
+        Execute Pandoc.
+        """
         if not self.input_path or not self.output_path:
             self.logger.error(self.i18n.t("error_no_input_output"))
             return
@@ -534,7 +595,10 @@ class MainWindow(tk.Tk):
                          daemon=True).start()
 
     def _run_pandoc_thread(self, cmd, output_file):
-        """バックグラウンドで pandoc を実行し、ログ出力を行う."""
+        """バックグラウンドで pandoc を実行し、ログ出力を行う.
+
+        Execute pandoc in background and output logs.
+        """
         try:
             proc = subprocess.Popen(cmd,
                                     stdout=subprocess.PIPE,
@@ -569,7 +633,11 @@ class MainWindow(tk.Tk):
                 self.current_proc = None
 
     def on_close(self):
-        """アプリ終了時に実行中プロセスを終了させてからウィンドウを破棄する."""
+        """アプリ終了時に実行中プロセスを終了させてからウィンドウを破棄する.
+
+        Terminate running processes and destroy window when closing the
+        application.
+        """
         self.logger.info(self.i18n.t("app_closing"))
         proc = None
         with self.proc_lock:
@@ -609,7 +677,10 @@ class MainWindow(tk.Tk):
         self._cleanup_and_close()
 
     def _cleanup_and_close(self):
-        """ウィンドウをクリーンアップして閉じる."""
+        """ウィンドウをクリーンアップして閉じる.
+
+        Clean up and close window.
+        """
         # ログウィンドウを閉じる
         if self.log_window:
             try:

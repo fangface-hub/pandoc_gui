@@ -5,7 +5,10 @@ import tkinter as tk
 
 
 class TextHandler(logging.Handler):
-    """ログテキストウィジェット用ハンドラー."""
+    """ログテキストウィジェット用ハンドラー.
+
+    Handler for log text widget.
+    """
 
     def __init__(self, widget):
         super().__init__()
@@ -18,15 +21,20 @@ class TextHandler(logging.Handler):
 
 
 class LogWindow(tk.Toplevel):
-    """ログ表示用のフローティングウィンドウ."""
+    """ログ表示用のフローティングウィンドウ.
+
+    Floating window for log display.
+    """
 
     def __init__(self, parent):
         """初期化.
 
+        Initialize.
+
         Parameters
         ----------
         parent : tk.Tk
-            親ウィンドウ
+            親ウィンドウ (Parent window)
         """
         super().__init__(parent)
         self.title("ログ")
@@ -43,7 +51,10 @@ class LogWindow(tk.Toplevel):
         self._create_widgets()
 
     def _create_widgets(self):
-        """ウィジェットを作成する."""
+        """ウィジェットを作成する.
+
+        Create widgets.
+        """
         # ログテキスト
         log_frame = tk.Frame(self, padx=5, pady=5)
         log_frame.pack(fill=tk.BOTH, expand=True)
@@ -90,21 +101,29 @@ class LogWindow(tk.Toplevel):
     def _change_log_level(self, selected):
         """ログレベルを変更する.
 
+        Change log level.
+
         Parameters
         ----------
         selected : str
-            選択されたログレベル
+            選択されたログレベル (Selected log level)
         """
         level = getattr(logging, selected)
         self.logger.setLevel(level)
         self.logger.info("ログレベルを %s に変更", selected)
 
     def _on_close(self):
-        """ウィンドウを閉じる時の処理."""
+        """ウィンドウを閉じる時の処理.
+
+        Process when closing window.
+        """
         self.withdraw()
         self.parent.log_button.config(text="ログウィンドウを表示")
 
     def clear_log(self):
-        """ログをクリアする."""
+        """ログをクリアする.
+
+        Clear log.
+        """
         self.log_text.delete(1.0, tk.END)
         self.logger.info("ログをクリアしました")

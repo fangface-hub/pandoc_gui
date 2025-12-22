@@ -6,15 +6,20 @@ from tkinter import filedialog
 
 
 class FilterWindow(tk.Toplevel):
-    """フィルター管理用のモーダルウィンドウ."""
+    """フィルター管理用のモーダルウィンドウ.
+
+    Modal window for filter management.
+    """
 
     def __init__(self, parent):
         """初期化.
 
+        Initialize.
+
         Parameters
         ----------
         parent : tk.Tk
-            親ウィンドウ
+            親ウィンドウ (Parent window)
         """
         super().__init__(parent)
         self.title("フィルター管理")
@@ -31,7 +36,10 @@ class FilterWindow(tk.Toplevel):
         self._create_widgets()
 
     def _create_widgets(self):
-        """ウィジェットを作成する."""
+        """ウィジェットを作成する.
+
+        Create widgets.
+        """
         # 有効フィルター
         tk.Label(self, text="有効フィルター").pack(padx=5, pady=5)
         self.enabled_list = tk.Listbox(self, height=15)
@@ -68,7 +76,10 @@ class FilterWindow(tk.Toplevel):
         self.geometry(f"+{x}+{y}")
 
     def add_user_filter(self):
-        """ユーザーフィルターを追加する."""
+        """ユーザーフィルターを追加する.
+
+        Add user filter.
+        """
         file = filedialog.askopenfilename(filetypes=[("Lua filter", "*.lua")],
                                           initialdir=str(
                                               self.parent.last_filter_dir))
@@ -82,7 +93,10 @@ class FilterWindow(tk.Toplevel):
             self.logger.info("ユーザーフィルター追加: %s", p)
 
     def remove_filter(self):
-        """有効フィルターから削除する."""
+        """有効フィルターから削除する.
+
+        Remove from enabled filters.
+        """
         idx = self.enabled_list.curselection()
         if not idx:
             return
@@ -92,7 +106,10 @@ class FilterWindow(tk.Toplevel):
         self.logger.info("フィルター削除: %s", removed)
 
     def move_up(self):
-        """有効フィルターを上に移動する."""
+        """有効フィルターを上に移動する.
+
+        Move enabled filter up.
+        """
         idx = self.enabled_list.curselection()
         if not idx:
             return
@@ -107,7 +124,10 @@ class FilterWindow(tk.Toplevel):
         self.enabled_list.select_set(i - 1)
 
     def move_down(self):
-        """有効フィルターを下に移動する."""
+        """有効フィルターを下に移動する.
+
+        Move enabled filter down.
+        """
         idx = self.enabled_list.curselection()
         if not idx:
             return
@@ -122,7 +142,10 @@ class FilterWindow(tk.Toplevel):
         self.enabled_list.select_set(i + 1)
 
     def _refresh_enabled_list(self):
-        """有効フィルターリストを更新する."""
+        """有効フィルターリストを更新する.
+
+        Update enabled filter list.
+        """
         self.enabled_list.delete(0, tk.END)
         for f in self.enabled_filters:
             self.enabled_list.insert(tk.END, str(f))
@@ -130,41 +153,54 @@ class FilterWindow(tk.Toplevel):
     def get_filters(self):
         """有効フィルターを取得する.
 
+        Get enabled filters.
+
         Returns
         -------
         list
-            有効フィルターのリスト
+            有効フィルターのリスト (List of enabled filters)
         """
         return self.enabled_filters
 
     def set_filters(self, filters):
         """有効フィルターを設定する.
 
+        Set enabled filters.
+
         Parameters
         ----------
         filters : list
-            有効フィルターのリスト
+            有効フィルターのリスト (List of enabled filters)
         """
         self.enabled_filters = filters
         self._refresh_enabled_list()
 
     def confirm(self):
-        """確定ボタンが押された時の処理."""
+        """確定ボタンが押された時の処理.
+
+        Process when confirm button is pressed.
+        """
         self.result = self.enabled_filters
         self.destroy()
 
     def cancel(self):
-        """キャンセルボタンが押された時の処理."""
+        """キャンセルボタンが押された時の処理.
+
+        Process when cancel button is pressed.
+        """
         self.result = None
         self.destroy()
 
     def show_modal(self):
         """モーダルウィンドウを表示して結果を返す.
 
+        Show modal window and return result.
+
         Returns
         -------
         list or None
             選択されたフィルター、またはキャンセルされた場合はNone
+            (Selected filters, or None if cancelled)
         """
         self.deiconify()
         self.wait_window()

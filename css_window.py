@@ -6,15 +6,20 @@ from tkinter import filedialog
 
 
 class CSSWindow(tk.Toplevel):
-    """CSS設定用のモーダルウィンドウ."""
+    """CSS設定用のモーダルウィンドウ.
+
+    Modal window for CSS settings.
+    """
 
     def __init__(self, parent):
         """初期化.
 
+        Initialize.
+
         Parameters
         ----------
         parent : tk.Tk
-            親ウィンドウ
+            親ウィンドウ (Parent window)
         """
         super().__init__(parent)
         self.title("CSS設定")
@@ -32,7 +37,10 @@ class CSSWindow(tk.Toplevel):
         self._create_widgets()
 
     def _create_widgets(self):
-        """ウィジェットを作成する."""
+        """ウィジェットを作成する.
+
+        Create widgets.
+        """
         # CSSファイル選択フレーム
         file_frame = tk.LabelFrame(self, text="CSSファイル", padx=5, pady=5)
         file_frame.pack(fill=tk.X, padx=5, pady=5)
@@ -75,7 +83,10 @@ class CSSWindow(tk.Toplevel):
         self.geometry(f"+{x}+{y}")
 
     def select_css_file(self):
-        """CSSファイルを選択する."""
+        """CSSファイルを選択する.
+
+        Select CSS file.
+        """
         file = filedialog.askopenfilename(filetypes=[("CSS files", "*.css")],
                                           initialdir=str(
                                               self.parent.last_filter_dir))
@@ -89,12 +100,14 @@ class CSSWindow(tk.Toplevel):
     def set_css_config(self, css_file, embed_mode):
         """CSS設定を設定する.
 
+        Set CSS configuration.
+
         Parameters
         ----------
         css_file : Path or None
-            CSSファイルパス
+            CSSファイルパス (CSS file path)
         embed_mode : bool
-            True=埋め込み, False=外部スタイル
+            True=埋め込み, False=外部スタイル (True=embed, False=external style)
         """
         self.css_file = css_file
         if css_file:
@@ -105,7 +118,10 @@ class CSSWindow(tk.Toplevel):
         self.style_var.set("embed" if embed_mode else "external")
 
     def confirm(self):
-        """確定ボタンが押された時の処理."""
+        """確定ボタンが押された時の処理.
+
+        Process when confirm button is pressed.
+        """
         self.result = {
             "css_file": self.css_file,
             "embed_mode": self.style_var.get() == "embed"
@@ -113,17 +129,23 @@ class CSSWindow(tk.Toplevel):
         self.destroy()
 
     def cancel(self):
-        """キャンセルボタンが押された時の処理."""
+        """キャンセルボタンが押された時の処理.
+
+        Process when cancel button is pressed.
+        """
         self.result = None
         self.destroy()
 
     def show_modal(self):
         """モーダルウィンドウを表示して結果を返す.
 
+        Show modal window and return result.
+
         Returns
         -------
         dict or None
             {"css_file": Path, "embed_mode": bool}、またはキャンセルされた場合はNone
+            ({"css_file": Path, "embed_mode": bool}, or None if cancelled)
         """
         self.deiconify()
         self.wait_window()

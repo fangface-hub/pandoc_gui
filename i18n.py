@@ -6,15 +6,22 @@ from pathlib import Path
 
 
 class I18n:
-    """国際化クラス."""
+    """国際化クラス.
+
+    Internationalization class.
+    """
 
     def __init__(self, lang=None):
         """初期化.
+
+        Initialize.
 
         Parameters
         ----------
         lang : str, optional
             言語コード（'ja', 'en'等）。Noneの場合はシステムロケールから自動検出
+            (Language code ('ja', 'en', etc.).
+            Auto-detect from system locale if None)
         """
         if lang is None:
             lang = self._detect_system_language()
@@ -25,10 +32,12 @@ class I18n:
     def _detect_system_language(self):
         """システムのロケールから言語を検出.
 
+        Detect language from system locale.
+
         Returns
         -------
         str
-            言語コード（'ja', 'en'等）
+            言語コード（'ja', 'en'等） (Language code ('ja', 'en', etc.))
         """
         try:
             # locale.getdefaultlocale()の代わりにgetlocale()を使用
@@ -46,7 +55,10 @@ class I18n:
         return 'en'
 
     def load_translations(self):
-        """翻訳ファイルを読み込む."""
+        """翻訳ファイルを読み込む.
+
+        Load translation files.
+        """
         locale_file = Path(__file__).parent / "locales" / f"{self.lang}.json"
         if locale_file.exists():
             with open(locale_file, 'r', encoding='utf-8') as f:
@@ -61,17 +73,19 @@ class I18n:
     def t(self, key, **kwargs):
         """翻訳を取得.
 
+        Get translation.
+
         Parameters
         ----------
         key : str
-            翻訳キー
+            翻訳キー (Translation key)
         **kwargs
-            フォーマット用のパラメータ
+            フォーマット用のパラメータ (Parameters for formatting)
 
         Returns
         -------
         str
-            翻訳されたテキスト
+            翻訳されたテキスト (Translated text)
         """
         text = self.translations.get(key, key)
         return text.format(**kwargs) if kwargs else text
@@ -79,16 +93,20 @@ class I18n:
     def change_language(self, lang):
         """言語を変更.
 
+        Change language.
+
         Parameters
         ----------
         lang : str
-            新しい言語コード
+            新しい言語コード (New language code)
         """
         self.lang = lang
         self.load_translations()
 
     def get_available_languages(self):
         """利用可能な言語のリストを取得.
+
+        Get list of available languages.
 
         Returns
         -------
