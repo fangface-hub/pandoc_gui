@@ -8,7 +8,7 @@ import threading
 import tkinter as tk
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from tkinter import filedialog, ttk
+from tkinter import filedialog, messagebox, ttk
 
 from css_window import CSSWindow
 from filter_window import FilterWindow
@@ -330,7 +330,6 @@ class MainWindow(tk.Tk):
         save_profile("default", profile_data)
 
         # 再起動が必要であることを通知
-        from tkinter import messagebox
         messagebox.showinfo(self.i18n.t("language_settings"),
                             self.i18n.t("restart_required"))
 
