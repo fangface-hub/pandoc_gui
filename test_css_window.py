@@ -17,6 +17,10 @@ class TestCSSWindow(unittest.TestCase):
         self.parent.logger = MagicMock()
         self.parent.last_filter_dir = Path(".")
 
+        # i18nのモックを作成
+        self.parent.i18n = Mock()
+        self.parent.i18n.t = Mock(side_effect=lambda key, **kwargs: key)
+
         # CSSWindowのGUI初期化をモックして回避
         with patch.object(CSSWindow, '__init__', return_value=None):
             self.window = CSSWindow(self.parent)
@@ -24,11 +28,13 @@ class TestCSSWindow(unittest.TestCase):
         # 必要な属性を手動で設定
         self.window.parent = self.parent
         self.window.logger = self.parent.logger
+        self.window.i18n = self.parent.i18n
         self.window.css_file = None
         self.window.embed_mode = True
         self.window.result = None
         self.window.style_var = Mock()
         self.window.css_label = Mock()
+        self.window.destroy = Mock()
 
     def test_initial_state(self):
         """初期状態の確認."""
@@ -51,7 +57,8 @@ class TestCSSWindow(unittest.TestCase):
         self.window.set_css_config(None, False)
 
         self.assertIsNone(self.window.css_file)
-        self.window.css_label.config.assert_called_with(text="未選択", fg="gray")
+        # i18nのtメソッドが呼ばれることを確認
+        self.window.i18n.t.assert_called_with("css_not_selected")
         self.window.style_var.set.assert_called_with("external")
 
     def test_set_css_config_external_mode(self):
@@ -88,7 +95,6 @@ class TestCSSWindow(unittest.TestCase):
         """確定ボタン（埋め込みモード）のテスト."""
         self.window.css_file = Path("test.css")
         self.window.style_var.get.return_value = "embed"
-        self.window.destroy = Mock()
 
         self.window.confirm()
 
@@ -101,7 +107,6 @@ class TestCSSWindow(unittest.TestCase):
         """確定ボタン（外部スタイルモード）のテスト."""
         self.window.css_file = Path("test.css")
         self.window.style_var.get.return_value = "external"
-        self.window.destroy = Mock()
 
         self.window.confirm()
 
@@ -113,12 +118,34 @@ class TestCSSWindow(unittest.TestCase):
     def test_cancel(self):
         """キャンセルボタンのテスト."""
         self.window.css_file = Path("test.css")
-        self.window.destroy = Mock()
 
         self.window.cancel()
 
         self.assertIsNone(self.window.result)
         self.window.destroy.assert_called_once()
+
+    def test_show_modal(self):
+        """show_modalメソッドのテスト."""
+        expected_result = {"css_file": Path("test.css"), "embed_mode": True}
+        self.window.result = expected_result
+
+        # wait_windowをモック化
+        self.window.wait_window = Mock()
+
+        result = self.window.show_modal()
+
+        self.assertEqual(result, expected_result)
+        self.window.wait_window.assert_called_once()
+
+    def test_show_modal_cancelled(self):
+        """show_modalメソッド（キャンセル時）のテスト."""
+        self.window.result = None
+        self.window.wait_window = Mock()
+
+        result = self.window.show_modal()
+
+        self.assertIsNone(result)
+        self.window.wait_window.assert_called_once()
 
 
 if __name__ == "__main__":
