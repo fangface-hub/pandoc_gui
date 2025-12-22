@@ -3,6 +3,7 @@
 import json
 import logging
 import platform
+import shutil
 import subprocess
 import threading
 import tkinter as tk
@@ -14,6 +15,12 @@ from css_window import CSSWindow
 from filter_window import FilterWindow
 from i18n import I18n
 from log_window import LogWindow
+
+try:
+    from importlib.metadata import PackageNotFoundError, version
+    __version__ = version("pandoc-gui")
+except PackageNotFoundError:
+    __version__ = "1.0.0"  # フォールバック
 
 PROFILE_DIR = Path("profiles")
 PROFILE_DIR.mkdir(exist_ok=True)
@@ -314,6 +321,12 @@ class MainWindow(tk.Tk):
                                       command=lambda lang_code=lang["code"]:
                                       (self.change_language(lang_code)))
 
+        # ヘルプメニュー
+        help_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label=self.i18n.t("help"), menu=help_menu)
+        help_menu.add_command(label=self.i18n.t("about"),
+                              command=self.show_about)
+
     def change_language(self, lang_code):
         """言語を変更してプロファイルに保存.
 
@@ -332,6 +345,17 @@ class MainWindow(tk.Tk):
         # 再起動が必要であることを通知
         messagebox.showinfo(self.i18n.t("language_settings"),
                             self.i18n.t("restart_required"))
+
+    def show_about(self):
+        """バージョン情報を表示する.
+
+        Show version information.
+        """
+        about_text = "\n".join([
+            "Pandoc GUI", f"Version: {__version__}", "",
+            self.i18n.t("about_description"), "", "© 2025"
+        ])
+        messagebox.showinfo(self.i18n.t("about"), about_text)
 
     def toggle_log_window(self):
         """ログウィンドウの表示・非表示を切り替える.
@@ -554,11 +578,24 @@ class MainWindow(tk.Tk):
                 output_file = self.output_path
             else:  # フォルダとして指定された
                 output_file = self.output_path / (self.input_path.stem + ext)
-            cmd = ["pandoc", str(self.input_path), "-o", str(output_file)]
-
+            self._run_single_file_conversion(self.input_path, output_file)
         else:
-            self.logger.error(self.i18n.t("error_folder_batch"))
-            return
+            # フォルダ選択の場合
+            self._run_folder_conversion(self.input_path, self.output_path, ext)
+
+    def _run_single_file_conversion(self, input_file, output_file):
+        """単一ファイルの変換を実行する.
+
+        Execute conversion for a single file.
+
+        Parameters
+        ----------
+        input_file : Path
+            入力ファイルパス (Input file path)
+        output_file : Path
+            出力ファイルパス (Output file path)
+        """
+        cmd = ["pandoc", str(input_file), "-o", str(output_file)]
 
         for f in self.enabled_filters:
             cmd.extend(["--lua-filter", str(f)])
@@ -593,43 +630,63 @@ class MainWindow(tk.Tk):
                          args=(cmd, output_file),
                          daemon=True).start()
 
-    def _run_pandoc_thread(self, cmd, output_file):
-        """バックグラウンドで pandoc を実行し、ログ出力を行う.
+    def _run_folder_conversion(self, input_folder, output_folder, ext):
+        """フォルダ内のファイルを一括変換する.
 
-        Execute pandoc in background and output logs.
+        Convert all files in a folder.
+
+        Parameters
+        ----------
+        input_folder : Path
+            入力フォルダパス (Input folder path)
+        output_folder : Path
+            出力フォルダパス (Output folder path)
+        ext : str
+            出力ファイルの拡張子 (Output file extension)
         """
-        try:
-            proc = subprocess.Popen(cmd,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE,
-                                    text=True)
-            with self.proc_lock:
-                self.current_proc = proc
+        # 変換対象の拡張子
+        convertible_extensions = {
+            ".md", ".markdown", ".html", ".htm", ".tex", ".rst", ".org",
+            ".textile", ".xml", ".epub", ".docx"
+        }
 
-            stdout, stderr = proc.communicate()
-            returncode = proc.returncode
+        # 出力フォルダが存在しない場合は作成
+        output_folder.mkdir(parents=True, exist_ok=True)
 
-            if stdout:
-                self.logger.debug("pandoc stdout: %s", stdout)
-            if returncode != 0:
-                self.logger.error(
-                    self.i18n.t("conversion_failed",
-                                code=returncode,
-                                error=stderr))
-                return
+        # 入力フォルダ内の全ファイルを走査
+        for input_file in input_folder.rglob("*"):
+            if input_file.is_file():
+                # 入力フォルダからの相対パスを取得
+                relative_path = input_file.relative_to(input_folder)
 
-            self.logger.info(self.i18n.t("conversion_success",
-                                         path=output_file))
+                if input_file.suffix.lower() in convertible_extensions:
+                    # 変換対象ファイル
+                    output_file = output_folder / relative_path.parent / (
+                        input_file.stem + ext)
+                    output_file.parent.mkdir(parents=True, exist_ok=True)
 
-        except subprocess.TimeoutExpired:
-            self.logger.error("pandoc 実行がタイムアウトしました")
-            proc.kill()
-            proc.communicate()  # デッドロックを避けるため
-        except (OSError, ValueError) as e:
-            self.logger.exception("pandoc 実行中に例外が発生しました: %s", e)
-        finally:
-            with self.proc_lock:
-                self.current_proc = None
+                    self.logger.info(
+                        self.i18n.t(
+                            "converting_file",
+                            input=str(relative_path),
+                            output=str(output_file.relative_to(output_folder))))
+                    self._run_single_file_conversion(input_file, output_file)
+                else:
+                    # 変換対象外ファイル（画像など）はコピー
+                    output_file = output_folder / relative_path
+                    output_file.parent.mkdir(parents=True, exist_ok=True)
+
+                    try:
+                        shutil.copy2(input_file, output_file)
+                        self.logger.info(
+                            self.i18n.t("copied_file", path=str(relative_path)))
+                    except (OSError, IOError) as e:
+                        self.logger.error(
+                            self.i18n.t("copy_failed",
+                                        path=str(relative_path),
+                                        error=str(e)))
+
+        self.logger.info(self.i18n.t("folder_conversion_complete"))
 
     def on_close(self):
         """アプリ終了時に実行中プロセスを終了させてからウィンドウを破棄する.

@@ -74,5 +74,12 @@
   "all_files": "すべてのファイル",
   "css_files": "CSSファイル",
   "lua_files": "Luaフィルター",
-  "output_file_format": "{format}ファイル"
+  "output_file_format": "{format}ファイル",
+  "help": "ヘルプ",
+  "about": "バージョン情報",
+  "about_description": "Pandocを使用したドキュメント変換GUIアプリケーション",
+  "converting_file": "変換中: {input} → {output}",
+  "copied_file": "コピー完了: {path}",
+  "copy_failed": "コピー失敗: {path} - {error}",
+  "folder_conversion_complete": "フォルダ変換が完了しました"
 }

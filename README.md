@@ -25,9 +25,9 @@ A simple GUI frontend for Pandoc that generates diagrams (Mermaid, PlantUML, etc
 1. 必要なツールをインストール（Pandoc, Node/mmdc, Java 等）/ Install required tools (Pandoc, Node/mmdc, Java, etc.)
 2. リポジトリのルートで実行 / Run from the repository root:
 
-```powershell
-python main_window.py
-```
+    ```powershell
+    python main_window.py
+    ```
 
 ## PlantUML / Java の指定方法 / Specifying PlantUML / Java Paths
 
@@ -66,14 +66,107 @@ java_path: C:\path\to\java.exe
 ## 使い方（GUI）/ How to Use (GUI)
 
 1. 「ファイル選択」または「フォルダ選択」で入力を決定 / Select input with "File Selection" or "Folder Selection"
-2. 「出力先フォルダ選択」で出力ディレクトリを選択 / Select output directory with "Output Destination Selection"
-3. プリセット/ユーザーフィルターを追加（順序は上下で調整）/ Add preset/user filters (adjust order with up/down buttons)
-4. 「変換実行」をクリック / Click "Run Conversion"
+1. 「出力先フォルダ選択」で出力ディレクトリを選択 / Select output directory with "Output Destination Selection"
+1. プリセット/ユーザーフィルターを追加（順序は上下で調整）/ Add preset/user filters (adjust order with up/down buttons)
+1. 「変換実行」をクリック / Click "Run Conversion"
 
 ## ログ・プロファイル / Logs & Profiles
 
 - GUI 内にログが表示され、詳細は `pandoc.log` に記録されます。/ The GUI displays logs, and the system records details in `pandoc.log`
 - プロファイルは `profiles/` に JSON 形式で保存されます。/ The system saves profiles as JSON in the `profiles/` directory
+
+## 配布用パッケージの作成 / Creating Distribution Packages
+
+### PyInstallerでフォルダ形式の実行ファイルを作成 / Create Folder Distribution with PyInstaller
+
+1. PyInstallerをインストール / Install PyInstaller:
+
+    ```powershell
+    pip install pyinstaller
+    ```
+
+1. 実行ファイルを作成 / Create executable:
+
+    ```powershell
+    pyinstaller --noconsole --onedir --name "PandocGUI" `
+      --add-data "locales;locales" `
+      --add-data "filters;filters" `
+      main_window.py
+    ```
+
+    オプションの説明 / Option descriptions:
+
+    - `--noconsole`: コンソールウィンドウを表示しない / Don't show console window
+    - `--onedir`: フォルダ形式で出力（複数ファイル）/ Output as folder (multiple files)
+    - `--name`: 実行ファイル名を指定 / Specify executable name
+    - `--add-data`: リソースファイルを含める / Include resource files
+
+1. 生成されたファイルを確認 / Check generated files:
+
+    ```text
+    dist/PandocGUI/
+    ├── PandocGUI.exe
+    ├── locales/
+    ├── filters/
+    └── （その他の依存ファイル / other dependencies）
+    ```
+
+### MSIX Packaging ToolでWindowsインストーラを作成 / Create Windows Installer with MSIX Packaging Tool
+
+1. MSIX Packaging Toolをインストール / Install MSIX Packaging Tool:
+
+   - Microsoft Storeから「MSIX Packaging Tool」をインストール / Install "MSIX Packaging Tool" from Microsoft Store
+
+1. MSIX Packaging Toolを起動し、「Application package」を選択 / Launch MSIX Packaging Tool and select "Application package"
+
+1. 「Create package on this computer」を選択 / Select "Create package on this computer"
+
+1. パッケージ情報を入力 / Enter package information:
+
+    - Package name: `PandocGUI`
+    - Publisher: `CN=YourName` （証明書に合わせて変更 / Change according to certificate）
+    - Version: `1.0.0.0`
+
+1. インストーラの選択 / Select installer:
+
+    - 「Browse」をクリックし、`dist/PandocGUI/PandocGUI.exe`を選択 / Click "Browse" and select `dist/PandocGUI/PandocGUI.exe`
+    - Installation location: `C:\Program Files\PandocGUI`
+
+1. インストールの実行とキャプチャ / Execute installation and capture:
+
+   - アプリを起動して動作を確認 / Launch app and verify operation
+   - 必要なファイルがすべて含まれていることを確認 / Verify all required files are included
+   - 「Done」をクリック / Click "Done"
+
+1. パッケージの保存 / Save package:
+
+    - .msixファイルとして保存 / Save as .msix file
+
+1. 署名（オプション）/ Signing (optional):
+
+    - テスト用の証明書を作成するか、既存の証明書を使用 / Create test certificate or use existing certificate
+
+    ```powershell
+    # テスト用証明書の作成 / Create test certificate
+    New-SelfSignedCertificate -Type Custom -Subject "CN=YourName" `
+      -KeyUsage DigitalSignature -FriendlyName "PandocGUI Test Certificate" `
+      -CertStoreLocation "Cert:\CurrentUser\My" `
+      -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+    
+    # MSIXファイルに署名 / Sign MSIX file
+    SignTool sign /fd SHA256 /a /f certificate.pfx /p password PandocGUI.msix
+    ```
+
+1. インストーラの配布 / Distribute installer:
+
+   - .msixファイルを配布 / Distribute .msix file
+   - ユーザーは証明書をインストールしてからアプリをインストール / Users install certificate before installing app
+
+### 注意事項 / Notes
+
+- `filters/`や`locales/`などのリソースファイルが正しく含まれているか確認してください / Verify that resource files like `filters/` and `locales/` are properly included
+- Pandoc、mmdc、Java等の外部ツールは別途インストールが必要です / External tools like Pandoc, mmdc, and Java need to be installed separately
+- MSIXパッケージは署名が必要です（開発時はテスト証明書を使用可能）/ MSIX packages require signing (test certificates can be used during development)
 
 ## テスト / Testing
 

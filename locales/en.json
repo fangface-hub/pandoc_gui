@@ -74,5 +74,12 @@
   "all_files": "All Files",
   "css_files": "CSS files",
   "lua_files": "Lua filter",
-  "output_file_format": "{format} file"
+  "output_file_format": "{format} file",
+  "help": "Help",
+  "about": "About",
+  "about_description": "A GUI application for document conversion using Pandoc",
+  "converting_file": "Converting: {input} → {output}",
+  "copied_file": "Copied: {path}",
+  "copy_failed": "Copy failed: {path} - {error}",
+  "folder_conversion_complete": "Folder conversion completed"
 }
