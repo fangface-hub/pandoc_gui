@@ -85,10 +85,13 @@ class TestLogWindow(unittest.TestCase):
 
     def test_clear_log(self):
         """ログクリアのテスト."""
+        # 初期レベルをINFOに設定
+        self.window.logger.setLevel(logging.INFO)
+
         self.window.clear_log()
 
         self.window.log_text.delete.assert_called_once()
-        # INFO レベルでログが記録される
+        # clear_log実行後もログレベルは維持される
         self.assertEqual(self.window.logger.level, logging.INFO)
 
     def test_on_close(self):

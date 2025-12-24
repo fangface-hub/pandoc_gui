@@ -5,6 +5,7 @@ import logging
 import platform
 import shutil
 import subprocess
+import sys
 import tempfile
 import threading
 import tkinter as tk
@@ -23,10 +24,16 @@ try:
 except PackageNotFoundError:
     __version__ = "1.0.0"  # フォールバック
 
-PROFILE_DIR = Path("profiles")
-PROFILE_DIR.mkdir(exist_ok=True)
+# PyInstallerビルド時のパス解決
+if getattr(sys, 'frozen', False):
+    # PyInstallerでビルドされた場合
+    SCRIPT_DIR = Path(sys.executable).parent
+else:
+    # 通常のPythonスクリプトとして実行される場合
+    SCRIPT_DIR = Path(__file__).parent
 
-SCRIPT_DIR = Path(__file__).parent
+PROFILE_DIR = SCRIPT_DIR / "profiles"
+PROFILE_DIR.mkdir(exist_ok=True)
 
 
 def to_relative_path(path: Path) -> str:

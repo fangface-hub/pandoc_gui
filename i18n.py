@@ -2,6 +2,7 @@
 """国際化(i18n)モジュール."""
 import json
 import locale
+import sys
 from pathlib import Path
 
 
@@ -23,6 +24,12 @@ class I18n:
             (Language code ('ja', 'en', etc.).
             Auto-detect from system locale if None)
         """
+        # PyInstallerビルド時のパス解決
+        if getattr(sys, 'frozen', False):
+            self.base_dir = Path(sys.executable).parent
+        else:
+            self.base_dir = Path(__file__).parent
+
         if lang is None:
             lang = self._detect_system_language()
         self.lang = lang
@@ -46,8 +53,7 @@ class I18n:
                 # 'ja_JP' -> 'ja', 'en_US' -> 'en'
                 lang = sys_locale.split('_')[0]
                 # サポートされている言語かチェック
-                if (Path(__file__).parent / "locales" /
-                        f"{lang}.json").exists():
+                if (self.base_dir / "locales" / f"{lang}.json").exists():
                     return lang
         except (ValueError, IndexError):
             pass
@@ -59,13 +65,13 @@ class I18n:
 
         Load translation files.
         """
-        locale_file = Path(__file__).parent / "locales" / f"{self.lang}.json"
+        locale_file = self.base_dir / "locales" / f"{self.lang}.json"
         if locale_file.exists():
             with open(locale_file, 'r', encoding='utf-8') as f:
                 self.translations = json.load(f)
         else:
             # フォールバック: 英語を読み込む
-            fallback_file = Path(__file__).parent / "locales" / "en.json"
+            fallback_file = self.base_dir / "locales" / "en.json"
             if fallback_file.exists():
                 with open(fallback_file, 'r', encoding='utf-8') as f:
                     self.translations = json.load(f)
@@ -113,7 +119,7 @@ class I18n:
         list of dict
             [{"code": "en", "name": "English"}, {"code": "ja", "name": "日本語"}]
         """
-        locales_dir = Path(__file__).parent / "locales"
+        locales_dir = self.base_dir / "locales"
         languages = []
 
         for locale_file in locales_dir.glob("*.json"):

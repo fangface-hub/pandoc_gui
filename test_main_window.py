@@ -134,7 +134,10 @@ class TestMainWindow(unittest.TestCase):
             self.window = MainWindow()
 
         # 必要な属性を手動で追加
+        self.window.tk = Mock()  # tkinter属性のモック
         self.window.logger = MagicMock()
+        self.window.i18n = Mock()
+        self.window.i18n.t = Mock(side_effect=lambda key, **kwargs: key)
         self.window.input_path = None
         self.window.output_path = None
         self.window.enabled_filters = []
@@ -146,6 +149,16 @@ class TestMainWindow(unittest.TestCase):
         self.window.profile_var = Mock()
         self.window.proc_lock = MagicMock()
         self.window.current_proc = None
+        # StringVarのモックを追加
+        self.window.java_path_var = Mock()
+        self.window.java_path_var.get = Mock(return_value="")
+        self.window.java_path = None
+        self.window.plantuml_jar = None
+        # その他の必要な属性
+        self.window.input_type = "single"
+        self.window.toc_enabled = False
+        self.window.toc_depth = 3
+        self.window.number_sections = False
 
     def test_initial_state(self):
         """初期状態の確認."""

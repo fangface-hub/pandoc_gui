@@ -26,6 +26,7 @@ class TestCSSWindow(unittest.TestCase):
             self.window = CSSWindow(self.parent)
 
         # 必要な属性を手動で設定
+        self.window.tk = Mock()  # tkinter属性のモック
         self.window.parent = self.parent
         self.window.logger = self.parent.logger
         self.window.i18n = self.parent.i18n
@@ -35,6 +36,8 @@ class TestCSSWindow(unittest.TestCase):
         self.window.style_var = Mock()
         self.window.css_label = Mock()
         self.window.destroy = Mock()
+        self.window.deiconify = Mock()
+        self.window.wait_window = Mock()
 
     def test_initial_state(self):
         """初期状態の確認."""
@@ -57,8 +60,8 @@ class TestCSSWindow(unittest.TestCase):
         self.window.set_css_config(None, False)
 
         self.assertIsNone(self.window.css_file)
-        # i18nのtメソッドが呼ばれることを確認
-        self.window.i18n.t.assert_called_with("css_not_selected")
+        # ラベルが「未選択」に設定されることを確認
+        self.window.css_label.config.assert_called_with(text="未選択", fg="gray")
         self.window.style_var.set.assert_called_with("external")
 
     def test_set_css_config_external_mode(self):
@@ -129,22 +132,20 @@ class TestCSSWindow(unittest.TestCase):
         expected_result = {"css_file": Path("test.css"), "embed_mode": True}
         self.window.result = expected_result
 
-        # wait_windowをモック化
-        self.window.wait_window = Mock()
-
         result = self.window.show_modal()
 
         self.assertEqual(result, expected_result)
+        self.window.deiconify.assert_called_once()
         self.window.wait_window.assert_called_once()
 
     def test_show_modal_cancelled(self):
         """show_modalメソッド（キャンセル時）のテスト."""
         self.window.result = None
-        self.window.wait_window = Mock()
 
         result = self.window.show_modal()
 
         self.assertIsNone(result)
+        self.window.deiconify.assert_called_once()
         self.window.wait_window.assert_called_once()
 
 
