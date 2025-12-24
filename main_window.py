@@ -24,13 +24,30 @@ try:
 except PackageNotFoundError:
     __version__ = "1.0.0"  # フォールバック
 
+
+def get_app_dir() -> Path:
+    """アプリケーションのルートディレクトリを取得.
+
+    Get application root directory.
+
+    PyInstallerでビルドされた場合は実行ファイルのディレクトリ、
+    開発環境ではスクリプトのディレクトリを返します。
+
+    Returns
+    -------
+    Path
+        アプリケーションのルートディレクトリ
+    """
+    if getattr(sys, 'frozen', False):
+        # PyInstallerでビルドされた場合
+        return Path(sys.executable).parent
+    else:
+        # 通常のPythonスクリプトとして実行される場合
+        return Path(__file__).parent
+
+
 # PyInstallerビルド時のパス解決
-if getattr(sys, 'frozen', False):
-    # PyInstallerでビルドされた場合
-    SCRIPT_DIR = Path(sys.executable).parent
-else:
-    # 通常のPythonスクリプトとして実行される場合
-    SCRIPT_DIR = Path(__file__).parent
+SCRIPT_DIR = get_app_dir()
 
 PROFILE_DIR = SCRIPT_DIR / "profiles"
 PROFILE_DIR.mkdir(exist_ok=True)
@@ -169,9 +186,9 @@ class MainWindow(tk.Tk):
         self.output_path = None
 
         # ダイアログ用の前回選択パス
-        self.last_input_dir = Path(__file__).parent
-        self.last_output_dir = Path(__file__).parent
-        self.last_filter_dir = Path(__file__).parent
+        self.last_input_dir = SCRIPT_DIR
+        self.last_output_dir = SCRIPT_DIR
+        self.last_filter_dir = SCRIPT_DIR
 
         # Java/PlantUML設定
         self.java_path = None

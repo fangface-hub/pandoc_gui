@@ -1,14 +1,35 @@
 # -*- coding: utf-8 -*-
 """Pandoc GUIアプリケーションのテストコード."""
 import json
+import sys
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 
-from main_window import (MainWindow, from_relative_path, init_default_profile,
-                         load_profile, save_profile, to_relative_path)
+from main_window import (MainWindow, from_relative_path, get_app_dir,
+                         init_default_profile, load_profile, save_profile,
+                         to_relative_path)
 
 SCRIPT_DIR = Path(__file__).parent
+
+
+class TestGetAppDir(unittest.TestCase):
+    """get_app_dir関数のテスト."""
+
+    def test_get_app_dir_not_frozen(self):
+        """非frozen環境では__file__のディレクトリを返す."""
+        with patch.object(sys, 'frozen', False, create=True):
+            result = get_app_dir()
+            # main_window.pyのディレクトリが返される
+            self.assertTrue(result.exists())
+            self.assertTrue(result.is_dir())
+
+    def test_get_app_dir_frozen(self):
+        """frozen環境ではsys.executableのディレクトリを返す."""
+        with patch.object(sys, 'frozen', True, create=True), \
+             patch.object(sys, 'executable', 'C:/test/app.exe'):
+            result = get_app_dir()
+            self.assertEqual(result, Path('C:/test'))
 
 
 class TestPathConversion(unittest.TestCase):

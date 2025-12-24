@@ -6,6 +6,27 @@ import sys
 from pathlib import Path
 
 
+def get_app_dir() -> Path:
+    """アプリケーションのルートディレクトリを取得.
+
+    Get application root directory.
+
+    PyInstallerでビルドされた場合は実行ファイルのディレクトリ、
+    開発環境ではスクリプトのディレクトリを返します。
+
+    Returns
+    -------
+    Path
+        アプリケーションのルートディレクトリ
+    """
+    if getattr(sys, 'frozen', False):
+        # PyInstallerでビルドされた場合
+        return Path(sys.executable).parent
+    else:
+        # 通常のPythonスクリプトとして実行される場合
+        return Path(__file__).parent
+
+
 class I18n:
     """国際化クラス.
 
@@ -25,10 +46,7 @@ class I18n:
             Auto-detect from system locale if None)
         """
         # PyInstallerビルド時のパス解決
-        if getattr(sys, 'frozen', False):
-            self.base_dir = Path(sys.executable).parent
-        else:
-            self.base_dir = Path(__file__).parent
+        self.base_dir = get_app_dir()
 
         if lang is None:
             lang = self._detect_system_language()
