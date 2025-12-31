@@ -10,7 +10,8 @@ a = Analysis(
         ('locales', 'locales'),
         ('filters', 'filters'),
         ('stylesheets', 'stylesheets'),
-        ('help', 'help'),  # helpフォルダを追加
+        ('help', 'help'),
+        ('profiles', 'profiles'),
     ],
     hiddenimports=[],
     hookspath=[],
@@ -54,7 +55,7 @@ coll = COLLECT(
     name='PandocGUI',
 )
 
-# ビルド後処理: filters/, locales/, stylesheets/, help/ を _internal/ の外に移動
+# ビルド後処理: filters/, locales/, stylesheets/, help/, profiles/ を _internal/ の外に移動
 import shutil
 import os
 from pathlib import Path
@@ -62,7 +63,7 @@ from pathlib import Path
 dist_dir = Path('dist/PandocGUI')
 internal_dir = dist_dir / '_internal'
 
-for folder in ['filters', 'locales', 'stylesheets', 'help']:
+for folder in ['filters', 'locales', 'stylesheets', 'help', 'profiles']:
     src = internal_dir / folder
     dst = dist_dir / folder
     
