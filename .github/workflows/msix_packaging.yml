@@ -1,0 +1,48 @@
+name: Build MSIX Package
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-msix:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+
+      - name: Build EXE with PyInstaller
+        run: python -m PyInstaller PandocGUI.spec
+
+      - name: Prepare MSIX folder structure
+        run: |
+          mkdir msix
+          Copy-Item dist\PandocGUI msix\PandocGUI -Recurse
+          Copy-Item AppxManifest.xml msix\
+          Copy-Item Square150x150Logo.png msix\
+          Copy-Item Square44x44Logo.png msix\
+
+      - name: Create MSIX package
+        run: |
+          $root = "C:\Program Files (x86)\Windows Kits\10\bin"
+          $versions = Get-ChildItem $root | Where-Object { $_.Name -match '^\d+\.\d+\.\d+\.\d+$' } | Sort-Object Name -Descending
+          $latest = $versions[0].FullName
+          $makeappx = Join-Path $latest "x64\makeappx.exe"
+          & $makeappx pack /d msix /p PandocGUI.msix /o
+
+      - name: Upload MSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: msix
+          path: PandocGUI.msix
