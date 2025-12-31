@@ -33,7 +33,7 @@ jobs:
         uses: sigstore/cosign-installer@v3
 
       - name: Sign ZIP with OIDC
-        run: cosign sign-blob --output-signature PandocGUI.zip.sig PandocGUI.zip
+        run: cosign sign-blob --yes --output-signature PandocGUI.zip.sig PandocGUI.zip
 
       - name: Upload signature
         uses: actions/upload-artifact@v4
