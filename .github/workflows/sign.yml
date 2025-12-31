@@ -1,4 +1,4 @@
-name: Build, Zip and Sign with Cosign (OIDC)
+name: Build Windows App, Zip and Sign with Cosign (OIDC)
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   build-sign:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout
@@ -21,26 +21,19 @@ jobs:
           python-version: "3.11"
 
       - name: Install PyInstaller
-        run: |
-          pip install pyinstaller
+        run: pip install pyinstaller
 
       - name: Build with PyInstaller
-        run: |
-          python -m PyInstaller PandocGUI.spec
+        run: python -m PyInstaller PandocGUI.spec
 
       - name: Create ZIP from dist/PandocGUI
-        run: |
-          cd dist
-          zip -r ../PandocGUI.zip PandocGUI
+        run: Compress-Archive -Path dist/PandocGUI -DestinationPath PandocGUI.zip
 
       - name: Install cosign
         uses: sigstore/cosign-installer@v3
 
       - name: Sign ZIP with OIDC
-        run: |
-          cosign sign-blob \
-            --output-signature PandocGUI.zip.sig \
-            PandocGUI.zip
+        run: cosign sign-blob --output-signature PandocGUI.zip.sig PandocGUI.zip
 
       - name: Upload signature
         uses: actions/upload-artifact@v4
