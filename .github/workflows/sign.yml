@@ -1,0 +1,49 @@
+name: Build, Zip and Sign with Cosign (OIDC)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-sign:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install PyInstaller
+        run: |
+          pip install pyinstaller
+
+      - name: Build with PyInstaller
+        run: |
+          python -m PyInstaller PandocGUI.spec
+
+      - name: Create ZIP from dist/PandocGUI
+        run: |
+          cd dist
+          zip -r ../PandocGUI.zip PandocGUI
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign ZIP with OIDC
+        run: |
+          cosign sign-blob \
+            --output-signature PandocGUI.zip.sig \
+            PandocGUI.zip
+
+      - name: Upload signature
+        uses: actions/upload-artifact@v4
+        with:
+          name: signature
+          path: PandocGUI.zip.sig
