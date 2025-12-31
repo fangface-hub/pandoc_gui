@@ -272,5 +272,4 @@ If problems persist, please report with the following information:
 
 ---
 
-**PandocGUI** - Simple GUI frontend for Pandoc  
-Version 1.0
+**PandocGUI** - Simple GUI Frontend for Pandoc

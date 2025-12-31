@@ -272,5 +272,4 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 
 ---
 
-**PandocGUI** - Pandoc 的简单 GUI 前端  
-版本 1.0
+**PandocGUI** - Pandoc 的简单 GUI 前端

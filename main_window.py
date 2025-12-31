@@ -10,6 +10,7 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
+from __version__ import __version__
 from css_window import CSSWindow
 from exclude_window import ExcludeWindow
 from filter_window import FilterWindow
@@ -17,12 +18,6 @@ from i18n import I18n
 from log_window import LogWindow
 from pandoc_service import (PandocService, get_app_dir, init_default_profile,
                             load_profile, save_profile)
-
-try:
-    from importlib.metadata import PackageNotFoundError, version
-    __version__ = version("pandoc-gui")
-except PackageNotFoundError:
-    __version__ = "1.0.0"  # フォールバック
 
 # Windowsでのプロセス管理用フラグ
 if platform.system() == "Windows":
@@ -252,10 +247,6 @@ class MainWindow(tk.Tk):
                                     fg="white",
                                     font=("Arial", 10, "bold"))
         self.run_button.pack(fill=tk.X)
-
-        # ヘルプボタン
-        tk.Button(exec_frame, text=self.i18n.t("help"),
-                  command=self.open_help).pack(fill=tk.X, pady=(5, 0))
 
         # ステータス表示
         self.status_label = tk.Label(exec_frame, text="", fg="#666")

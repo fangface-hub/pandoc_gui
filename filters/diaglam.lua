@@ -49,6 +49,26 @@ local function file_exists(path)
   return false
 end
 
+-- Base64エンコード関数（画像をdata URIとして埋め込むため）
+local function base64_encode(filepath)
+  if package.config:sub(1,1) == '\\' then
+    -- Windows: PowerShellを使用してBase64エンコード
+    local cmd = string.format('powershell -Command "[Convert]::ToBase64String([IO.File]::ReadAllBytes(\'%s\'))"', filepath)
+    local handle = io.popen(cmd)
+    if not handle then return nil end
+    local result = handle:read("*a")
+    handle:close()
+    return result:gsub("%s+", "")
+  else
+    -- Unix-like
+    local handle = io.popen(string.format('base64 "%s"', filepath))
+    if not handle then return nil end
+    local result = handle:read("*a")
+    handle:close()
+    return result:gsub("%s+", "")
+  end
+end
+
 function Meta(meta)
   if meta.plantuml_jar then
     plantuml_jar = trim_quotes(pandoc.utils.stringify(meta.plantuml_jar))
@@ -63,18 +83,85 @@ function CodeBlock(el)
   -- Mermaid
   if el.classes:includes("mermaid") then
     local input = tmp(".mmd")
-    local output = tmp(".png")
-    io.open(input, "w"):write(el.text):close()
-    local cmd = string.format('mmdc -i "%s" -o "%s"', input, output)
+    local output = tmp(".svg")
+    local f = io.open(input, "w")
+    if not f then
+      io.stderr:write(string.format("⚠️ Failed to create mermaid input file: %s\n", input))
+      return nil
+    end
+    f:write(el.text)
+    f:close()
+    
+    -- ファイルが正しく作成されたか確認
+    if not file_exists(input) then
+      io.stderr:write(string.format("⚠️ Mermaid input file was not created: %s\n", input))
+      return nil
+    end
+    
+    -- Windows環境ではcmdを使用してmmdcを実行
+    local cmd
+    if package.config:sub(1,1) == '\\' then
+      -- Windows: パスをダブルクォートで囲む
+      cmd = string.format('cmd /c mmdc -i "%s" -o "%s"', input, output)
+    else
+      -- Unix-like systems
+      cmd = string.format('mmdc -i "%s" -o "%s"', input, output)
+    end
+    
+    io.stderr:write(string.format("🔍 Executing mermaid command: %s\n", cmd))
     local ok = os.execute(cmd)
-    if not ok then io.stderr:write("mmdc failed: " .. tostring(ok) .. "\n") end
-    return pandoc.Para({ pandoc.Image({}, output) })
+    io.stderr:write(string.format("🔍 Command exit code: %s\n", tostring(ok)))
+    
+    if not ok then 
+      io.stderr:write(string.format("⚠️ mmdc failed (exit code: %s)\n", tostring(ok)))
+      return nil
+    end
+    
+    -- 出力ファイルが生成されたか確認
+    if not file_exists(output) then
+      io.stderr:write(string.format("⚠️ Mermaid output file was not created: %s\n", output))
+      return nil
+    end
+    
+    io.stderr:write(string.format("✅ Mermaid diagram created: %s\n", output))
+    
+    -- SVGファイルをBase64エンコードしてdata URIとして埋め込む
+    io.stderr:write("🔍 Starting base64 encoding...\n")
+    local base64_data = base64_encode(output)
+    if base64_data and base64_data ~= "" then
+      io.stderr:write(string.format("✅ Base64 encoded, length: %d\n", #base64_data))
+      local data_uri = "data:image/svg+xml;base64," .. base64_data
+      -- クリックでモーダル表示するHTMLを出力
+      local html = string.format([[
+<div style="margin: 10px 0;">
+  <img src="%s" style="max-width: 600px; cursor: zoom-in;" onclick="showImageModal(this.src)" alt="Mermaid Diagram" />
+</div>
+<script>
+if (typeof showImageModal === 'undefined') {
+  function showImageModal(src) {
+    var modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%%;height:100%%;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+    modal.onclick = function() { document.body.removeChild(modal); };
+    var img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'max-width:90%%;max-height:90%%;';
+    modal.appendChild(img);
+    document.body.appendChild(modal);
+  }
+}
+</script>]], data_uri)
+      return pandoc.RawBlock('html', html)
+    else
+      -- Base64エンコードに失敗した場合は通常のファイルパスを返す
+      io.stderr:write("⚠️ Failed to encode image to base64, using file path\n")
+      return pandoc.Para({ pandoc.Image({}, output) })
+    end
   end
 
   -- PlantUML
   if el.classes:includes("plantuml") then
     local input = tmp(".puml")
-    local output = tmp(".png")
+    local output = tmp(".svg")
     
     -- ファイルを書き込む
     local f = io.open(input, "w")
@@ -115,8 +202,8 @@ function CodeBlock(el)
       }, { class = "plantuml-error", style = "border: 2px solid red; padding: 10px; background-color: #fff3cd;" })
     end
 
-    -- PlantUMLを実行（-oオプションは出力ディレクトリのみ、ファイル名は自動生成）
-    local cmd = string.format('%s -jar "%s" -tpng "%s" 2>&1', java_cmd, jar, input)
+    -- PlantUMLを実行（SVG形式で出力）
+    local cmd = string.format('%s -jar "%s" -tsvg "%s" 2>&1', java_cmd, jar, input)
     
     -- Capture PlantUML output for better error reporting
     local handle = io.popen(cmd)
@@ -126,9 +213,9 @@ function CodeBlock(el)
       handle:close()
     end
     
-    -- PlantUMLは入力ファイルと同じディレクトリに.pngを生成する
-    -- input = "C:\...\diagram.puml" -> output = "C:\...\diagram.png"
-    local actual_output = input:gsub("%.puml$", ".png")
+    -- PlantUMLは入力ファイルと同じディレクトリに.svgを生成する
+    -- input = "C:\...\diagram.puml" -> output = "C:\...\diagram.svg"
+    local actual_output = input:gsub("%.puml$", ".svg")
     
     -- Check if output was created (PlantUML returns 0 even on some failures)
     if not file_exists(actual_output) then
@@ -141,6 +228,33 @@ function CodeBlock(el)
       }, { class = "plantuml-error", style = "border: 2px solid red; padding: 10px; background-color: #fff3cd;" })
     end
     
-    return pandoc.Para({ pandoc.Image({}, actual_output) })
+    -- SVGファイルをBase64エンコードしてdata URIとして埋め込む
+    local base64_data = base64_encode(actual_output)
+    if base64_data and base64_data ~= "" then
+      local data_uri = "data:image/svg+xml;base64," .. base64_data
+      -- クリックでモーダル表示するHTMLを出力
+      local html = string.format([[
+<div style="margin: 10px 0;">
+  <img src="%s" style="max-width: 600px; cursor: zoom-in;" onclick="showImageModal(this.src)" alt="PlantUML Diagram" />
+</div>
+<script>
+if (typeof showImageModal === 'undefined') {
+  function showImageModal(src) {
+    var modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%%;height:100%%;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+    modal.onclick = function() { document.body.removeChild(modal); };
+    var img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'max-width:90%%;max-height:90%%;';
+    modal.appendChild(img);
+    document.body.appendChild(modal);
+  }
+}
+</script>]], data_uri)
+      return pandoc.RawBlock('html', html)
+    else
+      -- Base64エンコードに失敗した場合は通常のファイルパスを返す
+      return pandoc.Para({ pandoc.Image({}, actual_output) })
+    end
   end
 end

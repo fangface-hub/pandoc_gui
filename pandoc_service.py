@@ -6,6 +6,7 @@ import os
 import platform
 import shutil
 import subprocess
+import sys
 import tempfile
 from fnmatch import fnmatch
 from pathlib import Path
@@ -32,7 +33,6 @@ def get_app_dir() -> Path:
     Path
         アプリケーションのルートディレクトリ
     """
-    import sys
     if getattr(sys, 'frozen', False):
         # PyInstallerでビルドされた場合
         return Path(sys.executable).parent

@@ -272,5 +272,4 @@ A: 창을 닫아 변환 프로세스를 안전하게 종료할 수 있습니다.
 
 ---
 
-**PandocGUI** - Pandoc용 간단한 GUI 프론트엔드  
-버전 1.0
+**PandocGUI** - Pandoc용 간단한 GUI 프론트엔드
