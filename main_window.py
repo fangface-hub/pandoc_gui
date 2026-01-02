@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Pandoc GUI Application."""
 import logging
+import os
 import platform
 import subprocess
 import threading
@@ -68,8 +69,14 @@ class MainWindow(tk.Tk):
         self.logger = logging.getLogger("pandoc_gui")
         self.logger.setLevel(logging.INFO)
 
+        # ログディレクトリの作成（ユーザーのローカルアプリデータフォルダ）
+        log_dir = Path(os.getenv("LOCALAPPDATA",
+                                 os.path.expanduser("~"))) / "PandocGUI"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_file = log_dir / "pandoc_gui.log"
+
         # ローテーション付きファイルログ
-        file_handler = RotatingFileHandler("pandoc_gui.log",
+        file_handler = RotatingFileHandler(str(log_file),
                                            maxBytes=1024 * 1024,
                                            backupCount=5,
                                            encoding="utf-8")
@@ -83,7 +90,6 @@ class MainWindow(tk.Tk):
         self.pandoc_service = PandocService(self.logger)
 
         # 環境変数の初期値をログ出力
-        import os
         env_java = os.getenv("JAVA_PATH") or ""
         env_plantuml = os.getenv("PLANTUML_JAR") or ""
         self.logger.info(self.i18n.t("startup_java_path_env", path=env_java))
