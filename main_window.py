@@ -3,6 +3,7 @@
 import logging
 import os
 import platform
+import shutil
 import subprocess
 import threading
 import tkinter as tk
@@ -31,6 +32,29 @@ else:
 # PyInstallerビルド時のパス解決
 SCRIPT_DIR = get_app_dir()
 
+# データディレクトリ（ユーザーのローカルアプリデータフォルダ）
+DATA_DIR = Path(os.getenv("LOCALAPPDATA",
+                          os.path.expanduser("~"))) / "PandocGUI"
+
+
+def _init_data_folders():
+    """初回起動時にDATA_DIRにフォルダを複製する.
+
+    Copy folders to DATA_DIR on first launch.
+
+    アップデート時に上書きしないように、フォルダが存在しない場合のみ複製する。
+    To avoid overwriting on updates, copy only if folders don't exist.
+    """
+    folders_to_copy = ["filters", "profiles", "stylesheets"]
+
+    for folder_name in folders_to_copy:
+        src_folder = SCRIPT_DIR / folder_name
+        dest_folder = DATA_DIR / folder_name
+
+        # フォルダが存在しない場合のみコピー
+        if src_folder.exists() and not dest_folder.exists():
+            shutil.copytree(src_folder, dest_folder)
+
 
 class MainWindow(tk.Tk):
     """Pandoc GUIアプリケーションのメインクラス.
@@ -44,6 +68,9 @@ class MainWindow(tk.Tk):
         Initialize.
         """
         super().__init__()
+
+        # 初回起動時にDATA_DIRにフォルダを複製
+        _init_data_folders()
 
         # デフォルトプロファイルを初期化
         init_default_profile()
@@ -59,9 +86,10 @@ class MainWindow(tk.Tk):
         self.output_path = None
 
         # ダイアログ用の前回選択パス
-        self.last_input_dir = SCRIPT_DIR
-        self.last_output_dir = SCRIPT_DIR
-        self.last_filter_dir = SCRIPT_DIR
+        documents_dir = Path(os.path.expanduser("~")) / "Documents"
+        self.last_input_dir = documents_dir
+        self.last_output_dir = documents_dir
+        self.last_filter_dir = DATA_DIR / "filters"
 
         # -------------------------
         # ログ設定
@@ -69,9 +97,8 @@ class MainWindow(tk.Tk):
         self.logger = logging.getLogger("pandoc_gui")
         self.logger.setLevel(logging.INFO)
 
-        # ログディレクトリの作成（ユーザーのローカルアプリデータフォルダ）
-        log_dir = Path(os.getenv("LOCALAPPDATA",
-                                 os.path.expanduser("~"))) / "PandocGUI"
+        # ログディレクトリの作成（DATA_DIRの下にlogサブフォルダ）
+        log_dir = DATA_DIR / "log"
         log_dir.mkdir(parents=True, exist_ok=True)
         log_file = log_dir / "pandoc_gui.log"
 

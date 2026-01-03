@@ -43,14 +43,19 @@ def get_app_dir() -> Path:
 
 # PyInstallerビルド時のパス解決
 SCRIPT_DIR = get_app_dir()
-PROFILE_DIR = SCRIPT_DIR / "profiles"
-PROFILE_DIR.mkdir(exist_ok=True)
+
+# データディレクトリ（ユーザーのローカルアプリデータフォルダ）
+DATA_DIR = Path(os.getenv("LOCALAPPDATA",
+                          os.path.expanduser("~"))) / "PandocGUI"
+
+# プロファイルディレクトリ（DATA_DIR配下）
+PROFILE_DIR = DATA_DIR / "profiles"
 
 
 def to_relative_path(path: Path) -> str:
-    """パスをスクリプトディレクトリ基準の相対パスに変換.
+    """パスをデータディレクトリ基準の相対パスに変換.
 
-    Convert path to relative path based on script directory.
+    Convert path to relative path based on data directory.
 
     Parameters
     ----------
@@ -65,17 +70,17 @@ def to_relative_path(path: Path) -> str:
         return None
     path = Path(path).resolve()
     try:
-        rel_path = path.relative_to(SCRIPT_DIR.resolve())
+        rel_path = path.relative_to(DATA_DIR.resolve())
         return str(rel_path)
     except ValueError:
-        # スクリプトディレクトリ以下でない場合は絶対パスで保存
+        # データディレクトリ以下でない場合は絶対パスで保存
         return str(path)
 
 
 def from_relative_path(path_str: str) -> Path:
-    """相対パスをスクリプトディレクトリ基準で解決.
+    """相対パスをデータディレクトリ基準で解決.
 
-    Resolve relative path based on script directory.
+    Resolve relative path based on data directory.
 
     Parameters
     ----------
@@ -91,7 +96,7 @@ def from_relative_path(path_str: str) -> Path:
     path = Path(path_str)
     if path.is_absolute():
         return path
-    return (SCRIPT_DIR / path).resolve()
+    return (DATA_DIR / path).resolve()
 
 
 def save_profile(name: str, data: dict):
