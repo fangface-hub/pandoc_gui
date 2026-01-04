@@ -8,10 +8,11 @@ from unittest.mock import MagicMock, Mock, patch
 
 from main_window import MainWindow
 from pandoc_service import (PandocService, from_relative_path, get_app_dir,
-                            init_default_profile, load_profile, save_profile,
-                            to_relative_path)
+                            get_data_dir, init_default_profile, load_profile,
+                            save_profile, to_relative_path)
 
 SCRIPT_DIR = Path(__file__).parent
+DATA_DIR = get_data_dir()
 
 
 class TestGetAppDir(unittest.TestCase):
@@ -36,15 +37,15 @@ class TestGetAppDir(unittest.TestCase):
 class TestPathConversion(unittest.TestCase):
     """パス変換関数のテスト."""
 
-    def test_to_relative_path_within_script_dir(self):
-        """スクリプトディレクトリ内のパスは相対パスに変換される."""
-        test_path = SCRIPT_DIR / "profiles" / "test.json"
+    def test_to_relative_path_within_data_dir(self):
+        """データディレクトリ内のパスは相対パスに変換される."""
+        test_path = DATA_DIR / "profiles" / "test.json"
         result = to_relative_path(test_path)
         # OSに依存しないようにPathで正規化して比較
         self.assertEqual(Path(result), Path("profiles/test.json"))
 
-    def test_to_relative_path_outside_script_dir(self):
-        """スクリプトディレクトリ外のパスは絶対パスのまま."""
+    def test_to_relative_path_outside_data_dir(self):
+        """データディレクトリ外のパスは絶対パスのまま."""
         test_path = Path("C:/temp/test.md")
         result = to_relative_path(test_path)
         self.assertTrue(Path(result).is_absolute())
@@ -55,9 +56,9 @@ class TestPathConversion(unittest.TestCase):
         self.assertIsNone(result)
 
     def test_from_relative_path_relative(self):
-        """相対パスはスクリプトディレクトリ基準で解決される."""
+        """相対パスはデータディレクトリ基準で解決される."""
         result = from_relative_path("profiles/test.json")
-        expected = (SCRIPT_DIR / "profiles" / "test.json").resolve()
+        expected = (DATA_DIR / "profiles" / "test.json").resolve()
         self.assertEqual(result, expected)
 
     def test_from_relative_path_absolute(self):
@@ -78,8 +79,10 @@ class TestProfileManagement(unittest.TestCase):
     def setUp(self):
         """テスト用プロファイルディレクトリを設定."""
         self.test_profile_name = "test_profile"
-        self.test_profile_path = Path(
-            "profiles") / f"{self.test_profile_name}.json"
+        profile_filename = f"{self.test_profile_name}.json"
+        self.test_profile_path = DATA_DIR / "profiles" / profile_filename
+        # テスト用にディレクトリを作成
+        self.test_profile_path.parent.mkdir(parents=True, exist_ok=True)
 
     def tearDown(self):
         """テスト用プロファイルを削除."""
@@ -110,7 +113,9 @@ class TestProfileManagement(unittest.TestCase):
 
     def test_init_default_profile(self):
         """デフォルトプロファイルの初期化."""
-        default_path = Path("profiles") / "default.json"
+        default_path = DATA_DIR / "profiles" / "default.json"
+        # テスト用にディレクトリを作成
+        default_path.parent.mkdir(parents=True, exist_ok=True)
 
         # 既存のdefault.jsonを一時的にバックアップ
         backup_data = None

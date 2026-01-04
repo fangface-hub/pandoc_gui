@@ -18,8 +18,8 @@ from exclude_window import ExcludeWindow
 from filter_window import FilterWindow
 from i18n import I18n
 from log_window import LogWindow
-from pandoc_service import (PandocService, get_app_dir, init_default_profile,
-                            load_profile, save_profile)
+from pandoc_service import (PandocService, get_app_dir, get_data_dir,
+                            init_default_profile, load_profile, save_profile)
 
 # Windowsでのプロセス管理用フラグ
 if platform.system() == "Windows":
@@ -32,9 +32,8 @@ else:
 # PyInstallerビルド時のパス解決
 SCRIPT_DIR = get_app_dir()
 
-# データディレクトリ（ユーザーのローカルアプリデータフォルダ）
-DATA_DIR = Path(os.getenv("LOCALAPPDATA",
-                          os.path.expanduser("~"))) / "PandocGUI"
+# データディレクトリ（プラットフォームごとに適切な場所を使用）
+DATA_DIR = get_data_dir()
 
 
 def _init_data_folders():

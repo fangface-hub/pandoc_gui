@@ -41,12 +41,37 @@ def get_app_dir() -> Path:
         return Path(__file__).parent
 
 
+def get_data_dir() -> Path:
+    """データディレクトリを取得 / Get data directory.
+
+    プラットフォームごとに適切な場所を返します。
+    Returns appropriate location for each platform:
+    - Windows: %LOCALAPPDATA%\\PandocGUI
+    - macOS: ~/Library/Application Support/PandocGUI
+    - Linux: ~/.local/share/PandocGUI (XDG Base Directory)
+
+    Returns
+    -------
+    Path
+        データディレクトリ / Data directory path
+    """
+    if platform.system() == "Windows":
+        return Path(os.getenv("LOCALAPPDATA",
+                              os.path.expanduser("~"))) / "PandocGUI"
+
+    if platform.system() == "Darwin":
+        return Path.home() / "Library" / "Application Support" / "PandocGUI"
+
+    # Linux and other Unix-like systems
+    return Path(os.getenv("XDG_DATA_HOME",
+                          Path.home() / ".local" / "share")) / "PandocGUI"
+
+
 # PyInstallerビルド時のパス解決
 SCRIPT_DIR = get_app_dir()
 
-# データディレクトリ（ユーザーのローカルアプリデータフォルダ）
-DATA_DIR = Path(os.getenv("LOCALAPPDATA",
-                          os.path.expanduser("~"))) / "PandocGUI"
+# データディレクトリ（プラットフォームごとに適切な場所を使用）
+DATA_DIR = get_data_dir()
 
 # プロファイルディレクトリ（DATA_DIR配下）
 PROFILE_DIR = DATA_DIR / "profiles"
