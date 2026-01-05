@@ -146,6 +146,11 @@ def load_profile(name: str) -> dict:
 
     Load profile.
 
+    バージョンアップ後に新しいキーが追加された場合、
+    SCRIPT_DIR/profiles/default.jsonから不足しているキーを補完します。
+    If new keys are added after version update,
+    missing keys are complemented from SCRIPT_DIR/profiles/default.json.
+
     Parameters
     ----------
     name : str
@@ -159,8 +164,38 @@ def load_profile(name: str) -> dict:
     path = PROFILE_DIR / f"{name}.json"
     if not path.exists():
         return None
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+
+    with open(path, "r", encoding="utf-8-sig") as f:
+        user_data = json.load(f)
+
+    # SCRIPT_DIRのデフォルトプロファイルからマスターキーを取得
+    # Get master keys from SCRIPT_DIR default profile
+    master_default_path = SCRIPT_DIR / "profiles" / "default.json"
+    if master_default_path.exists():
+        try:
+            with open(master_default_path, "r", encoding="utf-8-sig") as f:
+                master_default = json.load(f)
+
+            # 不足しているキーをマスターデフォルトから補完
+            # Complement missing keys from master default
+            updated = False
+            for key, value in master_default.items():
+                if key not in user_data:
+                    user_data[key] = value
+                    updated = True
+
+            # キーが補完された場合はファイルを保存
+            # Save file if keys were complemented
+            if updated:
+                with open(path, "w", encoding="utf-8") as f:
+                    json.dump(user_data, f, indent=2, ensure_ascii=False)
+
+        except (OSError, ValueError, json.JSONDecodeError):
+            # マスターデフォルトが読めない場合はユーザーデータをそのまま使用
+            # Use user data as-is if master default cannot be read
+            pass
+
+    return user_data
 
 
 def init_default_profile():
@@ -177,6 +212,8 @@ def init_default_profile():
         "language": None,  # None = auto-detect
         "java_path": None,
         "plantuml_jar": None,
+        "plantuml_use_server": False,
+        "plantuml_server_url": "http://www.plantuml.com/plantuml",
     }
     path = PROFILE_DIR / "default.json"
     if not path.exists():
@@ -208,6 +245,8 @@ class PandocService:
         self.output_format = "html"
         self.java_path = None
         self.plantuml_jar = None
+        self.plantuml_use_server = False
+        self.plantuml_server_url = "http://www.plantuml.com/plantuml"
 
     def should_exclude(self, relative_path: Path) -> bool:
         """ファイルパスが除外パターンに一致するかチェックする.
@@ -276,8 +315,12 @@ class PandocService:
         if not final_plantuml_jar:
             final_plantuml_jar = os.getenv("PLANTUML_JAR") or ""
 
-        # 両方とも設定がない場合は何もしない
-        if not final_java_path and not final_plantuml_jar:
+        # PlantUMLサーバ設定
+        use_server = self.plantuml_use_server
+        server_url = self.plantuml_server_url if use_server else ""
+
+        # 全ての設定がない場合は何もしない
+        if not final_java_path and not final_plantuml_jar and not use_server:
             return None
 
         # 一時ファイルを作成
@@ -287,14 +330,21 @@ class PandocService:
         try:
             yaml_lines = []
             yaml_lines.append("---\n")
-            if final_java_path:
-                # Windowsパスをフォワードスラッシュに変換（YAMLで安全）
-                forward_slash_path = final_java_path.replace('\\', '/')
-                yaml_lines.append(f"java_path: {forward_slash_path}\n")
-            if final_plantuml_jar:
-                # Windowsパスをフォワードスラッシュに変換（YAMLで安全）
-                forward_slash_path = final_plantuml_jar.replace('\\', '/')
-                yaml_lines.append(f"plantuml_jar: {forward_slash_path}\n")
+            if use_server:
+                # PlantUMLサーバを使用
+                yaml_lines.append("plantuml_server: true\n")
+                if server_url:
+                    yaml_lines.append(f"plantuml_server_url: {server_url}\n")
+            else:
+                # JAR方式を使用
+                if final_java_path:
+                    # Windowsパスをフォワードスラッシュに変換（YAMLで安全）
+                    forward_slash_path = final_java_path.replace('\\', '/')
+                    yaml_lines.append(f"java_path: {forward_slash_path}\n")
+                if final_plantuml_jar:
+                    # Windowsパスをフォワードスラッシュに変換（YAMLで安全）
+                    forward_slash_path = final_plantuml_jar.replace('\\', '/')
+                    yaml_lines.append(f"plantuml_jar: {forward_slash_path}\n")
             yaml_lines.append("---\n\n")
 
             with open(temp_fd, 'w', encoding='utf-8') as f:
@@ -602,6 +652,8 @@ class PandocService:
             "output_format": self.output_format,
             "java_path": to_relative_path(self.java_path),
             "plantuml_jar": to_relative_path(self.plantuml_jar),
+            "plantuml_use_server": self.plantuml_use_server,
+            "plantuml_server_url": self.plantuml_server_url,
         }
         save_profile(name, data)
         self.logger.info(f"Profile saved: {name}")
@@ -635,6 +687,9 @@ class PandocService:
         self.output_format = data.get("output_format", "html")
         self.java_path = from_relative_path(data.get("java_path"))
         self.plantuml_jar = from_relative_path(data.get("plantuml_jar"))
+        self.plantuml_use_server = data.get("plantuml_use_server", False)
+        self.plantuml_server_url = data.get("plantuml_server_url",
+                                            "http://www.plantuml.com/plantuml")
 
         self.logger.info(f"Profile loaded: {name}")
         return True

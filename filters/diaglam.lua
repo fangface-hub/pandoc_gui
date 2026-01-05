@@ -36,6 +36,10 @@ end
 -- 環境変数 PLANTUML_JAR またはメタデータ plantuml_jar で jar のパスを指定可能
 local plantuml_jar = trim_quotes(os.getenv("PLANTUML_JAR"))  -- nil の場合は後で "plantuml.jar" を使用
 
+-- PlantUMLサーバ設定
+local plantuml_use_server = false
+local plantuml_server_url = "http://www.plantuml.com/plantuml"
+
 -- java 実行ファイルはメタデータ java_path -> 環境変数 JAVA_PATH -> JAVA_HOME/bin/java -> "java"
 local sep = package.config:sub(1,1)
 local java_cmd = trim_quotes(os.getenv("JAVA_PATH")
@@ -70,6 +74,12 @@ local function base64_encode(filepath)
 end
 
 function Meta(meta)
+  if meta.plantuml_server then
+    plantuml_use_server = meta.plantuml_server == true or pandoc.utils.stringify(meta.plantuml_server) == "true"
+  end
+  if meta.plantuml_server_url then
+    plantuml_server_url = trim_quotes(pandoc.utils.stringify(meta.plantuml_server_url))
+  end
   if meta.plantuml_jar then
     plantuml_jar = trim_quotes(pandoc.utils.stringify(meta.plantuml_jar))
   end
@@ -178,54 +188,91 @@ if (typeof showImageModal === 'undefined') {
       return nil
     end
     
-    local jar = plantuml_jar or "plantuml.jar"
+    local actual_output
+    
+    -- PlantUMLサーバを使用する場合
+    if plantuml_use_server then
+      io.stderr:write(string.format("🌐 Using PlantUML server: %s\n", plantuml_server_url))
+      
+      -- curlコマンドを使用してPlantUMLサーバにリクエスト
+      local cmd
+      if package.config:sub(1,1) == '\\' then
+        -- Windows
+        cmd = string.format('curl -s -X POST -H "Content-Type: text/plain" --data-binary "@%s" "%s/svg" -o "%s"', 
+                           input, plantuml_server_url, output)
+      else
+        -- Unix-like
+        cmd = string.format('curl -s -X POST -H "Content-Type: text/plain" --data-binary "@%s" "%s/svg" -o "%s"', 
+                           input, plantuml_server_url, output)
+      end
+      
+      io.stderr:write(string.format("🔍 Executing: %s\n", cmd))
+      local ok = os.execute(cmd)
+      
+      if not ok or not file_exists(output) then
+        local error_msg = string.format("⚠️ PlantUML server request failed\nServer: %s\nCommand: %s", 
+                                       plantuml_server_url, cmd)
+        io.stderr:write(error_msg .. "\n")
+        return pandoc.Div({
+          pandoc.Para({ pandoc.Strong({ pandoc.Str("PlantUML Server Error:") }) }),
+          pandoc.Para({ pandoc.Str(error_msg) }),
+          pandoc.CodeBlock(el.text, { class = "plantuml" })
+        }, { class = "plantuml-error", style = "border: 2px solid red; padding: 10px; background-color: #fff3cd;" })
+      end
+      
+      actual_output = output
+    else
+      -- JAR方式を使用
+      local jar = plantuml_jar or "plantuml.jar"
 
-    if not file_exists(jar) then
-      local error_msg = string.format("⚠️ PlantUML JAR not found: %s\nPlease set plantuml_jar path in settings.", jar)
-      io.stderr:write(error_msg .. "\n")
-      -- エラーメッセージを含むコードブロックとして返す
-      return pandoc.Div({
-        pandoc.Para({ pandoc.Strong({ pandoc.Str("PlantUML Error:") }) }),
-        pandoc.Para({ pandoc.Str(error_msg) }),
-        pandoc.CodeBlock(el.text, { class = "plantuml" })
-      }, { class = "plantuml-error", style = "border: 2px solid red; padding: 10px; background-color: #fff3cd;" })
-    end
-    
-    -- java 実行ファイルの存在チェック（"java" の場合はスキップ）
-    if java_cmd ~= "java" and not file_exists(java_cmd) then
-      local error_msg = string.format("⚠️ Java executable not found: %s\nPlease set java_path in settings or install Java.", java_cmd)
-      io.stderr:write(error_msg .. "\n")
-      return pandoc.Div({
-        pandoc.Para({ pandoc.Strong({ pandoc.Str("PlantUML Error:") }) }),
-        pandoc.Para({ pandoc.Str(error_msg) }),
-        pandoc.CodeBlock(el.text, { class = "plantuml" })
-      }, { class = "plantuml-error", style = "border: 2px solid red; padding: 10px; background-color: #fff3cd;" })
-    end
+      if not file_exists(jar) then
+        local error_msg = string.format("⚠️ PlantUML JAR not found: %s\nPlease set plantuml_jar path in settings.", jar)
+        io.stderr:write(error_msg .. "\n")
+        -- エラーメッセージを含むコードブロックとして返す
+        return pandoc.Div({
+          pandoc.Para({ pandoc.Strong({ pandoc.Str("PlantUML Error:") }) }),
+          pandoc.Para({ pandoc.Str(error_msg) }),
+          pandoc.CodeBlock(el.text, { class = "plantuml" })
+        }, { class = "plantuml-error", style = "border: 2px solid red; padding: 10px; background-color: #fff3cd;" })
+      end
+      
+      -- java 実行ファイルの存在チェック（"java" の場合はスキップ）
+      if java_cmd ~= "java" and not file_exists(java_cmd) then
+        local error_msg = string.format("⚠️ Java executable not found: %s\nPlease set java_path in settings or install Java.", java_cmd)
+        io.stderr:write(error_msg .. "\n")
+        return pandoc.Div({
+          pandoc.Para({ pandoc.Strong({ pandoc.Str("PlantUML Error:") }) }),
+          pandoc.Para({ pandoc.Str(error_msg) }),
+          pandoc.CodeBlock(el.text, { class = "plantuml" })
+        }, { class = "plantuml-error", style = "border: 2px solid red; padding: 10px; background-color: #fff3cd;" })
+      end
 
-    -- PlantUMLを実行（SVG形式で出力）
-    local cmd = string.format('%s -jar "%s" -tsvg "%s" 2>&1', java_cmd, jar, input)
-    
-    -- Capture PlantUML output for better error reporting
-    local handle = io.popen(cmd)
-    local plantuml_output = ""
-    if handle then
-      plantuml_output = handle:read("*a")
-      handle:close()
-    end
-    
-    -- PlantUMLは入力ファイルと同じディレクトリに.svgを生成する
-    -- input = "C:\...\diagram.puml" -> output = "C:\...\diagram.svg"
-    local actual_output = input:gsub("%.puml$", ".svg")
-    
-    -- Check if output was created (PlantUML returns 0 even on some failures)
-    if not file_exists(actual_output) then
-      local error_msg = string.format("⚠️ PlantUML execution failed\nCommand: %s\nJava: %s\nJAR: %s\nPlantUML output: %s", cmd, java_cmd, jar, plantuml_output)
-      io.stderr:write(error_msg .. "\n")
-      return pandoc.Div({
-        pandoc.Para({ pandoc.Strong({ pandoc.Str("PlantUML Execution Error:") }) }),
-        pandoc.Para({ pandoc.Str(error_msg) }),
-        pandoc.CodeBlock(el.text, { class = "plantuml" })
-      }, { class = "plantuml-error", style = "border: 2px solid red; padding: 10px; background-color: #fff3cd;" })
+      -- PlantUMLを実行（SVG形式で出力）
+      local cmd = string.format('%s -jar "%s" -tsvg "%s" 2>&1', java_cmd, jar, input)
+      
+      -- Capture PlantUML output for better error reporting
+      local handle = io.popen(cmd)
+      local plantuml_output = ""
+      if handle then
+        plantuml_output = handle:read("*a")
+        handle:close()
+      end
+      
+      -- PlantUMLは入力ファイルと同じディレクトリに.svgを生成する
+      -- input = "C:\...\diagram.puml" -> output = "C:\...\diagram.svg"
+      actual_output = input:gsub("%.puml$", ".svg")
+      
+      -- Check if output was created (PlantUML returns 0 even on some failures)
+      if not file_exists(actual_output) then
+        local error_msg = string.format("⚠️ PlantUML execution failed\nCommand: %s\nJava: %s\nJAR: %s\nPlantUML output: %s", 
+                                       cmd, java_cmd, jar, plantuml_output)
+        io.stderr:write(error_msg .. "\n")
+        return pandoc.Div({
+          pandoc.Para({ pandoc.Strong({ pandoc.Str("PlantUML Execution Error:") }) }),
+          pandoc.Para({ pandoc.Str(error_msg) }),
+          pandoc.CodeBlock(el.text, { class = "plantuml" })
+        }, { class = "plantuml-error", style = "border: 2px solid red; padding: 10px; background-color: #fff3cd;" })
+      end
     end
     
     -- SVGファイルをBase64エンコードしてdata URIとして埋め込む

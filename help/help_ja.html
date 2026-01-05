@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>tmpfr89fkyu</title>
+  <title>tmpljga4hm4</title>
   <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -178,30 +178,66 @@ node_modules</code></pre>
 </ol>
 <h2 id="プロファイル機能">プロファイル機能</h2>
 <p>よく使う設定の組み合わせをプロファイルとして保存できます。</p>
+<h3 id="プロファイルの作成">プロファイルの作成</h3>
+<ol type="1">
+<li>「追加」ボタンをクリック</li>
+<li>新しいプロファイル名を入力</li>
+<li>「OK」をクリック</li>
+<li>デフォルトプロファイルの設定がコピーされます</li>
+</ol>
+<h3 id="プロファイルの選択">プロファイルの選択</h3>
+<ol type="1">
+<li>プロファイルドロップダウンから選択</li>
+<li>設定が自動的に読み込まれます</li>
+</ol>
 <h3 id="プロファイルの保存">プロファイルの保存</h3>
 <ol type="1">
 <li>設定を調整</li>
-<li>「プロファイル保存」ボタンをクリック</li>
-<li>プロファイル名を入力</li>
-<li>「OK」をクリック</li>
+<li>プロファイルドロップダウンから対象のプロファイルを選択</li>
+<li>「保存」ボタンをクリック</li>
+<li>現在の設定がプロファイルに保存されます</li>
 </ol>
-<h3 id="プロファイルの読み込み">プロファイルの読み込み</h3>
+<h3 id="プロファイルの削除">プロファイルの削除</h3>
 <ol type="1">
-<li>「プロファイル読み込み」ボタンをクリック</li>
-<li>リストからプロファイルを選択</li>
-<li>「OK」をクリック</li>
+<li>プロファイルドロップダウンから削除したいプロファイルを選択</li>
+<li>「削除」ボタンをクリック</li>
+<li>確認ダイアログで「はい」をクリック</li>
+</ol>
+<p><strong>注意:</strong> デフォルトプロファイルは削除できません。</p>
+<h3 id="プロファイルの更新">プロファイルの更新</h3>
+<ol type="1">
+<li>「読み込み」ボタンをクリック</li>
+<li>プロファイルが最新の設定項目で更新されます（後方互換性対応）</li>
 </ol>
 <p>保存されたプロファイルは<code>profiles/</code>フォルダにJSON形式で保存されます。</p>
 <h2 id="plantuml-java-の設定">PlantUML / Java の設定</h2>
-<p>PlantUML図を使用する場合、パスは以下の優先順位で検索されます:</p>
-<h3 id="plantuml-jarファイル">PlantUML JARファイル</h3>
+<p>PlantUML図を使用する場合、2つの実行方法があります。</p>
+<h3 id="plantuml実行方法の選択">PlantUML実行方法の選択</h3>
+<p><strong>JAR方式（ローカル実行）:</strong></p>
 <ol type="1">
+<li>「実行方法」で「JARファイル」を選択</li>
+<li>Java実行ファイルのパスを指定</li>
+<li>PlantUML JARファイルのパスを指定</li>
+</ol>
+<p><strong>サーバ方式（オンライン実行）:</strong></p>
+<ol type="1">
+<li>「実行方法」で「サーバ」を選択</li>
+<li>PlantUMLサーバURLを指定（デフォルト:
+http://www.plantuml.com/plantuml）</li>
+<li>Java/JARファイルは不要</li>
+</ol>
+<h3 id="plantuml-jar方式の設定">PlantUML JAR方式の設定</h3>
+<p>パスは以下の優先順位で検索されます:</p>
+<h4 id="plantuml-jarファイル">PlantUML JARファイル</h4>
+<ol type="1">
+<li>GUI設定のパス</li>
 <li>ドキュメントのYAMLメタデータ <code>plantuml_jar</code></li>
 <li>環境変数 <code>PLANTUML_JAR</code></li>
 <li>デフォルト値 <code>plantuml.jar</code></li>
 </ol>
-<h3 id="java実行ファイル">Java実行ファイル</h3>
+<h4 id="java実行ファイル">Java実行ファイル</h4>
 <ol type="1">
+<li>GUI設定のパス</li>
 <li>ドキュメントのYAMLメタデータ <code>java_path</code></li>
 <li>環境変数 <code>JAVA_PATH</code></li>
 <li>環境変数 <code>JAVA_HOME\bin\java</code></li>
@@ -220,7 +256,38 @@ node_modules</code></pre>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_jar</span><span class="kw">:</span><span class="at"> C:\tools\plantuml.jar</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">java_path</span><span class="kw">:</span><span class="at"> C:\Program Files\Java\jdk-17\bin\java.exe</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<p><strong>サーバ方式を使用する場合:</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server_url</span><span class="kw">:</span><span class="at"> http://www.plantuml.com/plantuml</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<h2 id="自動更新機能">自動更新機能</h2>
+<p>アプリケーションをアップデートすると、以下のファイルが自動的に更新されます:</p>
+<h3 id="フィルタファイル">フィルタファイル</h3>
+<ul>
+<li><code>filters/</code>フォルダ内の組み込みフィルタ（diaglam.lua、md2html.lua、wikilink.lua）</li>
+<li>アップデート時に最新版に自動更新</li>
+<li>ユーザーが追加したカスタムフィルタは保護されます</li>
+</ul>
+<h3 id="プロファイル設定">プロファイル設定</h3>
+<ul>
+<li>新しいバージョンで追加された設定項目は自動的に補完されます</li>
+<li>既存の設定は保持されます</li>
+<li>デフォルト値は<code>profiles/default.json</code>から取得されます</li>
+</ul>
 <h2 id="トラブルシューティング">トラブルシューティング</h2>
+<h3 id="pandocが見つからない">Pandocが見つからない</h3>
+<p><strong>症状:</strong></p>
+<ul>
+<li>起動時に警告ダイアログが表示される</li>
+<li>変換が実行できない</li>
+</ul>
+<p><strong>解決方法:</strong></p>
+<ol type="1">
+<li>Pandocをインストール: https://pandoc.org/installing.html</li>
+<li>インストール後、PATHに追加されているか確認</li>
+<li>コマンドプロンプトで<code>pandoc --version</code>を実行して確認</li>
+</ol>
 <h3 id="変換が失敗する">変換が失敗する</h3>
 <p><strong>確認事項:</strong></p>
 <ul>
@@ -240,11 +307,12 @@ node_modules</code></pre>
 <li>コマンドプロンプトで<code>mmdc --version</code>を実行して確認</li>
 </ul>
 <p><strong>PlantUML図の場合:</strong></p>
-<ul>
-<li><code>plantuml.jar</code>が存在するか確認</li>
-<li>Javaがインストールされているか確認</li>
-<li>環境変数またはYAMLメタデータでパスを指定</li>
-</ul>
+<p><strong>JAR方式:</strong> - <code>plantuml.jar</code>が存在するか確認
+- Javaがインストールされているか確認 -
+GUI設定または環境変数、YAMLメタデータでパスを指定</p>
+<p><strong>サーバ方式:</strong> - インターネット接続を確認 -
+サーバURLが正しいか確認（デフォルト: http://www.plantuml.com/plantuml）
+- ファイアウォール設定を確認</p>
 <h3 id="フィルタが適用されない">フィルタが適用されない</h3>
 <p><strong>確認事項:</strong></p>
 <ul>

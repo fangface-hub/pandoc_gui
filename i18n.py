@@ -85,13 +85,13 @@ class I18n:
         """
         locale_file = self.base_dir / "locales" / f"{self.lang}.json"
         if locale_file.exists():
-            with open(locale_file, 'r', encoding='utf-8') as f:
+            with open(locale_file, 'r', encoding='utf-8-sig') as f:
                 self.translations = json.load(f)
         else:
             # フォールバック: 英語を読み込む
             fallback_file = self.base_dir / "locales" / "en.json"
             if fallback_file.exists():
-                with open(fallback_file, 'r', encoding='utf-8') as f:
+                with open(fallback_file, 'r', encoding='utf-8-sig') as f:
                     self.translations = json.load(f)
 
     def t(self, key, **kwargs):
@@ -142,7 +142,7 @@ class I18n:
 
         for locale_file in locales_dir.glob("*.json"):
             lang_code = locale_file.stem
-            with open(locale_file, 'r', encoding='utf-8') as f:
+            with open(locale_file, 'r', encoding='utf-8-sig') as f:
                 data = json.load(f)
                 lang_name = data.get("language_name", lang_code)
                 languages.append({"code": lang_code, "name": lang_name})
@@ -151,7 +151,7 @@ class I18n:
 
     def get_current_language(self) -> str:
         """現在の言語コードを取得する.
-        
+
         Returns:
             str: 現在の言語コード (例: 'ja', 'en')
         """

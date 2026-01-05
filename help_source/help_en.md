@@ -97,37 +97,76 @@ node_modules
 
 You can save frequently used setting combinations as profiles.
 
+### Create Profile
+
+1. Click "Add" button
+2. Enter new profile name
+3. Click "OK"
+4. Default profile settings will be copied
+
+### Select Profile
+
+1. Select from profile dropdown
+2. Settings are automatically loaded
+
 ### Save Profile
 
 1. Adjust settings
-2. Click "Save Profile" button
-3. Enter profile name
-4. Click "OK"
+2. Select target profile from dropdown
+3. Click "Save" button
+4. Current settings are saved to the profile
 
-### Load Profile
+### Delete Profile
 
-1. Click "Load Profile" button
-2. Select a profile from the list
-3. Click "OK"
+1. Select profile to delete from dropdown
+2. Click "Delete" button
+3. Click "Yes" in confirmation dialog
+
+**Note:** Default profile cannot be deleted.
+
+### Update Profile
+
+1. Click "Load" button
+2. Profile is updated with latest settings (backward compatibility)
 
 Saved profiles are stored in the `profiles/` folder in JSON format.
 
 ## PlantUML / Java Configuration
 
-When using PlantUML diagrams, paths are searched in the following priority order:
+When using PlantUML diagrams, there are two execution methods available.
 
-### PlantUML JAR File
+### Select PlantUML Execution Method
 
-1. YAML metadata `plantuml_jar` in document
-2. Environment variable `PLANTUML_JAR`
-3. Default value `plantuml.jar`
+**JAR Method (Local Execution):**
 
-### Java Executable
+1. Select "JAR File" in "Execution Method"
+2. Specify Java executable path
+3. Specify PlantUML JAR file path
 
-1. YAML metadata `java_path` in document
-2. Environment variable `JAVA_PATH`
-3. Environment variable `JAVA_HOME\bin\java`
-4. `java` from PATH
+**Server Method (Online Execution):**
+
+1. Select "Server" in "Execution Method"
+2. Specify PlantUML server URL (Default: http://www.plantuml.com/plantuml)
+3. Java/JAR file not required
+
+### PlantUML JAR Method Configuration
+
+Paths are searched in the following priority order:
+
+#### PlantUML JAR File
+
+1. GUI settings path
+2. YAML metadata `plantuml_jar` in document
+3. Environment variable `PLANTUML_JAR`
+4. Default value `plantuml.jar`
+
+#### Java Executable
+
+1. GUI settings path
+2. YAML metadata `java_path` in document
+3. Environment variable `JAVA_PATH`
+4. Environment variable `JAVA_HOME\bin\java`
+5. `java` from PATH
 
 ### Environment Variable Configuration Examples
 
@@ -139,6 +178,47 @@ $env:JAVA_PATH = 'C:\Program Files\Java\jdk-17\bin\java.exe'
 ```
 
 **Command Prompt:**
+
+```bat
+set PLANTUML_JAR=C:\tools\plantuml.jar
+set JAVA_PATH=C:\Program Files\Java\jdk-17\bin\java.exe
+```
+
+### YAML Metadata Specification
+
+Add to the beginning of Markdown file:
+
+```yaml
+---
+plantuml_jar: C:\tools\plantuml.jar
+java_path: C:\Program Files\Java\jdk-17\bin\java.exe
+---
+```
+
+**When using server method:**
+
+```yaml
+---
+plantuml_server: true
+plantuml_server_url: http://www.plantuml.com/plantuml
+---
+```
+
+## Auto-Update Feature
+
+When you update the application, the following files are automatically updated:
+
+### Filter Files
+
+- Built-in filters in `filters/` folder (diaglam.lua, md2html.lua, wikilink.lua)
+- Automatically updated to latest version on update
+- Custom filters added by users are protected
+
+### Profile Settings
+
+- New settings added in new versions are automatically complemented
+- Existing settings are preserved
+- Default values are retrieved from `profiles/default.json`
 
 ```bat
 set PLANTUML_JAR=C:\tools\plantuml.jar
@@ -157,6 +237,19 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 ```
 
 ## Troubleshooting
+
+### Pandoc Not Found
+
+**Symptoms:**
+
+- Warning dialog displayed on startup
+- Cannot execute conversion
+
+**Solution:**
+
+1. Install Pandoc: https://pandoc.org/installing.html
+2. After installation, verify it's added to PATH
+3. Run `pandoc --version` in command prompt to confirm
 
 ### Conversion Fails
 
@@ -180,9 +273,15 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 
 **For PlantUML diagrams:**
 
+**JAR Method:**
 - Verify `plantuml.jar` exists
 - Verify Java is installed
-- Specify path in environment variables or YAML metadata
+- Specify path in GUI settings, environment variables, or YAML metadata
+
+**Server Method:**
+- Verify internet connection
+- Verify server URL is correct (Default: http://www.plantuml.com/plantuml)
+- Check firewall settings
 
 ### Filters Not Applied
 

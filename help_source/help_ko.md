@@ -97,37 +97,76 @@ node_modules
 
 자주 사용하는 설정 조합을 프로필로 저장할 수 있습니다.
 
+### 프로필 생성
+
+1. "추가" 버튼 클릭
+2. 새 프로필 이름 입력
+3. "확인" 클릭
+4. 기본 프로필 설정이 복사됩니다
+
+### 프로필 선택
+
+1. 프로필 드롭다운에서 선택
+2. 설정이 자동으로 로드됩니다
+
 ### 프로필 저장
 
 1. 설정 조정
-2. "프로필 저장" 버튼 클릭
-3. 프로필 이름 입력
-4. "확인" 클릭
+2. 드롭다운에서 대상 프로필 선택
+3. "저장" 버튼 클릭
+4. 현재 설정이 프로필에 저장됩니다
 
-### 프로필 로드
+### 프로필 삭제
 
-1. "프로필 로드" 버튼 클릭
-2. 목록에서 프로필 선택
-3. "확인" 클릭
+1. 드롭다운에서 삭제할 프로필 선택
+2. "삭제" 버튼 클릭
+3. 확인 대화 상자에서 "예" 클릭
+
+**참고:** 기본 프로필은 삭제할 수 없습니다.
+
+### 프로필 업데이트
+
+1. "로드" 버튼 클릭
+2. 프로필이 최신 설정 항목으로 업데이트됩니다 (하위 호환성)
 
 저장된 프로필은 `profiles/` 폴더에 JSON 형식으로 저장됩니다.
 
 ## PlantUML / Java 구성
 
-PlantUML 다이어그램을 사용할 때 경로는 다음 우선 순위로 검색됩니다:
+PlantUML 다이어그램을 사용할 때 두 가지 실행 방법이 있습니다.
 
-### PlantUML JAR 파일
+### PlantUML 실행 방법 선택
 
-1. 문서의 YAML 메타데이터 `plantuml_jar`
-2. 환경 변수 `PLANTUML_JAR`
-3. 기본값 `plantuml.jar`
+**JAR 방식 (로컬 실행):**
 
-### Java 실행 파일
+1. "실행 방법"에서 "JAR파일" 선택
+2. Java 실행 파일 경로 지정
+3. PlantUML JAR 파일 경로 지정
 
-1. 문서의 YAML 메타데이터 `java_path`
-2. 환경 변수 `JAVA_PATH`
-3. 환경 변수 `JAVA_HOME\bin\java`
-4. PATH의 `java`
+**서버 방식 (온라인 실행):**
+
+1. "실행 방법"에서 "서버" 선택
+2. PlantUML 서버 URL 지정 (기본값: http://www.plantuml.com/plantuml)
+3. Java/JAR 파일 불필요
+
+### PlantUML JAR 방식 구성
+
+경로는 다음 우선 순위로 검색됩니다:
+
+#### PlantUML JAR 파일
+
+1. GUI 설정 경로
+2. 문서의 YAML 메타데이터 `plantuml_jar`
+3. 환경 변수 `PLANTUML_JAR`
+4. 기본값 `plantuml.jar`
+
+#### Java 실행 파일
+
+1. GUI 설정 경로
+2. 문서의 YAML 메타데이터 `java_path`
+3. 환경 변수 `JAVA_PATH`
+4. 환경 변수 `JAVA_HOME\bin\java`
+5. PATH에서 `java`
 
 ### 환경 변수 구성 예시
 
@@ -139,6 +178,47 @@ $env:JAVA_PATH = 'C:\Program Files\Java\jdk-17\bin\java.exe'
 ```
 
 **명령 프롬프트:**
+
+```bat
+set PLANTUML_JAR=C:\tools\plantuml.jar
+set JAVA_PATH=C:\Program Files\Java\jdk-17\bin\java.exe
+```
+
+### YAML 메타데이터 지정
+
+Markdown 파일 시작 부분에 추가:
+
+```yaml
+---
+plantuml_jar: C:\tools\plantuml.jar
+java_path: C:\Program Files\Java\jdk-17\bin\java.exe
+---
+```
+
+**서버 방식 사용 시:**
+
+```yaml
+---
+plantuml_server: true
+plantuml_server_url: http://www.plantuml.com/plantuml
+---
+```
+
+## 자동 업데이트 기능
+
+애플리케이션을 업데이트하면 다음 파일이 자동으로 업데이트됩니다:
+
+### 필터 파일
+
+- `filters/` 폴더의 내장 필터 (diaglam.lua, md2html.lua, wikilink.lua)
+- 업데이트 시 최신 버전으로 자동 업데이트
+- 사용자 추가 필터는 보호됨
+
+### 프로필 설정
+
+- 새 버전에서 추가된 새 설정이 자동으로 보완됨
+- 기존 설정은 보존됨
+- 기본값은 `profiles/default.json`에서 가져옴
 
 ```bat
 set PLANTUML_JAR=C:\tools\plantuml.jar
@@ -157,6 +237,19 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 ```
 
 ## 문제 해결
+
+### Pandoc을 찾을 수 없음
+
+**증상:**
+
+- 시작 시 경고 대화 상자 표시
+- 변환을 실행할 수 없음
+
+**해결 방법:**
+
+1. Pandoc 설치: https://pandoc.org/installing.html
+2. 설치 후 PATH에 추가되었는지 확인
+3. 명령 프롬프트에서 `pandoc --version`을 실행하여 확인
 
 ### 변환 실패
 
@@ -180,9 +273,15 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 
 **PlantUML 다이어그램의 경우:**
 
+**JAR 방식:**
 - `plantuml.jar`이 존재하는지 확인
 - Java가 설치되어 있는지 확인
-- 환경 변수 또는 YAML 메타데이터에서 경로 지정
+- GUI 설정, 환경 변수 또는 YAML 메타데이터에서 경로 지정
+
+**서버 방식:**
+- 인터넷 연결 확인
+- 서버 URL이 올바른지 확인 (기본값: http://www.plantuml.com/plantuml)
+- 방화벽 설정 확인
 
 ### 필터가 적용되지 않음
 

@@ -97,37 +97,76 @@ node_modules
 
 Puoi salvare combinazioni di impostazioni utilizzate frequentemente come profili.
 
+### Crea profilo
+
+1. Fai clic sul pulsante "Aggiungi"
+2. Inserisci il nome del nuovo profilo
+3. Fai clic su "OK"
+4. Le impostazioni del profilo predefinito verranno copiate
+
+### Seleziona profilo
+
+1. Seleziona dal menu a discesa del profilo
+2. Le impostazioni vengono caricate automaticamente
+
 ### Salva profilo
 
 1. Regola le impostazioni
-2. Fai clic sul pulsante "Salva profilo"
-3. Inserisci il nome del profilo
-4. Fai clic su "OK"
+2. Seleziona il profilo di destinazione dal menu a discesa
+3. Fai clic sul pulsante "Salva"
+4. Le impostazioni correnti vengono salvate nel profilo
 
-### Carica profilo
+### Elimina profilo
 
-1. Fai clic sul pulsante "Carica profilo"
-2. Seleziona un profilo dall'elenco
-3. Fai clic su "OK"
+1. Seleziona il profilo da eliminare dal menu a discesa
+2. Fai clic sul pulsante "Elimina"
+3. Fai clic su "Sì" nella finestra di dialogo di conferma
+
+**Nota:** Il profilo predefinito non può essere eliminato.
+
+### Aggiorna profilo
+
+1. Fai clic sul pulsante "Carica"
+2. Il profilo viene aggiornato con gli ultimi elementi di impostazione (retrocompatibilità)
 
 I profili salvati sono memorizzati nella cartella `profiles/` in formato JSON.
 
 ## Configurazione PlantUML / Java
 
-Quando si utilizzano diagrammi PlantUML, i percorsi vengono cercati nel seguente ordine di priorità:
+Quando si utilizzano diagrammi PlantUML, sono disponibili due metodi di esecuzione.
 
-### File JAR PlantUML
+### Seleziona metodo di esecuzione PlantUML
 
-1. Metadati YAML `plantuml_jar` nel documento
-2. Variabile d'ambiente `PLANTUML_JAR`
-3. Valore predefinito `plantuml.jar`
+**Metodo JAR (Esecuzione locale):**
 
-### Eseguibile Java
+1. Seleziona "File JAR" in "Metodo di esecuzione"
+2. Specifica il percorso dell'eseguibile Java
+3. Specifica il percorso del file JAR PlantUML
 
-1. Metadati YAML `java_path` nel documento
-2. Variabile d'ambiente `JAVA_PATH`
-3. Variabile d'ambiente `JAVA_HOME\bin\java`
-4. `java` da PATH
+**Metodo server (Esecuzione online):**
+
+1. Seleziona "Server" in "Metodo di esecuzione"
+2. Specifica l'URL del server PlantUML (Predefinito: http://www.plantuml.com/plantuml)
+3. Java/file JAR non richiesto
+
+### Configurazione metodo JAR PlantUML
+
+I percorsi vengono cercati nel seguente ordine di priorità:
+
+#### File JAR PlantUML
+
+1. Percorso impostazioni GUI
+2. Metadati YAML `plantuml_jar` nel documento
+3. Variabile d'ambiente `PLANTUML_JAR`
+4. Valore predefinito `plantuml.jar`
+
+#### Eseguibile Java
+
+1. Percorso impostazioni GUI
+2. Metadati YAML `java_path` nel documento
+3. Variabile d'ambiente `JAVA_PATH`
+4. Variabile d'ambiente `JAVA_HOME\bin\java`
+5. `java` da PATH
 
 ### Esempi di configurazione variabili d'ambiente
 
@@ -139,6 +178,47 @@ $env:JAVA_PATH = 'C:\Program Files\Java\jdk-17\bin\java.exe'
 ```
 
 **Prompt dei comandi:**
+
+```bat
+set PLANTUML_JAR=C:\tools\plantuml.jar
+set JAVA_PATH=C:\Program Files\Java\jdk-17\bin\java.exe
+```
+
+### Specifica dei metadati YAML
+
+Aggiungi all'inizio del file Markdown:
+
+```yaml
+---
+plantuml_jar: C:\tools\plantuml.jar
+java_path: C:\Program Files\Java\jdk-17\bin\java.exe
+---
+```
+
+**Quando si utilizza il metodo server:**
+
+```yaml
+---
+plantuml_server: true
+plantuml_server_url: http://www.plantuml.com/plantuml
+---
+```
+
+## Funzione di aggiornamento automatico
+
+Quando aggiorni l'applicazione, i seguenti file vengono aggiornati automaticamente:
+
+### File di filtro
+
+- Filtri integrati nella cartella `filters/` (diaglam.lua, md2html.lua, wikilink.lua)
+- Aggiornati automaticamente all'ultima versione durante l'aggiornamento
+- I filtri personalizzati sono protetti
+
+### Impostazioni profilo
+
+- Le nuove impostazioni aggiunte nelle nuove versioni vengono completate automaticamente
+- Le impostazioni esistenti vengono preservate
+- I valori predefiniti vengono recuperati da `profiles/default.json`
 
 ```bat
 set PLANTUML_JAR=C:\tools\plantuml.jar
@@ -157,6 +237,19 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 ```
 
 ## Risoluzione dei problemi
+
+### Pandoc non trovato
+
+**Sintomi:**
+
+- Dialogo di avviso visualizzato all'avvio
+- Impossibile eseguire la conversione
+
+**Soluzione:**
+
+1. Installa Pandoc: https://pandoc.org/installing.html
+2. Dopo l'installazione, verifica che sia aggiunto a PATH
+3. Esegui `pandoc --version` nel prompt dei comandi per confermare
 
 ### La conversione fallisce
 
@@ -180,9 +273,15 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 
 **Per diagrammi PlantUML:**
 
+**Metodo JAR:**
 - Verifica che `plantuml.jar` esista
 - Verifica che Java sia installato
-- Specifica il percorso nelle variabili d'ambiente o nei metadati YAML
+- Specifica il percorso nelle impostazioni GUI, variabili d'ambiente o metadati YAML
+
+**Metodo server:**
+- Verifica la connessione Internet
+- Verifica che l'URL del server sia corretto (Predefinito: http://www.plantuml.com/plantuml)
+- Controlla le impostazioni del firewall
 
 ### I filtri non vengono applicati
 

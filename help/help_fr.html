@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>tmpl6bguo_k</title>
+  <title>tmp6nrwsmbb</title>
   <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -189,32 +189,72 @@ node_modules</code></pre>
 <h2 id="fonction-de-profil">Fonction de profil</h2>
 <p>Vous pouvez enregistrer les combinaisons de paramètres fréquemment
 utilisées en tant que profils.</p>
+<h3 id="créer-un-profil">Créer un profil</h3>
+<ol type="1">
+<li>Cliquez sur le bouton “Ajouter”</li>
+<li>Entrez le nouveau nom du profil</li>
+<li>Cliquez sur “OK”</li>
+<li>Les paramètres du profil par défaut seront copiés</li>
+</ol>
+<h3 id="sélectionner-un-profil">Sélectionner un profil</h3>
+<ol type="1">
+<li>Sélectionnez dans le menu déroulant de profil</li>
+<li>Les paramètres sont automatiquement chargés</li>
+</ol>
 <h3 id="enregistrer-un-profil">Enregistrer un profil</h3>
 <ol type="1">
 <li>Ajustez les paramètres</li>
-<li>Cliquez sur le bouton “Enregistrer le profil”</li>
-<li>Entrez le nom du profil</li>
-<li>Cliquez sur “OK”</li>
+<li>Sélectionnez le profil cible dans le menu déroulant</li>
+<li>Cliquez sur le bouton “Enregistrer”</li>
+<li>Les paramètres actuels sont enregistrés dans le profil</li>
 </ol>
-<h3 id="charger-un-profil">Charger un profil</h3>
+<h3 id="supprimer-un-profil">Supprimer un profil</h3>
 <ol type="1">
-<li>Cliquez sur le bouton “Charger le profil”</li>
-<li>Sélectionnez un profil dans la liste</li>
-<li>Cliquez sur “OK”</li>
+<li>Sélectionnez le profil à supprimer dans le menu déroulant</li>
+<li>Cliquez sur le bouton “Supprimer”</li>
+<li>Cliquez sur “Oui” dans la boîte de dialogue de confirmation</li>
+</ol>
+<p><strong>Remarque:</strong> Le profil par défaut ne peut pas être
+supprimé.</p>
+<h3 id="mettre-à-jour-un-profil">Mettre à jour un profil</h3>
+<ol type="1">
+<li>Cliquez sur le bouton “Charger”</li>
+<li>Le profil est mis à jour avec les derniers éléments de paramètres
+(rétrocompatibilité)</li>
 </ol>
 <p>Les profils enregistrés sont stockés dans le dossier
 <code>profiles/</code> au format JSON.</p>
 <h2 id="configuration-plantuml-java">Configuration PlantUML / Java</h2>
-<p>Lors de l’utilisation de diagrammes PlantUML, les chemins sont
-recherchés dans l’ordre de priorité suivant :</p>
-<h3 id="fichier-jar-plantuml">Fichier JAR PlantUML</h3>
+<p>Lors de l’utilisation de diagrammes PlantUML, deux méthodes
+d’exécution sont disponibles.</p>
+<h3 id="sélectionner-la-méthode-dexécution-plantuml">Sélectionner la
+méthode d’exécution PlantUML</h3>
+<p><strong>Méthode JAR (Exécution locale):</strong></p>
 <ol type="1">
+<li>Sélectionnez “Fichier JAR” dans “Méthode d’exécution”</li>
+<li>Spécifiez le chemin de l’exécutable Java</li>
+<li>Spécifiez le chemin du fichier JAR PlantUML</li>
+</ol>
+<p><strong>Méthode serveur (Exécution en ligne):</strong></p>
+<ol type="1">
+<li>Sélectionnez “Serveur” dans “Méthode d’exécution”</li>
+<li>Spécifiez l’URL du serveur PlantUML (Par défaut:
+http://www.plantuml.com/plantuml)</li>
+<li>Java/fichier JAR non requis</li>
+</ol>
+<h3 id="configuration-de-la-méthode-jar-plantuml">Configuration de la
+méthode JAR PlantUML</h3>
+<p>Les chemins sont recherchés dans l’ordre de priorité suivant :</p>
+<h4 id="fichier-jar-plantuml">Fichier JAR PlantUML</h4>
+<ol type="1">
+<li>Chemin des paramètres GUI</li>
 <li>Métadonnées YAML <code>plantuml_jar</code> dans le document</li>
 <li>Variable d’environnement <code>PLANTUML_JAR</code></li>
 <li>Valeur par défaut <code>plantuml.jar</code></li>
 </ol>
-<h3 id="exécutable-java">Exécutable Java</h3>
+<h4 id="exécutable-java">Exécutable Java</h4>
 <ol type="1">
+<li>Chemin des paramètres GUI</li>
 <li>Métadonnées YAML <code>java_path</code> dans le document</li>
 <li>Variable d’environnement <code>JAVA_PATH</code></li>
 <li>Variable d’environnement <code>JAVA_HOME\bin\java</code></li>
@@ -228,14 +268,61 @@ de configuration de variables d’environnement</h3>
 <p><strong>Invite de commandes :</strong></p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode bat"><code class="sourceCode dosbat"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">PLANTUML_JAR</span>=C:\tools\plantuml.jar</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">JAVA_PATH</span>=C:\Program Files\Java\jdk-17\bin\java.exe</span></code></pre></div>
-<h3 id="spécification-dans-les-métadonnées-yaml">Spécification dans les
+<h3 id="spécification-des-métadonnées-yaml">Spécification des
 métadonnées YAML</h3>
-<p>Ajoutez au début du fichier Markdown :</p>
+<p>Ajouter au début du fichier Markdown :</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_jar</span><span class="kw">:</span><span class="at"> C:\tools\plantuml.jar</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">java_path</span><span class="kw">:</span><span class="at"> C:\Program Files\Java\jdk-17\bin\java.exe</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<p><strong>Lors de l’utilisation de la méthode serveur:</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server_url</span><span class="kw">:</span><span class="at"> http://www.plantuml.com/plantuml</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<h2 id="fonction-de-mise-à-jour-automatique">Fonction de mise à jour
+automatique</h2>
+<p>Lorsque vous mettez à jour l’application, les fichiers suivants sont
+automatiquement mis à jour :</p>
+<h3 id="fichiers-de-filtre">Fichiers de filtre</h3>
+<ul>
+<li>Filtres intégrés dans le dossier <code>filters/</code> (diaglam.lua,
+md2html.lua, wikilink.lua)</li>
+<li>Automatiquement mis à jour vers la dernière version lors de la mise
+à jour</li>
+<li>Les filtres personnalisés sont protégés</li>
+</ul>
+<h3 id="paramètres-de-profil">Paramètres de profil</h3>
+<ul>
+<li>Les nouveaux paramètres ajoutés dans les nouvelles versions sont
+automatiquement complétés</li>
+<li>Les paramètres existants sont préservés</li>
+<li>Les valeurs par défaut sont récupérées depuis
+<code>profiles/default.json</code></li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bat"><code class="sourceCode dosbat"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">PLANTUML_JAR</span>=C:\tools\plantuml.jar</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">JAVA_PATH</span>=C:\Program Files\Java\jdk-17\bin\java.exe</span></code></pre></div>
+<h3 id="spécification-dans-les-métadonnées-yaml">Spécification dans les
+métadonnées YAML</h3>
+<p>Ajoutez au début du fichier Markdown :</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_jar</span><span class="kw">:</span><span class="at"> C:\tools\plantuml.jar</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">java_path</span><span class="kw">:</span><span class="at"> C:\Program Files\Java\jdk-17\bin\java.exe</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
 <h2 id="dépannage">Dépannage</h2>
+<h3 id="pandoc-introuvable">Pandoc introuvable</h3>
+<p><strong>Symptômes :</strong></p>
+<ul>
+<li>Boîte de dialogue d’avertissement affichée au démarrage</li>
+<li>Impossible d’exécuter la conversion</li>
+</ul>
+<p><strong>Solution :</strong></p>
+<ol type="1">
+<li>Installer Pandoc : https://pandoc.org/installing.html</li>
+<li>Après l’installation, vérifier qu’il est ajouté à PATH</li>
+<li>Exécuter <code>pandoc --version</code> dans l’invite de commandes
+pour confirmer</li>
+</ol>
 <h3 id="la-conversion-échoue">La conversion échoue</h3>
 <p><strong>Vérifier :</strong></p>
 <ul>
@@ -257,12 +344,14 @@ générés</h3>
 confirmer</li>
 </ul>
 <p><strong>Pour les diagrammes PlantUML :</strong></p>
-<ul>
-<li>Vérifiez que <code>plantuml.jar</code> existe</li>
-<li>Vérifiez que Java est installé</li>
-<li>Spécifiez le chemin dans les variables d’environnement ou les
-métadonnées YAML</li>
-</ul>
+<p><strong>Méthode JAR :</strong> - Vérifiez que
+<code>plantuml.jar</code> existe - Vérifiez que Java est installé -
+Spécifiez le chemin dans les paramètres GUI, les variables
+d’environnement ou les métadonnées YAML</p>
+<p><strong>Méthode serveur :</strong> - Vérifiez la connexion Internet -
+Vérifiez que l’URL du serveur est correcte (Par défaut :
+http://www.plantuml.com/plantuml) - Vérifiez les paramètres du
+pare-feu</p>
 <h3 id="les-filtres-ne-sont-pas-appliqués">Les filtres ne sont pas
 appliqués</h3>
 <p><strong>Vérifier :</strong></p>

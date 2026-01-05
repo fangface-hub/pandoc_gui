@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>tmp49n4j6jc</title>
+  <title>tmphto4ihet</title>
   <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -177,36 +177,71 @@ node_modules</code></pre>
 </ol>
 <h2 id="프로필-기능">프로필 기능</h2>
 <p>자주 사용하는 설정 조합을 프로필로 저장할 수 있습니다.</p>
+<h3 id="프로필-생성">프로필 생성</h3>
+<ol type="1">
+<li>“추가” 버튼 클릭</li>
+<li>새 프로필 이름 입력</li>
+<li>“확인” 클릭</li>
+<li>기본 프로필 설정이 복사됩니다</li>
+</ol>
+<h3 id="프로필-선택">프로필 선택</h3>
+<ol type="1">
+<li>프로필 드롭다운에서 선택</li>
+<li>설정이 자동으로 로드됩니다</li>
+</ol>
 <h3 id="프로필-저장">프로필 저장</h3>
 <ol type="1">
 <li>설정 조정</li>
-<li>“프로필 저장” 버튼 클릭</li>
-<li>프로필 이름 입력</li>
-<li>“확인” 클릭</li>
+<li>드롭다운에서 대상 프로필 선택</li>
+<li>“저장” 버튼 클릭</li>
+<li>현재 설정이 프로필에 저장됩니다</li>
 </ol>
-<h3 id="프로필-로드">프로필 로드</h3>
+<h3 id="프로필-삭제">프로필 삭제</h3>
 <ol type="1">
-<li>“프로필 로드” 버튼 클릭</li>
-<li>목록에서 프로필 선택</li>
-<li>“확인” 클릭</li>
+<li>드롭다운에서 삭제할 프로필 선택</li>
+<li>“삭제” 버튼 클릭</li>
+<li>확인 대화 상자에서 “예” 클릭</li>
+</ol>
+<p><strong>참고:</strong> 기본 프로필은 삭제할 수 없습니다.</p>
+<h3 id="프로필-업데이트">프로필 업데이트</h3>
+<ol type="1">
+<li>“로드” 버튼 클릭</li>
+<li>프로필이 최신 설정 항목으로 업데이트됩니다 (하위 호환성)</li>
 </ol>
 <p>저장된 프로필은 <code>profiles/</code> 폴더에 JSON 형식으로
 저장됩니다.</p>
 <h2 id="plantuml-java-구성">PlantUML / Java 구성</h2>
-<p>PlantUML 다이어그램을 사용할 때 경로는 다음 우선 순위로
-검색됩니다:</p>
-<h3 id="plantuml-jar-파일">PlantUML JAR 파일</h3>
+<p>PlantUML 다이어그램을 사용할 때 두 가지 실행 방법이 있습니다.</p>
+<h3 id="plantuml-실행-방법-선택">PlantUML 실행 방법 선택</h3>
+<p><strong>JAR 방식 (로컬 실행):</strong></p>
 <ol type="1">
+<li>“실행 방법”에서 “JAR파일” 선택</li>
+<li>Java 실행 파일 경로 지정</li>
+<li>PlantUML JAR 파일 경로 지정</li>
+</ol>
+<p><strong>서버 방식 (온라인 실행):</strong></p>
+<ol type="1">
+<li>“실행 방법”에서 “서버” 선택</li>
+<li>PlantUML 서버 URL 지정 (기본값:
+http://www.plantuml.com/plantuml)</li>
+<li>Java/JAR 파일 불필요</li>
+</ol>
+<h3 id="plantuml-jar-방식-구성">PlantUML JAR 방식 구성</h3>
+<p>경로는 다음 우선 순위로 검색됩니다:</p>
+<h4 id="plantuml-jar-파일">PlantUML JAR 파일</h4>
+<ol type="1">
+<li>GUI 설정 경로</li>
 <li>문서의 YAML 메타데이터 <code>plantuml_jar</code></li>
 <li>환경 변수 <code>PLANTUML_JAR</code></li>
 <li>기본값 <code>plantuml.jar</code></li>
 </ol>
-<h3 id="java-실행-파일">Java 실행 파일</h3>
+<h4 id="java-실행-파일">Java 실행 파일</h4>
 <ol type="1">
+<li>GUI 설정 경로</li>
 <li>문서의 YAML 메타데이터 <code>java_path</code></li>
 <li>환경 변수 <code>JAVA_PATH</code></li>
 <li>환경 변수 <code>JAVA_HOME\bin\java</code></li>
-<li>PATH의 <code>java</code></li>
+<li>PATH에서 <code>java</code></li>
 </ol>
 <h3 id="환경-변수-구성-예시">환경 변수 구성 예시</h3>
 <p><strong>PowerShell:</strong></p>
@@ -215,13 +250,53 @@ node_modules</code></pre>
 <p><strong>명령 프롬프트:</strong></p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode bat"><code class="sourceCode dosbat"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">PLANTUML_JAR</span>=C:\tools\plantuml.jar</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">JAVA_PATH</span>=C:\Program Files\Java\jdk-17\bin\java.exe</span></code></pre></div>
-<h3 id="yaml-메타데이터에서-지정">YAML 메타데이터에서 지정</h3>
+<h3 id="yaml-메타데이터-지정">YAML 메타데이터 지정</h3>
 <p>Markdown 파일 시작 부분에 추가:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_jar</span><span class="kw">:</span><span class="at"> C:\tools\plantuml.jar</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">java_path</span><span class="kw">:</span><span class="at"> C:\Program Files\Java\jdk-17\bin\java.exe</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<p><strong>서버 방식 사용 시:</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server_url</span><span class="kw">:</span><span class="at"> http://www.plantuml.com/plantuml</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<h2 id="자동-업데이트-기능">자동 업데이트 기능</h2>
+<p>애플리케이션을 업데이트하면 다음 파일이 자동으로 업데이트됩니다:</p>
+<h3 id="필터-파일">필터 파일</h3>
+<ul>
+<li><code>filters/</code> 폴더의 내장 필터 (diaglam.lua, md2html.lua,
+wikilink.lua)</li>
+<li>업데이트 시 최신 버전으로 자동 업데이트</li>
+<li>사용자 추가 필터는 보호됨</li>
+</ul>
+<h3 id="프로필-설정">프로필 설정</h3>
+<ul>
+<li>새 버전에서 추가된 새 설정이 자동으로 보완됨</li>
+<li>기존 설정은 보존됨</li>
+<li>기본값은 <code>profiles/default.json</code>에서 가져옴</li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bat"><code class="sourceCode dosbat"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">PLANTUML_JAR</span>=C:\tools\plantuml.jar</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">JAVA_PATH</span>=C:\Program Files\Java\jdk-17\bin\java.exe</span></code></pre></div>
+<h3 id="yaml-메타데이터에서-지정">YAML 메타데이터에서 지정</h3>
+<p>Markdown 파일 시작 부분에 추가:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_jar</span><span class="kw">:</span><span class="at"> C:\tools\plantuml.jar</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">java_path</span><span class="kw">:</span><span class="at"> C:\Program Files\Java\jdk-17\bin\java.exe</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
 <h2 id="문제-해결">문제 해결</h2>
+<h3 id="pandoc을-찾을-수-없음">Pandoc을 찾을 수 없음</h3>
+<p><strong>증상:</strong></p>
+<ul>
+<li>시작 시 경고 대화 상자 표시</li>
+<li>변환을 실행할 수 없음</li>
+</ul>
+<p><strong>해결 방법:</strong></p>
+<ol type="1">
+<li>Pandoc 설치: https://pandoc.org/installing.html</li>
+<li>설치 후 PATH에 추가되었는지 확인</li>
+<li>명령 프롬프트에서 <code>pandoc --version</code>을 실행하여 확인</li>
+</ol>
 <h3 id="변환-실패">변환 실패</h3>
 <p><strong>확인 사항:</strong></p>
 <ul>
@@ -241,11 +316,11 @@ node_modules</code></pre>
 <li>명령 프롬프트에서 <code>mmdc --version</code>을 실행하여 확인</li>
 </ul>
 <p><strong>PlantUML 다이어그램의 경우:</strong></p>
-<ul>
-<li><code>plantuml.jar</code>이 존재하는지 확인</li>
-<li>Java가 설치되어 있는지 확인</li>
-<li>환경 변수 또는 YAML 메타데이터에서 경로 지정</li>
-</ul>
+<p><strong>JAR 방식:</strong> - <code>plantuml.jar</code>이 존재하는지
+확인 - Java가 설치되어 있는지 확인 - GUI 설정, 환경 변수 또는 YAML
+메타데이터에서 경로 지정</p>
+<p><strong>서버 방식:</strong> - 인터넷 연결 확인 - 서버 URL이 올바른지
+확인 (기본값: http://www.plantuml.com/plantuml) - 방화벽 설정 확인</p>
 <h3 id="필터가-적용되지-않음">필터가 적용되지 않음</h3>
 <p><strong>확인 사항:</strong></p>
 <ul>

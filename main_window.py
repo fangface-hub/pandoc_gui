@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Pandoc GUI Application."""
+import json
 import logging
 import os
 import platform
@@ -10,7 +11,7 @@ import tkinter as tk
 import webbrowser
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from tkinter import filedialog, messagebox, ttk
+from tkinter import filedialog, messagebox, simpledialog, ttk
 
 from __version__ import __version__
 from css_window import CSSWindow
@@ -36,23 +37,61 @@ SCRIPT_DIR = get_app_dir()
 DATA_DIR = get_data_dir()
 
 
+def _check_pandoc_installed():
+    """
+pandocがインストールされているかチェックする.
+
+    Check if pandoc is installed.
+
+    Returns
+    -------
+    bool
+        pandocが利用可能な場合True (True if pandoc is available)
+    """
+    try:
+        result = subprocess.run(["pandoc", "--version"],
+                                capture_output=True,
+                                text=True,
+                                timeout=5,
+                                check=False)
+        return result.returncode == 0
+    except (FileNotFoundError, subprocess.SubprocessError, OSError):
+        return False
+
+
 def _init_data_folders():
     """初回起動時にDATA_DIRにフォルダを複製する.
 
     Copy folders to DATA_DIR on first launch.
 
-    アップデート時に上書きしないように、フォルダが存在しない場合のみ複製する。
-    To avoid overwriting on updates, copy only if folders don't exist.
+    フィルタはアップデート時に上書き、それ以外は初回のみコピー。
+    Filters are overwritten on updates, others are copied only on first launch.
     """
-    folders_to_copy = ["filters", "profiles", "stylesheets"]
+    # profiles, stylesheets は初回のみコピー（ユーザーカスタマイズを保護）
+    folders_to_copy_once = ["profiles", "stylesheets"]
 
-    for folder_name in folders_to_copy:
+    for folder_name in folders_to_copy_once:
         src_folder = SCRIPT_DIR / folder_name
         dest_folder = DATA_DIR / folder_name
 
         # フォルダが存在しない場合のみコピー
         if src_folder.exists() and not dest_folder.exists():
             shutil.copytree(src_folder, dest_folder)
+
+    # filters は常に上書き（アップデート時に最新版に更新）
+    filters_src = SCRIPT_DIR / "filters"
+    filters_dest = DATA_DIR / "filters"
+
+    if filters_src.exists():
+        # DATA_DIR/filters が存在する場合は、SCRIPT_DIRにある同名ファイルのみ上書き
+        if filters_dest.exists():
+            for filter_file in filters_src.glob("*"):
+                if filter_file.is_file():
+                    dest_file = filters_dest / filter_file.name
+                    shutil.copy2(filter_file, dest_file)
+        else:
+            # DATA_DIR/filters が存在しない場合は丸ごとコピー
+            shutil.copytree(filters_src, filters_dest)
 
 
 class MainWindow(tk.Tk):
@@ -115,6 +154,15 @@ class MainWindow(tk.Tk):
         # PandocServiceのインスタンスを作成
         self.pandoc_service = PandocService(self.logger)
 
+        # pandocのインストール状況をチェック
+        if not _check_pandoc_installed():
+            self.logger.warning("Pandoc is not installed or not in PATH")
+            # 警告メッセージを表示（afterで少し遅延させてUI構築後に表示）
+            self.after(
+                100, lambda: messagebox.showwarning(
+                    self.i18n.t("warning"),
+                    self.i18n.t("pandoc_not_installed_warning")))
+
         # 環境変数の初期値をログ出力
         env_java = os.getenv("JAVA_PATH") or ""
         env_plantuml = os.getenv("PLANTUML_JAR") or ""
@@ -173,6 +221,27 @@ class MainWindow(tk.Tk):
                                        pady=5)
         plantuml_frame.pack(fill=tk.X, padx=5, pady=5)
 
+        # PlantUML実行方法選択
+        method_frame = tk.Frame(plantuml_frame)
+        method_frame.pack(fill=tk.X, pady=2)
+        tk.Label(method_frame,
+                 text=self.i18n.t("plantuml_method"),
+                 width=15,
+                 anchor=tk.W).pack(side=tk.LEFT, padx=2)
+        self.plantuml_method_var = tk.StringVar(value="jar")
+        tk.Radiobutton(method_frame,
+                       text=self.i18n.t("plantuml_jar_method"),
+                       variable=self.plantuml_method_var,
+                       value="jar",
+                       command=self._on_plantuml_method_changed).pack(
+                           side=tk.LEFT, padx=10)
+        tk.Radiobutton(method_frame,
+                       text=self.i18n.t("plantuml_server_method"),
+                       variable=self.plantuml_method_var,
+                       value="server",
+                       command=self._on_plantuml_method_changed).pack(
+                           side=tk.LEFT, padx=10)
+
         # Java Path
         java_frame = tk.Frame(plantuml_frame)
         java_frame.pack(fill=tk.X, pady=2)
@@ -181,12 +250,15 @@ class MainWindow(tk.Tk):
                  width=12,
                  anchor=tk.W).pack(side=tk.LEFT, padx=2)
         self.java_path_var = tk.StringVar()
-        tk.Entry(java_frame, textvariable=self.java_path_var,
-                 width=40).pack(side=tk.LEFT, padx=2, fill=tk.X, expand=True)
-        tk.Button(java_frame,
-                  text="...",
-                  command=self.select_java_path,
-                  width=3).pack(side=tk.LEFT, padx=2)
+        self.java_path_entry = tk.Entry(java_frame,
+                                        textvariable=self.java_path_var,
+                                        width=40)
+        self.java_path_entry.pack(side=tk.LEFT, padx=2, fill=tk.X, expand=True)
+        self.java_path_button = tk.Button(java_frame,
+                                          text="...",
+                                          command=self.select_java_path,
+                                          width=3)
+        self.java_path_button.pack(side=tk.LEFT, padx=2)
 
         # PlantUML JAR
         jar_frame = tk.Frame(plantuml_frame)
@@ -196,12 +268,34 @@ class MainWindow(tk.Tk):
                  width=12,
                  anchor=tk.W).pack(side=tk.LEFT, padx=2)
         self.plantuml_jar_var = tk.StringVar()
-        tk.Entry(jar_frame, textvariable=self.plantuml_jar_var,
-                 width=40).pack(side=tk.LEFT, padx=2, fill=tk.X, expand=True)
-        tk.Button(jar_frame,
-                  text="...",
-                  command=self.select_plantuml_jar,
-                  width=3).pack(side=tk.LEFT, padx=2)
+        self.plantuml_jar_entry = tk.Entry(jar_frame,
+                                           textvariable=self.plantuml_jar_var,
+                                           width=40)
+        self.plantuml_jar_entry.pack(side=tk.LEFT,
+                                     padx=2,
+                                     fill=tk.X,
+                                     expand=True)
+        self.plantuml_jar_button = tk.Button(jar_frame,
+                                             text="...",
+                                             command=self.select_plantuml_jar,
+                                             width=3)
+        self.plantuml_jar_button.pack(side=tk.LEFT, padx=2)
+
+        # PlantUML Server URL
+        server_frame = tk.Frame(plantuml_frame)
+        server_frame.pack(fill=tk.X, pady=2)
+        tk.Label(server_frame,
+                 text=self.i18n.t("plantuml_server_url"),
+                 width=12,
+                 anchor=tk.W).pack(side=tk.LEFT, padx=2)
+        self.plantuml_server_url_var = tk.StringVar(
+            value="http://www.plantuml.com/plantuml")
+        self.plantuml_server_url_entry = tk.Entry(
+            server_frame, textvariable=self.plantuml_server_url_var, width=40)
+        self.plantuml_server_url_entry.pack(side=tk.LEFT,
+                                            padx=2,
+                                            fill=tk.X,
+                                            expand=True)
 
         # -------------------------
         # 入出力
@@ -257,15 +351,28 @@ class MainWindow(tk.Tk):
         tk.Label(profile_frame,
                  text=self.i18n.t("profile_name")).pack(side=tk.LEFT, padx=5)
         self.profile_var = tk.StringVar(value="default")
-        tk.Entry(profile_frame, textvariable=self.profile_var,
-                 width=15).pack(side=tk.LEFT, padx=5)
+        self.profile_combo = ttk.Combobox(profile_frame,
+                                          textvariable=self.profile_var,
+                                          values=self._get_available_profiles(),
+                                          state="readonly",
+                                          width=15)
+        self.profile_combo.pack(side=tk.LEFT, padx=5)
 
+        tk.Button(profile_frame,
+                  text=self.i18n.t("add"),
+                  command=self.add_new_profile).pack(side=tk.LEFT, padx=2)
+        tk.Button(profile_frame,
+                  text=self.i18n.t("delete"),
+                  command=self.delete_profile).pack(side=tk.LEFT, padx=2)
         tk.Button(profile_frame,
                   text=self.i18n.t("save"),
                   command=self.save_profile).pack(side=tk.LEFT, padx=2)
         tk.Button(profile_frame,
                   text=self.i18n.t("load"),
                   command=self.load_profile).pack(side=tk.LEFT, padx=2)
+        tk.Button(profile_frame,
+                  text=self.i18n.t("refresh"),
+                  command=self._refresh_profile_list).pack(side=tk.LEFT, padx=2)
 
         # -------------------------
         # 実行
@@ -294,6 +401,159 @@ class MainWindow(tk.Tk):
         # デフォルトプロファイルが存在する場合、起動時に自動ロード
         self._load_default_profile_on_startup()
 
+    def _get_available_profiles(self):
+        """利用可能なプロファイルのリストを取得する.
+
+        Get list of available profiles.
+
+        Returns
+        -------
+        list
+            プロファイル名のリスト (List of profile names)
+        """
+        profiles_dir = DATA_DIR / "profiles"
+        if not profiles_dir.exists():
+            return ["default"]
+
+        profile_files = list(profiles_dir.glob("*.json"))
+        profile_names = [p.stem for p in profile_files]
+
+        # defaultが含まれていない場合は追加
+        if "default" not in profile_names:
+            profile_names.insert(0, "default")
+
+        return sorted(profile_names)
+
+    def _refresh_profile_list(self):
+        """プロファイルリストを更新する.
+
+        Refresh profile list.
+        """
+        profiles = self._get_available_profiles()
+        self.profile_combo.config(values=profiles)
+        self.logger.info(self.i18n.t("profile_list_refreshed"))
+
+    def add_new_profile(self):
+        """新規プロファイルを作成する.
+
+        Create a new profile.
+        """
+        # プロファイル名を入力
+        new_profile_name = simpledialog.askstring(
+            self.i18n.t("add_new_profile"), self.i18n.t("enter_profile_name"))
+
+        if not new_profile_name:
+            return
+
+        # 無効な文字をチェック
+        invalid_chars = ['/', '\\', ':', '*', '?', '"', '<', '>', '|']
+        if any(c in new_profile_name for c in invalid_chars):
+            messagebox.showerror(self.i18n.t("error"),
+                                 self.i18n.t("invalid_profile_name"))
+            return
+
+        # 既存のプロファイルと重複チェック
+        dest_file = DATA_DIR / "profiles" / f"{new_profile_name}.json"
+        if dest_file.exists():
+            messagebox.showerror(
+                self.i18n.t("error"),
+                self.i18n.t("profile_already_exists", name=new_profile_name))
+            return
+
+        # SCRIPT_DIR/profiles/default.json を読み込む
+        src_file = SCRIPT_DIR / "profiles" / "default.json"
+        if not src_file.exists():
+            messagebox.showerror(self.i18n.t("error"),
+                                 self.i18n.t("default_profile_not_found"))
+            return
+
+        try:
+            # プロファイルディレクトリが存在しない場合は作成
+            dest_file.parent.mkdir(parents=True, exist_ok=True)
+
+            # ファイルを複製
+            with open(src_file, 'r', encoding='utf-8-sig') as f:
+                profile_data = json.load(f)
+
+            with open(dest_file, 'w', encoding='utf-8') as f:
+                json.dump(profile_data, f, ensure_ascii=False, indent=2)
+
+            self.logger.info(
+                self.i18n.t("profile_created", name=new_profile_name))
+
+            # プロファイルリストを更新
+            self._refresh_profile_list()
+
+            # 新しいプロファイルを選択
+            self.profile_var.set(new_profile_name)
+
+            messagebox.showinfo(
+                self.i18n.t("success"),
+                self.i18n.t("profile_created", name=new_profile_name))
+
+        except (OSError, ValueError) as e:
+            self.logger.error(
+                self.i18n.t("profile_creation_failed",
+                            name=new_profile_name,
+                            error=str(e)))
+            messagebox.showerror(
+                self.i18n.t("error"),
+                self.i18n.t("profile_creation_failed",
+                            name=new_profile_name,
+                            error=str(e)))
+
+    def delete_profile(self):
+        """プロファイルを削除する.
+
+        Delete a profile.
+        """
+        profile_name = self.profile_var.get()
+
+        # defaultプロファイルは削除不可
+        if profile_name == "default":
+            messagebox.showerror(self.i18n.t("error"),
+                                 self.i18n.t("cannot_delete_default_profile"))
+            return
+
+        # 削除確認
+        if not messagebox.askyesno(
+                self.i18n.t("confirm_delete"),
+                self.i18n.t("confirm_delete_profile", name=profile_name)):
+            return
+
+        # プロファイルファイルのパス
+        profile_file = DATA_DIR / "profiles" / f"{profile_name}.json"
+
+        try:
+            if profile_file.exists():
+                profile_file.unlink()
+                self.logger.info(
+                    self.i18n.t("profile_deleted", name=profile_name))
+
+                # プロファイルリストを更新
+                self._refresh_profile_list()
+
+                # defaultプロファイルを選択
+                self.profile_var.set("default")
+
+                messagebox.showinfo(
+                    self.i18n.t("success"),
+                    self.i18n.t("profile_deleted", name=profile_name))
+            else:
+                messagebox.showerror(self.i18n.t("error"),
+                                     self.i18n.t("profile_not_found"))
+
+        except OSError as e:
+            self.logger.error(
+                self.i18n.t("profile_deletion_failed",
+                            name=profile_name,
+                            error=str(e)))
+            messagebox.showerror(
+                self.i18n.t("error"),
+                self.i18n.t("profile_deletion_failed",
+                            name=profile_name,
+                            error=str(e)))
+
     def _load_default_profile_on_startup(self):
         """起動時にデフォルトプロファイルを自動的にロードする.
 
@@ -316,7 +576,18 @@ class MainWindow(tk.Tk):
         else:
             self.plantuml_jar_var.set("")
 
+        # PlantUMLサーバ設定を読み込む
+        if hasattr(self.pandoc_service, 'plantuml_use_server'):
+            method = ("server"
+                      if self.pandoc_service.plantuml_use_server else "jar")
+            self.plantuml_method_var.set(method)
+        if hasattr(self.pandoc_service, 'plantuml_server_url'
+                   ) and self.pandoc_service.plantuml_server_url:
+            self.plantuml_server_url_var.set(
+                self.pandoc_service.plantuml_server_url)
+
         # UIを更新
+        self._on_plantuml_method_changed()
         self._update_css_info_label()
         self._on_format_changed()
 
@@ -350,6 +621,25 @@ class MainWindow(tk.Tk):
             self.plantuml_jar_var.set(file)
             self.pandoc_service.plantuml_jar = Path(file)
             self.logger.info(self.i18n.t("plantuml_jar_selected", path=file))
+
+    def _on_plantuml_method_changed(self):
+        """
+        PlantUML実行方法が変更されたときの処理.
+
+        Process when PlantUML execution method is changed.
+        """
+        is_jar = self.plantuml_method_var.get() == "jar"
+
+        # JAR方式の場合はJavaとJARを有効化、サーバを無効化
+        # If JAR method, enable Java and JAR, disable Server
+        state_jar = tk.NORMAL if is_jar else tk.DISABLED
+        state_server = tk.DISABLED if is_jar else tk.NORMAL
+
+        self.java_path_entry.config(state=state_jar)
+        self.java_path_button.config(state=state_jar)
+        self.plantuml_jar_entry.config(state=state_jar)
+        self.plantuml_jar_button.config(state=state_jar)
+        self.plantuml_server_url_entry.config(state=state_server)
 
     def _create_menu(self):
         """メニューバーを作成する.
@@ -651,9 +941,17 @@ class MainWindow(tk.Tk):
 
         Save profile.
         """
+        # PlantUML設定を反映
+        self.pandoc_service.plantuml_use_server = (
+            self.plantuml_method_var.get() == "server")
+        self.pandoc_service.plantuml_server_url = (
+            self.plantuml_server_url_var.get())
+
         self.pandoc_service.save_profile_data(self.profile_var.get())
         self.logger.info(
             self.i18n.t("profile_saved", name=self.profile_var.get()))
+        # プロファイルリストを更新
+        self._refresh_profile_list()
 
     def load_profile(self):
         """プロファイルを読み込む.
@@ -676,6 +974,17 @@ class MainWindow(tk.Tk):
         else:
             self.plantuml_jar_var.set("")
 
+        # PlantUMLサーバ設定を読み込む
+        if hasattr(self.pandoc_service, 'plantuml_use_server'):
+            method = ("server"
+                      if self.pandoc_service.plantuml_use_server else "jar")
+            self.plantuml_method_var.set(method)
+        if hasattr(self.pandoc_service, 'plantuml_server_url'
+                   ) and self.pandoc_service.plantuml_server_url:
+            self.plantuml_server_url_var.set(
+                self.pandoc_service.plantuml_server_url)
+
+        self._on_plantuml_method_changed()
         self._update_css_info_label()
         self._on_format_changed()
 

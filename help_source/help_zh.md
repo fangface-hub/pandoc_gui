@@ -97,37 +97,76 @@ node_modules
 
 您可以将常用的设置组合保存为配置文件。
 
+### 创建配置文件
+
+1. 点击"添加"按钮
+2. 输入新配置文件名称
+3. 点击"确定"
+4. 默认配置文件设置将被复制
+
+### 选择配置文件
+
+1. 从配置文件下拉菜单中选择
+2. 设置将自动加载
+
 ### 保存配置文件
 
 1. 调整设置
-2. 点击"保存配置文件"按钮
-3. 输入配置文件名称
-4. 点击"确定"
+2. 从下拉菜单中选择目标配置文件
+3. 点击"保存"按钮
+4. 当前设置将保存到配置文件
 
-### 加载配置文件
+### 删除配置文件
 
-1. 点击"加载配置文件"按钮
-2. 从列表中选择配置文件
-3. 点击"确定"
+1. 从下拉菜单中选择要删除的配置文件
+2. 点击"删除"按钮
+3. 在确认对话框中点击"是"
+
+**注意:** 默认配置文件无法删除。
+
+### 更新配置文件
+
+1. 点击"加载"按钮
+2. 配置文件将使用最新的设置项更新（向后兼容性）
 
 保存的配置文件以 JSON 格式存储在 `profiles/` 文件夹中。
 
 ## PlantUML / Java 配置
 
-使用 PlantUML 图表时，按以下优先级顺序搜索路径：
+使用 PlantUML 图表时，有两种执行方法可用。
 
-### PlantUML JAR 文件
+### 选择 PlantUML 执行方法
 
-1. 文档中的 YAML 元数据 `plantuml_jar`
-2. 环境变量 `PLANTUML_JAR`
-3. 默认值 `plantuml.jar`
+**JAR方式（本地执行）：**
 
-### Java 可执行文件
+1. 在“执行方法”中选择“JAR文件”
+2. 指定 Java 可执行文件路径
+3. 指定 PlantUML JAR 文件路径
 
-1. 文档中的 YAML 元数据 `java_path`
-2. 环境变量 `JAVA_PATH`
-3. 环境变量 `JAVA_HOME\bin\java`
-4. PATH 中的 `java`
+**服务器方式（在线执行）：**
+
+1. 在“执行方法”中选择“服务器”
+2. 指定 PlantUML 服务器 URL（默认：http://www.plantuml.com/plantuml）
+3. 不需要 Java/JAR 文件
+
+### PlantUML JAR 方式配置
+
+按以下优先级顺序搜索路径：
+
+#### PlantUML JAR 文件
+
+1. GUI 设置路径
+2. 文档中的 YAML 元数据 `plantuml_jar`
+3. 环境变量 `PLANTUML_JAR`
+4. 默认值 `plantuml.jar`
+
+#### Java 可执行文件
+
+1. GUI 设置路径
+2. 文档中的 YAML 元数据 `java_path`
+3. 环境变量 `JAVA_PATH`
+4. 环境变量 `JAVA_HOME\bin\java`
+5. 从 PATH 中的 `java`
 
 ### 环境变量配置示例
 
@@ -139,6 +178,47 @@ $env:JAVA_PATH = 'C:\Program Files\Java\jdk-17\bin\java.exe'
 ```
 
 **命令提示符：**
+
+```bat
+set PLANTUML_JAR=C:\tools\plantuml.jar
+set JAVA_PATH=C:\Program Files\Java\jdk-17\bin\java.exe
+```
+
+### YAML 元数据规范
+
+在 Markdown 文件开头添加：
+
+```yaml
+---
+plantuml_jar: C:\tools\plantuml.jar
+java_path: C:\Program Files\Java\jdk-17\bin\java.exe
+---
+```
+
+**使用服务器方式时：**
+
+```yaml
+---
+plantuml_server: true
+plantuml_server_url: http://www.plantuml.com/plantuml
+---
+```
+
+## 自动更新功能
+
+当您更新应用程序时，以下文件将自动更新：
+
+### 过滤器文件
+
+- `filters/` 文件夹中的内置过滤器 (diaglam.lua, md2html.lua, wikilink.lua)
+- 更新时自动更新到最新版本
+- 用户添加的自定义过滤器受保护
+
+### 配置文件设置
+
+- 新版本中添加的新设置将自动补充
+- 现有设置将保留
+- 默认值从 `profiles/default.json` 获取
 
 ```bat
 set PLANTUML_JAR=C:\tools\plantuml.jar
@@ -157,6 +237,19 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 ```
 
 ## 故障排除
+
+### 找不到 Pandoc
+
+**症状：**
+
+- 启动时显示警告对话框
+- 无法执行转换
+
+**解决方案：**
+
+1. 安装 Pandoc：https://pandoc.org/installing.html
+2. 安装后，验证它是否添加到 PATH
+3. 在命令提示符中运行 `pandoc --version` 进行确认
 
 ### 转换失败
 
@@ -180,9 +273,15 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 
 **对于 PlantUML 图表：**
 
+**JAR方式：**
 - 验证 `plantuml.jar` 是否存在
 - 验证是否安装了 Java
-- 在环境变量或 YAML 元数据中指定路径
+- 在 GUI 设置、环境变量或 YAML 元数据中指定路径
+
+**服务器方式：**
+- 验证互联网连接
+- 验证服务器 URL 是否正确（默认：http://www.plantuml.com/plantuml）
+- 检查防火墙设置
 
 ### 过滤器未应用
 

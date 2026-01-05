@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>tmpjjgwk7rt</title>
+  <title>tmpxwtndio3</title>
   <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -182,32 +182,71 @@ node_modules</code></pre>
 </ol>
 <h2 id="profile-feature">Profile Feature</h2>
 <p>You can save frequently used setting combinations as profiles.</p>
+<h3 id="create-profile">Create Profile</h3>
+<ol type="1">
+<li>Click “Add” button</li>
+<li>Enter new profile name</li>
+<li>Click “OK”</li>
+<li>Default profile settings will be copied</li>
+</ol>
+<h3 id="select-profile">Select Profile</h3>
+<ol type="1">
+<li>Select from profile dropdown</li>
+<li>Settings are automatically loaded</li>
+</ol>
 <h3 id="save-profile">Save Profile</h3>
 <ol type="1">
 <li>Adjust settings</li>
-<li>Click “Save Profile” button</li>
-<li>Enter profile name</li>
-<li>Click “OK”</li>
+<li>Select target profile from dropdown</li>
+<li>Click “Save” button</li>
+<li>Current settings are saved to the profile</li>
 </ol>
-<h3 id="load-profile">Load Profile</h3>
+<h3 id="delete-profile">Delete Profile</h3>
 <ol type="1">
-<li>Click “Load Profile” button</li>
-<li>Select a profile from the list</li>
-<li>Click “OK”</li>
+<li>Select profile to delete from dropdown</li>
+<li>Click “Delete” button</li>
+<li>Click “Yes” in confirmation dialog</li>
+</ol>
+<p><strong>Note:</strong> Default profile cannot be deleted.</p>
+<h3 id="update-profile">Update Profile</h3>
+<ol type="1">
+<li>Click “Load” button</li>
+<li>Profile is updated with latest settings (backward
+compatibility)</li>
 </ol>
 <p>Saved profiles are stored in the <code>profiles/</code> folder in
 JSON format.</p>
 <h2 id="plantuml-java-configuration">PlantUML / Java Configuration</h2>
-<p>When using PlantUML diagrams, paths are searched in the following
-priority order:</p>
-<h3 id="plantuml-jar-file">PlantUML JAR File</h3>
+<p>When using PlantUML diagrams, there are two execution methods
+available.</p>
+<h3 id="select-plantuml-execution-method">Select PlantUML Execution
+Method</h3>
+<p><strong>JAR Method (Local Execution):</strong></p>
 <ol type="1">
+<li>Select “JAR File” in “Execution Method”</li>
+<li>Specify Java executable path</li>
+<li>Specify PlantUML JAR file path</li>
+</ol>
+<p><strong>Server Method (Online Execution):</strong></p>
+<ol type="1">
+<li>Select “Server” in “Execution Method”</li>
+<li>Specify PlantUML server URL (Default:
+http://www.plantuml.com/plantuml)</li>
+<li>Java/JAR file not required</li>
+</ol>
+<h3 id="plantuml-jar-method-configuration">PlantUML JAR Method
+Configuration</h3>
+<p>Paths are searched in the following priority order:</p>
+<h4 id="plantuml-jar-file">PlantUML JAR File</h4>
+<ol type="1">
+<li>GUI settings path</li>
 <li>YAML metadata <code>plantuml_jar</code> in document</li>
 <li>Environment variable <code>PLANTUML_JAR</code></li>
 <li>Default value <code>plantuml.jar</code></li>
 </ol>
-<h3 id="java-executable">Java Executable</h3>
+<h4 id="java-executable">Java Executable</h4>
 <ol type="1">
+<li>GUI settings path</li>
 <li>YAML metadata <code>java_path</code> in document</li>
 <li>Environment variable <code>JAVA_PATH</code></li>
 <li>Environment variable <code>JAVA_HOME\bin\java</code></li>
@@ -221,14 +260,57 @@ Variable Configuration Examples</h3>
 <p><strong>Command Prompt:</strong></p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode bat"><code class="sourceCode dosbat"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">PLANTUML_JAR</span>=C:\tools\plantuml.jar</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">JAVA_PATH</span>=C:\Program Files\Java\jdk-17\bin\java.exe</span></code></pre></div>
-<h3 id="specification-in-yaml-metadata">Specification in YAML
-Metadata</h3>
-<p>Add to the beginning of the Markdown file:</p>
+<h3 id="yaml-metadata-specification">YAML Metadata Specification</h3>
+<p>Add to the beginning of Markdown file:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_jar</span><span class="kw">:</span><span class="at"> C:\tools\plantuml.jar</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">java_path</span><span class="kw">:</span><span class="at"> C:\Program Files\Java\jdk-17\bin\java.exe</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<p><strong>When using server method:</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server_url</span><span class="kw">:</span><span class="at"> http://www.plantuml.com/plantuml</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<h2 id="auto-update-feature">Auto-Update Feature</h2>
+<p>When you update the application, the following files are
+automatically updated:</p>
+<h3 id="filter-files">Filter Files</h3>
+<ul>
+<li>Built-in filters in <code>filters/</code> folder (diaglam.lua,
+md2html.lua, wikilink.lua)</li>
+<li>Automatically updated to latest version on update</li>
+<li>Custom filters added by users are protected</li>
+</ul>
+<h3 id="profile-settings">Profile Settings</h3>
+<ul>
+<li>New settings added in new versions are automatically
+complemented</li>
+<li>Existing settings are preserved</li>
+<li>Default values are retrieved from
+<code>profiles/default.json</code></li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bat"><code class="sourceCode dosbat"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">PLANTUML_JAR</span>=C:\tools\plantuml.jar</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">JAVA_PATH</span>=C:\Program Files\Java\jdk-17\bin\java.exe</span></code></pre></div>
+<h3 id="specification-in-yaml-metadata">Specification in YAML
+Metadata</h3>
+<p>Add to the beginning of the Markdown file:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_jar</span><span class="kw">:</span><span class="at"> C:\tools\plantuml.jar</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">java_path</span><span class="kw">:</span><span class="at"> C:\Program Files\Java\jdk-17\bin\java.exe</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
 <h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="pandoc-not-found">Pandoc Not Found</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Warning dialog displayed on startup</li>
+<li>Cannot execute conversion</li>
+</ul>
+<p><strong>Solution:</strong></p>
+<ol type="1">
+<li>Install Pandoc: https://pandoc.org/installing.html</li>
+<li>After installation, verify it’s added to PATH</li>
+<li>Run <code>pandoc --version</code> in command prompt to confirm</li>
+</ol>
 <h3 id="conversion-fails">Conversion Fails</h3>
 <p><strong>Check:</strong></p>
 <ul>
@@ -248,11 +330,12 @@ Metadata</h3>
 <li>Run <code>mmdc --version</code> in command prompt to confirm</li>
 </ul>
 <p><strong>For PlantUML diagrams:</strong></p>
-<ul>
-<li>Verify <code>plantuml.jar</code> exists</li>
-<li>Verify Java is installed</li>
-<li>Specify path in environment variables or YAML metadata</li>
-</ul>
+<p><strong>JAR Method:</strong> - Verify <code>plantuml.jar</code>
+exists - Verify Java is installed - Specify path in GUI settings,
+environment variables, or YAML metadata</p>
+<p><strong>Server Method:</strong> - Verify internet connection - Verify
+server URL is correct (Default: http://www.plantuml.com/plantuml) -
+Check firewall settings</p>
 <h3 id="filters-not-applied">Filters Not Applied</h3>
 <p><strong>Check:</strong></p>
 <ul>

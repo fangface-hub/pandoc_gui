@@ -96,6 +96,10 @@ class TestProfileManagement(unittest.TestCase):
             "css_file": "style.css",
             "embed_css": False,
             "output_format": "pdf",
+            "java_path": "/usr/bin/java",
+            "plantuml_jar": "/opt/plantuml.jar",
+            "plantuml_use_server": False,
+            "plantuml_server_url": "http://www.plantuml.com/plantuml",
         }
 
         # 保存
@@ -104,7 +108,18 @@ class TestProfileManagement(unittest.TestCase):
 
         # 読み込み
         loaded_data = load_profile(self.test_profile_name)
-        self.assertEqual(loaded_data, test_data)
+        # マスターデフォルトから補完されるキーがあるため、主要項目のみ検証
+        self.assertEqual(loaded_data["filters"], test_data["filters"])
+        self.assertEqual(loaded_data["css_file"], test_data["css_file"])
+        self.assertEqual(loaded_data["embed_css"], test_data["embed_css"])
+        self.assertEqual(loaded_data["output_format"],
+                         test_data["output_format"])
+        self.assertEqual(loaded_data["java_path"], test_data["java_path"])
+        self.assertEqual(loaded_data["plantuml_jar"], test_data["plantuml_jar"])
+        self.assertEqual(loaded_data["plantuml_use_server"],
+                         test_data["plantuml_use_server"])
+        self.assertEqual(loaded_data["plantuml_server_url"],
+                         test_data["plantuml_server_url"])
 
     def test_load_nonexistent_profile(self):
         """存在しないプロファイルの読み込みはNoneを返す."""
@@ -138,11 +153,20 @@ class TestProfileManagement(unittest.TestCase):
             self.assertIn("embed_css", data)
             self.assertIn("output_format", data)
             self.assertIn("exclude_patterns", data)
+            self.assertIn("java_path", data)
+            self.assertIn("plantuml_jar", data)
+            self.assertIn("plantuml_use_server", data)
+            self.assertIn("plantuml_server_url", data)
             self.assertEqual(data["filters"], [])
             self.assertEqual(data["exclude_patterns"], [])
             self.assertIsNone(data["css_file"])
             self.assertTrue(data["embed_css"])
             self.assertEqual(data["output_format"], "html")
+            self.assertIsNone(data["java_path"])
+            self.assertIsNone(data["plantuml_jar"])
+            self.assertFalse(data["plantuml_use_server"])
+            self.assertEqual(data["plantuml_server_url"],
+                             "http://www.plantuml.com/plantuml")
 
         finally:
             # バックアップを復元
@@ -178,6 +202,9 @@ class TestMainWindow(unittest.TestCase):
         self.window.pandoc_service.output_format = "html"
         self.window.pandoc_service.java_path = None
         self.window.pandoc_service.plantuml_jar = None
+        self.window.pandoc_service.plantuml_use_server = False
+        self.window.pandoc_service.plantuml_server_url = \
+            "http://www.plantuml.com/plantuml"
         self.window.pandoc_service.should_exclude = Mock(return_value=False)
         self.window.input_type_var = Mock()
         self.window.format_var = Mock()
@@ -189,6 +216,11 @@ class TestMainWindow(unittest.TestCase):
         self.window.java_path_var.get = Mock(return_value="")
         self.window.plantuml_jar_var = Mock()
         self.window.plantuml_jar_var.get = Mock(return_value="")
+        self.window.plantuml_method_var = Mock()
+        self.window.plantuml_method_var.get = Mock(return_value="jar")
+        self.window.plantuml_server_url_var = Mock()
+        self.window.plantuml_server_url_var.get = Mock(
+            return_value="http://www.plantuml.com/plantuml")
         # その他の必要な属性
         self.window.input_type = "single"
         self.window.toc_enabled = False
@@ -230,6 +262,9 @@ class TestMainWindow(unittest.TestCase):
         self.window.pandoc_service.output_format = "pdf"
         self.window.pandoc_service.java_path = None
         self.window.pandoc_service.plantuml_jar = None
+        self.window.pandoc_service.plantuml_use_server = False
+        self.window.pandoc_service.plantuml_server_url = \
+            "http://www.plantuml.com/plantuml"
 
         self.window.load_profile()
 
@@ -331,6 +366,107 @@ class TestMainWindow(unittest.TestCase):
         # マッチしない
         self.assertFalse(service.should_exclude(Path("main.py")))
         self.assertFalse(service.should_exclude(Path("logger.py")))
+
+
+class TestPlantUMLSettings(unittest.TestCase):
+    """PlantUML設定のテスト."""
+
+    def test_plantuml_jar_method(self):
+        """JAR方式のPlantUML設定テスト."""
+        logger = MagicMock()
+        service = PandocService(logger)
+        service.java_path = Path("/usr/bin/java")
+        service.plantuml_jar = Path("/opt/plantuml.jar")
+        service.plantuml_use_server = False
+        service.plantuml_server_url = "http://www.plantuml.com/plantuml"
+
+        self.assertFalse(service.plantuml_use_server)
+        self.assertEqual(service.java_path, Path("/usr/bin/java"))
+        self.assertEqual(service.plantuml_jar, Path("/opt/plantuml.jar"))
+
+    def test_plantuml_server_method(self):
+        """サーバ方式のPlantUML設定テスト."""
+        logger = MagicMock()
+        service = PandocService(logger)
+        service.java_path = None
+        service.plantuml_jar = None
+        service.plantuml_use_server = True
+        service.plantuml_server_url = "https://plantuml.example.com/plantuml"
+
+        self.assertTrue(service.plantuml_use_server)
+        self.assertEqual(service.plantuml_server_url,
+                         "https://plantuml.example.com/plantuml")
+        self.assertIsNone(service.java_path)
+        self.assertIsNone(service.plantuml_jar)
+
+    def test_save_profile_with_plantuml_server(self):
+        """サーバ設定を含むプロファイル保存テスト."""
+        test_profile_name = "test_plantuml_server"
+        profile_path = DATA_DIR / "profiles" / f"{test_profile_name}.json"
+        profile_path.parent.mkdir(parents=True, exist_ok=True)
+
+        try:
+            test_data = {
+                "filters": [],
+                "css_file": None,
+                "embed_css": True,
+                "output_format": "html",
+                "exclude_patterns": [],
+                "java_path": None,
+                "plantuml_jar": None,
+                "plantuml_use_server": True,
+                "plantuml_server_url": "https://custom.server.com/plantuml",
+            }
+
+            save_profile(test_profile_name, test_data)
+            self.assertTrue(profile_path.exists())
+
+            loaded_data = load_profile(test_profile_name)
+            self.assertTrue(loaded_data["plantuml_use_server"])
+            self.assertEqual(loaded_data["plantuml_server_url"],
+                             "https://custom.server.com/plantuml")
+            self.assertIsNone(loaded_data["java_path"])
+            self.assertIsNone(loaded_data["plantuml_jar"])
+
+        finally:
+            if profile_path.exists():
+                profile_path.unlink()
+
+    def test_load_legacy_profile_without_server_settings(self):
+        """サーバ設定のない旧プロファイル読み込みテスト."""
+        test_profile_name = "test_legacy"
+        profile_path = DATA_DIR / "profiles" / f"{test_profile_name}.json"
+        profile_path.parent.mkdir(parents=True, exist_ok=True)
+
+        try:
+            # 旧形式のプロファイル（サーバ設定なし）
+            legacy_data = {
+                "filters": [],
+                "css_file": None,
+                "embed_css": True,
+                "output_format": "html",
+                "exclude_patterns": [],
+                "java_path": "/usr/bin/java",
+                "plantuml_jar": "/opt/plantuml.jar",
+            }
+
+            with open(profile_path, "w", encoding="utf-8") as f:
+                json.dump(legacy_data, f, ensure_ascii=False, indent=2)
+
+            loaded_data = load_profile(test_profile_name)
+            # load_profile内でマスターデフォルトから補完される
+            # デフォルト値が補完されることを確認
+            self.assertIn("plantuml_use_server", loaded_data)
+            self.assertIn("plantuml_server_url", loaded_data)
+            # 補完後のファイルを確認
+            with open(profile_path, "r", encoding="utf-8") as f:
+                saved_data = json.load(f)
+            self.assertIn("plantuml_use_server", saved_data)
+            self.assertIn("plantuml_server_url", saved_data)
+
+        finally:
+            if profile_path.exists():
+                profile_path.unlink()
 
 
 if __name__ == "__main__":
