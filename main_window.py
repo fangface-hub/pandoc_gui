@@ -38,8 +38,7 @@ DATA_DIR = get_data_dir()
 
 
 def _check_pandoc_installed():
-    """
-pandocがインストールされているかチェックする.
+    """pandocがインストールされているかチェックする.
 
     Check if pandoc is installed.
 
@@ -174,24 +173,24 @@ class MainWindow(tk.Tk):
         self._create_menu()
 
         # ログウィンドウトグルボタン
-        log_toggle_frame = tk.Frame(self, padx=5, pady=5)
-        log_toggle_frame.pack(fill=tk.X, padx=5, pady=5)
+        log_toggle_frame = tk.Frame(self, padx=5, pady=2)
+        log_toggle_frame.pack(fill=tk.X, padx=5, pady=2)
         self.log_button = tk.Button(log_toggle_frame,
                                     text=self.i18n.t("log_window_show"),
                                     command=self.toggle_log_window)
         self.log_button.pack(fill=tk.X)
 
         # フィルター管理ボタン
-        filter_button_frame = tk.Frame(self, padx=5, pady=5)
-        filter_button_frame.pack(fill=tk.X, padx=5, pady=5)
+        filter_button_frame = tk.Frame(self, padx=5, pady=2)
+        filter_button_frame.pack(fill=tk.X, padx=5, pady=2)
         self.filter_button = tk.Button(filter_button_frame,
                                        text=self.i18n.t("filter_management"),
                                        command=self.open_filter_window)
         self.filter_button.pack(fill=tk.X)
 
         # CSS設定ボタン
-        css_button_frame = tk.Frame(self, padx=5, pady=5)
-        css_button_frame.pack(fill=tk.X, padx=5, pady=5)
+        css_button_frame = tk.Frame(self, padx=5, pady=2)
+        css_button_frame.pack(fill=tk.X, padx=5, pady=2)
         self.css_button = tk.Button(css_button_frame,
                                     text=self.i18n.t("css_settings"),
                                     command=self.open_css_window)
@@ -202,11 +201,11 @@ class MainWindow(tk.Tk):
                                        text=self.i18n.t("css_info_not_set"),
                                        fg="gray",
                                        font=("Arial", 9))
-        self.css_info_label.pack(fill=tk.X, padx=5, pady=2)
+        self.css_info_label.pack(fill=tk.X, padx=5, pady=1)
 
         # 除外パターン管理ボタン
-        exclude_button_frame = tk.Frame(self, padx=5, pady=5)
-        exclude_button_frame.pack(fill=tk.X, padx=5, pady=5)
+        exclude_button_frame = tk.Frame(self, padx=5, pady=2)
+        exclude_button_frame.pack(fill=tk.X, padx=5, pady=2)
         self.exclude_button = tk.Button(exclude_button_frame,
                                         text=self.i18n.t("exclude_management"),
                                         command=self.open_exclude_window)
@@ -218,8 +217,8 @@ class MainWindow(tk.Tk):
         plantuml_frame = tk.LabelFrame(self,
                                        text=self.i18n.t("plantuml_settings"),
                                        padx=5,
-                                       pady=5)
-        plantuml_frame.pack(fill=tk.X, padx=5, pady=5)
+                                       pady=3)
+        plantuml_frame.pack(fill=tk.X, padx=5, pady=3)
 
         # PlantUML実行方法選択
         method_frame = tk.Frame(plantuml_frame)
@@ -247,7 +246,7 @@ class MainWindow(tk.Tk):
         java_frame.pack(fill=tk.X, pady=2)
         tk.Label(java_frame,
                  text=self.i18n.t("java_path"),
-                 width=12,
+                 width=18,
                  anchor=tk.W).pack(side=tk.LEFT, padx=2)
         self.java_path_var = tk.StringVar()
         self.java_path_entry = tk.Entry(java_frame,
@@ -265,7 +264,7 @@ class MainWindow(tk.Tk):
         jar_frame.pack(fill=tk.X, pady=2)
         tk.Label(jar_frame,
                  text=self.i18n.t("plantuml_jar"),
-                 width=12,
+                 width=18,
                  anchor=tk.W).pack(side=tk.LEFT, padx=2)
         self.plantuml_jar_var = tk.StringVar()
         self.plantuml_jar_entry = tk.Entry(jar_frame,
@@ -286,7 +285,7 @@ class MainWindow(tk.Tk):
         server_frame.pack(fill=tk.X, pady=2)
         tk.Label(server_frame,
                  text=self.i18n.t("plantuml_server_url"),
-                 width=12,
+                 width=18,
                  anchor=tk.W).pack(side=tk.LEFT, padx=2)
         self.plantuml_server_url_var = tk.StringVar(
             value="http://www.plantuml.com/plantuml")
@@ -298,13 +297,39 @@ class MainWindow(tk.Tk):
                                             expand=True)
 
         # -------------------------
+        # Mermaid設定
+        # -------------------------
+        mermaid_frame = tk.LabelFrame(self,
+                                      text=self.i18n.t("mermaid_settings"),
+                                      padx=5,
+                                      pady=3)
+        mermaid_frame.pack(fill=tk.X, padx=5, pady=3)
+
+        # Mermaid描画方法選択
+        mermaid_method_frame = tk.Frame(mermaid_frame)
+        mermaid_method_frame.pack(fill=tk.X, pady=2)
+        tk.Label(mermaid_method_frame,
+                 text=self.i18n.t("mermaid_method"),
+                 width=15,
+                 anchor=tk.W).pack(side=tk.LEFT, padx=2)
+        self.mermaid_mode_var = tk.StringVar(value="browser")
+        tk.Radiobutton(mermaid_method_frame,
+                       text=self.i18n.t("mermaid_browser_method"),
+                       variable=self.mermaid_mode_var,
+                       value="browser").pack(side=tk.LEFT, padx=10)
+        tk.Radiobutton(mermaid_method_frame,
+                       text=self.i18n.t("mermaid_mmdc_method"),
+                       variable=self.mermaid_mode_var,
+                       value="mmdc").pack(side=tk.LEFT, padx=10)
+
+        # -------------------------
         # 入出力
         # -------------------------
         io_frame = tk.LabelFrame(self,
                                  text=self.i18n.t("input_output"),
                                  padx=5,
-                                 pady=5)
-        io_frame.pack(fill=tk.X, padx=5, pady=5)
+                                 pady=3)
+        io_frame.pack(fill=tk.X, padx=5, pady=3)
 
         self.input_type_var = tk.StringVar(value="file")
         tk.Radiobutton(io_frame,
@@ -345,8 +370,8 @@ class MainWindow(tk.Tk):
         profile_frame = tk.LabelFrame(self,
                                       text=self.i18n.t("profile"),
                                       padx=5,
-                                      pady=5)
-        profile_frame.pack(fill=tk.X, padx=5, pady=5)
+                                      pady=3)
+        profile_frame.pack(fill=tk.X, padx=5, pady=3)
 
         tk.Label(profile_frame,
                  text=self.i18n.t("profile_name")).pack(side=tk.LEFT, padx=5)
@@ -377,8 +402,8 @@ class MainWindow(tk.Tk):
         # -------------------------
         # 実行
         # -------------------------
-        exec_frame = tk.Frame(self, padx=5, pady=5)
-        exec_frame.pack(fill=tk.X, padx=5, pady=5)
+        exec_frame = tk.Frame(self, padx=5, pady=3)
+        exec_frame.pack(fill=tk.X, padx=5, pady=3)
         self.run_button = tk.Button(exec_frame,
                                     text=self.i18n.t("run_conversion"),
                                     command=self.run_pandoc,
@@ -585,6 +610,10 @@ class MainWindow(tk.Tk):
                    ) and self.pandoc_service.plantuml_server_url:
             self.plantuml_server_url_var.set(
                 self.pandoc_service.plantuml_server_url)
+
+        # Mermaid設定を読み込む
+        if hasattr(self.pandoc_service, 'mermaid_mode'):
+            self.mermaid_mode_var.set(self.pandoc_service.mermaid_mode)
 
         # UIを更新
         self._on_plantuml_method_changed()
@@ -947,6 +976,9 @@ class MainWindow(tk.Tk):
         self.pandoc_service.plantuml_server_url = (
             self.plantuml_server_url_var.get())
 
+        # Mermaid設定を反映
+        self.pandoc_service.mermaid_mode = self.mermaid_mode_var.get()
+
         self.pandoc_service.save_profile_data(self.profile_var.get())
         self.logger.info(
             self.i18n.t("profile_saved", name=self.profile_var.get()))
@@ -983,6 +1015,10 @@ class MainWindow(tk.Tk):
                    ) and self.pandoc_service.plantuml_server_url:
             self.plantuml_server_url_var.set(
                 self.pandoc_service.plantuml_server_url)
+
+        # Mermaid設定を読み込む
+        if hasattr(self.pandoc_service, 'mermaid_mode'):
+            self.mermaid_mode_var.set(self.pandoc_service.mermaid_mode)
 
         self._on_plantuml_method_changed()
         self._update_css_info_label()
@@ -1121,14 +1157,45 @@ class MainWindow(tk.Tk):
             java_path_override = self.java_path_var.get().strip()
             plantuml_jar_override = self.plantuml_jar_var.get().strip()
 
-            _success, _stdout, _stderr, _returncode = (
+            success, _stdout, _stderr, _returncode = (
                 self.pandoc_service.convert_file(input_file, output_file,
                                                  java_path_override,
                                                  plantuml_jar_override))
 
+            # 変換成功 & HTML出力 & browserモードの場合、サーバ起動してブラウザで開く
+            if (success and output_file.suffix.lower() == '.html'
+                    and self.pandoc_service.mermaid_mode == 'browser'):
+                self._open_html_with_server(output_file)
+
         finally:
             # ステータスをリセット
             self._set_converting_status(False)
+
+    def _open_html_with_server(self, html_file: Path):
+        """HTMLファイルをローカルサーバ経由でブラウザで開く（Mermaid自動保存用）.
+
+        Open HTML file in browser via local server for automatic Mermaid saving.
+
+        Parameters
+        ----------
+        html_file : Path
+            HTMLファイルのパス
+        """
+        try:
+            # 出力ディレクトリでローカルサーバを起動
+            output_dir = html_file.parent
+            port = self.pandoc_service.start_local_server(output_dir)
+
+            if port:
+                # ブラウザで開く
+                url = f"http://127.0.0.1:{port}/{html_file.name}"
+                webbrowser.open(url)
+                self.logger.info("Opened HTML in browser: %s", url)
+            else:
+                self.logger.warning("Failed to start local server")
+
+        except (OSError, IOError, ValueError) as e:
+            self.logger.error("Failed to open HTML with server: %s", e)
 
     def on_close(self):
         """アプリ終了時に実行中プロセスを終了させてからウィンドウを破棄する.
@@ -1199,6 +1266,10 @@ class MainWindow(tk.Tk):
 
         Clean up and close window.
         """
+        # ローカルHTTPサーバを停止
+        if self.pandoc_service.local_server:
+            self.pandoc_service.stop_local_server()
+
         # ログウィンドウを閉じる
         if self.log_window:
             try:

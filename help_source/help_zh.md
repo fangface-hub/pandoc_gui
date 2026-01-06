@@ -139,14 +139,14 @@ node_modules
 
 **JAR方式（本地执行）：**
 
-1. 在“执行方法”中选择“JAR文件”
+1. 在"执行方法"中选择"JAR文件"
 2. 指定 Java 可执行文件路径
 3. 指定 PlantUML JAR 文件路径
 
 **服务器方式（在线执行）：**
 
-1. 在“执行方法”中选择“服务器”
-2. 指定 PlantUML 服务器 URL（默认：http://www.plantuml.com/plantuml）
+1. 在"执行方法"中选择"服务器"
+2. 指定 PlantUML 服务器 URL（默认：<http://www.plantuml.com/plantuml>）
 3. 不需要 Java/JAR 文件
 
 ### PlantUML JAR 方式配置
@@ -204,6 +204,59 @@ plantuml_server_url: http://www.plantuml.com/plantuml
 ---
 ```
 
+### Mermaid 配置
+
+生成 Mermaid 图表有两种方法：
+
+#### 浏览器模式（默认，推荐）
+
+**特点：**
+
+- 无需安装命令行工具
+- 使用浏览器和 mermaid.js 自动生成图表
+- 使用本地 HTTP 服务器自动保存 SVG 文件
+
+**使用方法：**
+
+- 在 GUI 设置中选择"浏览器"作为 Mermaid 方法（默认）
+- 转换期间浏览器会自动打开并生成图表
+- SVG 文件会自动保存到输出文件夹
+
+**优点：**
+
+- 无需设置
+- 访问最新的 Mermaid.js 功能
+- 环境独立
+
+#### mmdc 模式（命令行工具）
+
+**特点：**
+
+- 使用 mermaid-cli (`mmdc`)
+- 无头生成图表
+
+**使用方法：**
+
+- 在 GUI 设置中选择"mmdc"作为 Mermaid 方法
+- 验证是否安装了 `mmdc`
+- 在命令提示符中运行 `mmdc --version` 进行确认
+
+**安装：**
+
+```bash
+npm install -g @mermaid-js/mermaid-cli
+```
+
+### 在 YAML 元数据中指定 Mermaid 模式
+
+在 Markdown 文件开头添加：
+
+```yaml
+---
+mermaid_mode: browser  # 或 mmdc
+---
+```
+
 ## 自动更新功能
 
 当您更新应用程序时，以下文件将自动更新：
@@ -220,22 +273,6 @@ plantuml_server_url: http://www.plantuml.com/plantuml
 - 现有设置将保留
 - 默认值从 `profiles/default.json` 获取
 
-```bat
-set PLANTUML_JAR=C:\tools\plantuml.jar
-set JAVA_PATH=C:\Program Files\Java\jdk-17\bin\java.exe
-```
-
-### 在 YAML 元数据中指定
-
-添加到 Markdown 文件开头：
-
-```yaml
----
-plantuml_jar: C:\tools\plantuml.jar
-java_path: C:\Program Files\Java\jdk-17\bin\java.exe
----
-```
-
 ## 故障排除
 
 ### 找不到 Pandoc
@@ -247,7 +284,7 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 
 **解决方案：**
 
-1. 安装 Pandoc：https://pandoc.org/installing.html
+1. 安装 Pandoc：<https://pandoc.org/installing.html>
 2. 安装后，验证它是否添加到 PATH
 3. 在命令提示符中运行 `pandoc --version` 进行确认
 
@@ -266,21 +303,29 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 
 ### 图表未生成
 
-**对于 Mermaid 图表：**
+**对于 Mermaid 图表（mmdc 模式）：**
 
 - 验证是否安装了 `mmdc`（mermaid-cli）
 - 在命令提示符中运行 `mmdc --version` 进行确认
 
+**对于 Mermaid 图表（浏览器模式）：**
+
+- 浏览器模式无需额外设置即可工作
+- 检查浏览器是否自动打开
+- 验证 SVG 文件是否保存到输出文件夹
+
 **对于 PlantUML 图表：**
 
 **JAR方式：**
+
 - 验证 `plantuml.jar` 是否存在
 - 验证是否安装了 Java
 - 在 GUI 设置、环境变量或 YAML 元数据中指定路径
 
 **服务器方式：**
+
 - 验证互联网连接
-- 验证服务器 URL 是否正确（默认：http://www.plantuml.com/plantuml）
+- 验证服务器 URL 是否正确（默认：<http://www.plantuml.com/plantuml>）
 - 检查防火墙设置
 
 ### 过滤器未应用

@@ -40,6 +40,12 @@ local plantuml_jar = trim_quotes(os.getenv("PLANTUML_JAR"))  -- nil の場合は
 local plantuml_use_server = false
 local plantuml_server_url = "http://www.plantuml.com/plantuml"
 
+-- Mermaidモード設定 (mmdc or browser)
+local mermaid_mode = "mmdc"
+
+-- Mermaid.jsのパス設定（スタンドアロン版を使用）
+local mermaid_js_path = "mermaid/mermaid.min.js"
+
 -- java 実行ファイルはメタデータ java_path -> 環境変数 JAVA_PATH -> JAVA_HOME/bin/java -> "java"
 local sep = package.config:sub(1,1)
 local java_cmd = trim_quotes(os.getenv("JAVA_PATH")
@@ -86,12 +92,93 @@ function Meta(meta)
   if meta.java_path then
     java_cmd = trim_quotes(pandoc.utils.stringify(meta.java_path))
   end
+  if meta.mermaid_mode then
+    mermaid_mode = trim_quotes(pandoc.utils.stringify(meta.mermaid_mode))
+  end
+  if meta.mermaid_js_path then
+    mermaid_js_path = trim_quotes(pandoc.utils.stringify(meta.mermaid_js_path))
+  end
   return meta
 end
 
 function CodeBlock(el)
   -- Mermaid
   if el.classes:includes("mermaid") then
+    -- browserモードの場合は、mermaid.jsを使うHTMLを出力
+    if mermaid_mode == "browser" then
+      -- ユニークなIDを生成
+      local diagram_id = "mermaid-" .. tostring(os.time()) .. "-" .. tostring(math.random(1000, 9999))
+      local filename = diagram_id .. ".svg"
+      
+      local html = string.format([[
+<div class="mermaid-container" style="margin: 20px 0; padding: 10px; border: 1px solid #ddd;">
+  <div class="mermaid" id="%s">
+%s
+  </div>
+  <p id="status-%s" style="margin-top: 10px; color: #666;">描画中...</p>
+</div>
+<script src="./%s"></script>
+<script>
+  // 初期化
+  mermaid.initialize({ startOnLoad: false });
+  
+  // 描画と自動保存
+  (async () => {
+    const statusElement = document.getElementById('status-%s');
+    try {
+      const element = document.getElementById('%s');
+      if (element) {
+        // Mermaid図を描画
+        const { svg } = await mermaid.render('%s-rendered', `%s`);
+        element.innerHTML = svg;
+        statusElement.textContent = '描画完了。保存中...';
+        statusElement.style.color = '#28a745';
+        
+        // SVGを取得
+        const svgElement = element.querySelector('svg');
+        if (svgElement) {
+          const svgData = new XMLSerializer().serializeToString(svgElement);
+          
+          // サーバにPOST（自動保存）
+          try {
+            const response = await fetch('/save-svg', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                svg: svgData,
+                filename: '%s'
+              })
+            });
+            
+            if (response.ok) {
+              statusElement.textContent = '✓ 保存完了: %s';
+              statusElement.style.color = '#28a745';
+              console.log('SVG saved successfully: %s');
+            } else {
+              statusElement.textContent = '⚠ 保存失敗';
+              statusElement.style.color = '#dc3545';
+            }
+          } catch (error) {
+            console.error('Failed to save SVG:', error);
+            statusElement.textContent = '⚠ 保存エラー: ' + error.message;
+            statusElement.style.color = '#dc3545';
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to render mermaid diagram:', error);
+      document.getElementById('%s').innerHTML = '<p style="color: red;">描画エラー: ' + error.message + '</p>';
+      statusElement.textContent = '✗ 描画失敗';
+      statusElement.style.color = '#dc3545';
+    }
+  })();
+</script>]], diagram_id, el.text, diagram_id, mermaid_js_path, diagram_id, diagram_id, diagram_id, el.text, filename, filename, filename, diagram_id)
+      return pandoc.RawBlock('html', html)
+    end
+    
+    -- mmdcモード（従来の方法）
     local input = tmp(".mmd")
     local output = tmp(".svg")
     local f = io.open(input, "w")
@@ -143,6 +230,7 @@ function CodeBlock(el)
       local data_uri = "data:image/svg+xml;base64," .. base64_data
       -- クリックでモーダル表示するHTMLを出力
       local html = string.format([[
+
 <div style="margin: 10px 0;">
   <img src="%s" style="max-width: 600px; cursor: zoom-in;" onclick="showImageModal(this.src)" alt="Mermaid Diagram" />
 </div>
@@ -281,6 +369,7 @@ if (typeof showImageModal === 'undefined') {
       local data_uri = "data:image/svg+xml;base64," .. base64_data
       -- クリックでモーダル表示するHTMLを出力
       local html = string.format([[
+
 <div style="margin: 10px 0;">
   <img src="%s" style="max-width: 600px; cursor: zoom-in;" onclick="showImageModal(this.src)" alt="PlantUML Diagram" />
 </div>

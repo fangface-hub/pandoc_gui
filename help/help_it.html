@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>tmp6rd2rb6v</title>
+  <title>tmpjv00gelb</title>
   <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -234,8 +234,7 @@ esecuzione PlantUML</h3>
 <p><strong>Metodo server (Esecuzione online):</strong></p>
 <ol type="1">
 <li>Seleziona “Server” in “Metodo di esecuzione”</li>
-<li>Specifica l’URL del server PlantUML (Predefinito:
-http://www.plantuml.com/plantuml)</li>
+<li>Specifica l’URL del server PlantUML (Predefinito: <a href="http://www.plantuml.com/plantuml" class="uri">http://www.plantuml.com/plantuml</a>)</li>
 <li>Java/file JAR non richiesto</li>
 </ol>
 <h3 id="configurazione-metodo-jar-plantuml">Configurazione metodo JAR
@@ -275,6 +274,55 @@ configurazione variabili d’ambiente</h3>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server_url</span><span class="kw">:</span><span class="at"> http://www.plantuml.com/plantuml</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<h3 id="configurazione-mermaid">Configurazione Mermaid</h3>
+<p>Esistono due metodi per generare diagrammi Mermaid:</p>
+<h4 id="modalità-browser-predefinita-consigliata">Modalità browser
+(Predefinita, consigliata)</h4>
+<p><strong>Caratteristiche:</strong></p>
+<ul>
+<li>Non è richiesta l’installazione di strumenti da riga di comando</li>
+<li>Genera automaticamente diagrammi utilizzando il browser e
+mermaid.js</li>
+<li>Salva automaticamente file SVG utilizzando un server HTTP
+locale</li>
+</ul>
+<p><strong>Come usare:</strong></p>
+<ul>
+<li>Seleziona “Browser” come metodo Mermaid nelle impostazioni GUI
+(predefinito)</li>
+<li>Il browser si apre automaticamente durante la conversione e i
+diagrammi vengono generati</li>
+<li>I file SVG vengono salvati automaticamente nella cartella di
+output</li>
+</ul>
+<p><strong>Vantaggi:</strong></p>
+<ul>
+<li>Nessuna configurazione richiesta</li>
+<li>Accesso alle ultime funzionalità di Mermaid.js</li>
+<li>Indipendente dall’ambiente</li>
+</ul>
+<h4 id="modalità-mmdc-strumento-da-riga-di-comando">Modalità mmdc
+(Strumento da riga di comando)</h4>
+<p><strong>Caratteristiche:</strong></p>
+<ul>
+<li>Utilizza mermaid-cli (<code>mmdc</code>)</li>
+<li>Genera diagrammi senza interfaccia grafica</li>
+</ul>
+<p><strong>Come usare:</strong></p>
+<ul>
+<li>Seleziona “mmdc” come metodo Mermaid nelle impostazioni GUI</li>
+<li>Verifica che <code>mmdc</code> sia installato</li>
+<li>Esegui <code>mmdc --version</code> nel prompt dei comandi per
+confermare</li>
+</ul>
+<p><strong>Installazione:</strong></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install <span class="at">-g</span> @mermaid-js/mermaid-cli</span></code></pre></div>
+<h3 id="specifica-della-modalità-mermaid-nei-metadati-yaml">Specifica
+della modalità Mermaid nei metadati YAML</h3>
+<p>Aggiungi all’inizio del file Markdown:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mermaid_mode</span><span class="kw">:</span><span class="at"> browser</span><span class="co">  # o mmdc</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
 <h2 id="funzione-di-aggiornamento-automatico">Funzione di aggiornamento
 automatico</h2>
 <p>Quando aggiorni l’applicazione, i seguenti file vengono aggiornati
@@ -295,14 +343,6 @@ completate automaticamente</li>
 <li>I valori predefiniti vengono recuperati da
 <code>profiles/default.json</code></li>
 </ul>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bat"><code class="sourceCode dosbat"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">PLANTUML_JAR</span>=C:\tools\plantuml.jar</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">JAVA_PATH</span>=C:\Program Files\Java\jdk-17\bin\java.exe</span></code></pre></div>
-<h3 id="specifica-nei-metadati-yaml">Specifica nei metadati YAML</h3>
-<p>Aggiungi all’inizio del file Markdown:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_jar</span><span class="kw">:</span><span class="at"> C:\tools\plantuml.jar</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">java_path</span><span class="kw">:</span><span class="at"> C:\Program Files\Java\jdk-17\bin\java.exe</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
 <h2 id="risoluzione-dei-problemi">Risoluzione dei problemi</h2>
 <h3 id="pandoc-non-trovato">Pandoc non trovato</h3>
 <p><strong>Sintomi:</strong></p>
@@ -312,7 +352,7 @@ completate automaticamente</li>
 </ul>
 <p><strong>Soluzione:</strong></p>
 <ol type="1">
-<li>Installa Pandoc: https://pandoc.org/installing.html</li>
+<li>Installa Pandoc: <a href="https://pandoc.org/installing.html" class="uri">https://pandoc.org/installing.html</a></li>
 <li>Dopo l’installazione, verifica che sia aggiunto a PATH</li>
 <li>Esegui <code>pandoc --version</code> nel prompt dei comandi per
 confermare</li>
@@ -331,20 +371,34 @@ confermare</li>
 </ul>
 <h3 id="i-diagrammi-non-vengono-generati">I diagrammi non vengono
 generati</h3>
-<p><strong>Per diagrammi Mermaid:</strong></p>
+<p><strong>Per diagrammi Mermaid (modalità mmdc):</strong></p>
 <ul>
 <li>Verifica che <code>mmdc</code> (mermaid-cli) sia installato</li>
 <li>Esegui <code>mmdc --version</code> nel prompt dei comandi per
 confermare</li>
 </ul>
+<p><strong>Per diagrammi Mermaid (modalità browser):</strong></p>
+<ul>
+<li>La modalità browser dovrebbe funzionare senza configurazione
+aggiuntiva</li>
+<li>Verifica che il browser si apra automaticamente</li>
+<li>Verifica che i file SVG vengano salvati nella cartella di
+output</li>
+</ul>
 <p><strong>Per diagrammi PlantUML:</strong></p>
-<p><strong>Metodo JAR:</strong> - Verifica che <code>plantuml.jar</code>
-esista - Verifica che Java sia installato - Specifica il percorso nelle
-impostazioni GUI, variabili d’ambiente o metadati YAML</p>
-<p><strong>Metodo server:</strong> - Verifica la connessione Internet -
-Verifica che l’URL del server sia corretto (Predefinito:
-http://www.plantuml.com/plantuml) - Controlla le impostazioni del
-firewall</p>
+<p><strong>Metodo JAR:</strong></p>
+<ul>
+<li>Verifica che <code>plantuml.jar</code> esista</li>
+<li>Verifica che Java sia installato</li>
+<li>Specifica il percorso nelle impostazioni GUI, variabili d’ambiente o
+metadati YAML</li>
+</ul>
+<p><strong>Metodo server:</strong></p>
+<ul>
+<li>Verifica la connessione Internet</li>
+<li>Verifica che l’URL del server sia corretto (Predefinito: <a href="http://www.plantuml.com/plantuml" class="uri">http://www.plantuml.com/plantuml</a>)</li>
+<li>Controlla le impostazioni del firewall</li>
+</ul>
 <h3 id="i-filtri-non-vengono-applicati">I filtri non vengono
 applicati</h3>
 <p><strong>Verifica:</strong></p>

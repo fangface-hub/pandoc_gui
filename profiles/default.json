@@ -16,5 +16,6 @@
   "plantuml_jar": null,
   "plantuml_use_server": false,
   "plantuml_server_url": "http://www.plantuml.com/plantuml",
+  "mermaid_mode": "browser",
   "language": "en"
 }

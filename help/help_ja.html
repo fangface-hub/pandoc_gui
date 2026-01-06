@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>tmpljga4hm4</title>
+  <title>tmpbbqnbtm6</title>
   <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -222,8 +222,7 @@ node_modules</code></pre>
 <p><strong>サーバ方式（オンライン実行）:</strong></p>
 <ol type="1">
 <li>「実行方法」で「サーバ」を選択</li>
-<li>PlantUMLサーバURLを指定（デフォルト:
-http://www.plantuml.com/plantuml）</li>
+<li>PlantUMLサーバURLを指定（デフォルト: <a href="http://www.plantuml.com/plantuml" class="uri">http://www.plantuml.com/plantuml</a>）</li>
 <li>Java/JARファイルは不要</li>
 </ol>
 <h3 id="plantuml-jar方式の設定">PlantUML JAR方式の設定</h3>
@@ -261,6 +260,46 @@ http://www.plantuml.com/plantuml）</li>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server_url</span><span class="kw">:</span><span class="at"> http://www.plantuml.com/plantuml</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<h3 id="mermaid設定">Mermaid設定</h3>
+<p>Mermaid図の生成には2つの方式があります:</p>
+<h4 id="ブラウザ方式デフォルト推奨">ブラウザ方式（デフォルト、推奨）</h4>
+<p><strong>特徴:</strong></p>
+<ul>
+<li>コマンドラインツールのインストール不要</li>
+<li>ブラウザとmermaid.jsを使用して図を自動生成</li>
+<li>ローカルHTTPサーバを使用してSVGファイルを自動保存</li>
+</ul>
+<p><strong>使い方:</strong></p>
+<ul>
+<li>GUI設定でMermaid方式として「ブラウザ」を選択（デフォルト）</li>
+<li>変換実行時に自動的にブラウザが開き、図が生成されます</li>
+<li>SVGファイルは出力フォルダに自動保存されます</li>
+</ul>
+<p><strong>利点:</strong></p>
+<ul>
+<li>セットアップ不要</li>
+<li>最新のMermaid.js機能を利用可能</li>
+<li>環境に依存しない</li>
+</ul>
+<h4 id="mmdc方式コマンドラインツール">mmdc方式（コマンドラインツール）</h4>
+<p><strong>特徴:</strong></p>
+<ul>
+<li>mermaid-cli (<code>mmdc</code>) を使用</li>
+<li>ヘッドレスで図を生成</li>
+</ul>
+<p><strong>使い方:</strong></p>
+<ul>
+<li>GUI設定でMermaid方式として「mmdc」を選択</li>
+<li><code>mmdc</code>がインストールされているか確認</li>
+<li>コマンドプロンプトで<code>mmdc --version</code>を実行して確認</li>
+</ul>
+<p><strong>インストール方法:</strong></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install <span class="at">-g</span> @mermaid-js/mermaid-cli</span></code></pre></div>
+<h3 id="yamlメタデータでmermaid方式を指定">YAMLメタデータでMermaid方式を指定</h3>
+<p>Markdownファイルの先頭に追加:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mermaid_mode</span><span class="kw">:</span><span class="at"> browser</span><span class="co">  # または mmdc</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
 <h2 id="自動更新機能">自動更新機能</h2>
 <p>アプリケーションをアップデートすると、以下のファイルが自動的に更新されます:</p>
 <h3 id="フィルタファイル">フィルタファイル</h3>
@@ -284,7 +323,7 @@ http://www.plantuml.com/plantuml）</li>
 </ul>
 <p><strong>解決方法:</strong></p>
 <ol type="1">
-<li>Pandocをインストール: https://pandoc.org/installing.html</li>
+<li>Pandocをインストール: <a href="https://pandoc.org/installing.html" class="uri">https://pandoc.org/installing.html</a></li>
 <li>インストール後、PATHに追加されているか確認</li>
 <li>コマンドプロンプトで<code>pandoc --version</code>を実行して確認</li>
 </ol>
@@ -301,18 +340,30 @@ http://www.plantuml.com/plantuml）</li>
 <li><code>pandoc.log</code>ファイルで詳細を確認</li>
 </ul>
 <h3 id="図が生成されない">図が生成されない</h3>
-<p><strong>Mermaid図の場合:</strong></p>
+<p><strong>Mermaid図の場合（mmdcモード）:</strong></p>
 <ul>
 <li><code>mmdc</code>（mermaid-cli）がインストールされているか確認</li>
 <li>コマンドプロンプトで<code>mmdc --version</code>を実行して確認</li>
 </ul>
+<p><strong>Mermaid図の場合（ブラウザモード）:</strong></p>
+<ul>
+<li>ブラウザモードは追加セットアップなしで動作するはずです</li>
+<li>ブラウザが自動的に開くか確認</li>
+<li>SVGファイルが出力フォルダに保存されているか確認</li>
+</ul>
 <p><strong>PlantUML図の場合:</strong></p>
-<p><strong>JAR方式:</strong> - <code>plantuml.jar</code>が存在するか確認
-- Javaがインストールされているか確認 -
-GUI設定または環境変数、YAMLメタデータでパスを指定</p>
-<p><strong>サーバ方式:</strong> - インターネット接続を確認 -
-サーバURLが正しいか確認（デフォルト: http://www.plantuml.com/plantuml）
-- ファイアウォール設定を確認</p>
+<p><strong>JAR方式:</strong></p>
+<ul>
+<li><code>plantuml.jar</code>が存在するか確認</li>
+<li>Javaがインストールされているか確認</li>
+<li>GUI設定または環境変数、YAMLメタデータでパスを指定</li>
+</ul>
+<p><strong>サーバ方式:</strong></p>
+<ul>
+<li>インターネット接続を確認</li>
+<li>サーバURLが正しいか確認（デフォルト: <a href="http://www.plantuml.com/plantuml" class="uri">http://www.plantuml.com/plantuml</a>）</li>
+<li>ファイアウォール設定を確認</li>
+</ul>
 <h3 id="フィルタが適用されない">フィルタが適用されない</h3>
 <p><strong>確認事項:</strong></p>
 <ul>

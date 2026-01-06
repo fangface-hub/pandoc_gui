@@ -146,7 +146,7 @@ PlantUML 다이어그램을 사용할 때 두 가지 실행 방법이 있습니�
 **서버 방식 (온라인 실행):**
 
 1. "실행 방법"에서 "서버" 선택
-2. PlantUML 서버 URL 지정 (기본값: http://www.plantuml.com/plantuml)
+2. PlantUML 서버 URL 지정 (기본값: <http://www.plantuml.com/plantuml>)
 3. Java/JAR 파일 불필요
 
 ### PlantUML JAR 방식 구성
@@ -204,6 +204,59 @@ plantuml_server_url: http://www.plantuml.com/plantuml
 ---
 ```
 
+### Mermaid 구성
+
+Mermaid 다이어그램을 생성하는 두 가지 방법이 있습니다:
+
+#### 브라우저 모드 (기본값, 권장)
+
+**특징:**
+
+- 명령줄 도구 설치 불필요
+- 브라우저와 mermaid.js를 사용하여 다이어그램 자동 생성
+- 로컬 HTTP 서버를 사용하여 SVG 파일 자동 저장
+
+**사용 방법:**
+
+- GUI 설정에서 Mermaid 방법으로 "브라우저" 선택 (기본값)
+- 변환 중 브라우저가 자동으로 열리고 다이어그램이 생성됩니다
+- SVG 파일이 출력 폴더에 자동 저장됩니다
+
+**장점:**
+
+- 설정 불필요
+- 최신 Mermaid.js 기능 액세스
+- 환경 독립적
+
+#### mmdc 모드 (명령줄 도구)
+
+**특징:**
+
+- mermaid-cli (`mmdc`) 사용
+- 헤드리스로 다이어그램 생성
+
+**사용 방법:**
+
+- GUI 설정에서 Mermaid 방법으로 "mmdc" 선택
+- `mmdc`가 설치되어 있는지 확인
+- 명령 프롬프트에서 `mmdc --version`을 실행하여 확인
+
+**설치:**
+
+```bash
+npm install -g @mermaid-js/mermaid-cli
+```
+
+### YAML 메타데이터에서 Mermaid 모드 지정
+
+Markdown 파일 시작 부분에 추가:
+
+```yaml
+---
+mermaid_mode: browser  # 또는 mmdc
+---
+```
+
 ## 자동 업데이트 기능
 
 애플리케이션을 업데이트하면 다음 파일이 자동으로 업데이트됩니다:
@@ -220,22 +273,6 @@ plantuml_server_url: http://www.plantuml.com/plantuml
 - 기존 설정은 보존됨
 - 기본값은 `profiles/default.json`에서 가져옴
 
-```bat
-set PLANTUML_JAR=C:\tools\plantuml.jar
-set JAVA_PATH=C:\Program Files\Java\jdk-17\bin\java.exe
-```
-
-### YAML 메타데이터에서 지정
-
-Markdown 파일 시작 부분에 추가:
-
-```yaml
----
-plantuml_jar: C:\tools\plantuml.jar
-java_path: C:\Program Files\Java\jdk-17\bin\java.exe
----
-```
-
 ## 문제 해결
 
 ### Pandoc을 찾을 수 없음
@@ -247,7 +284,7 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 
 **해결 방법:**
 
-1. Pandoc 설치: https://pandoc.org/installing.html
+1. Pandoc 설치: <https://pandoc.org/installing.html>
 2. 설치 후 PATH에 추가되었는지 확인
 3. 명령 프롬프트에서 `pandoc --version`을 실행하여 확인
 
@@ -266,21 +303,29 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 
 ### 다이어그램이 생성되지 않음
 
-**Mermaid 다이어그램의 경우:**
+**Mermaid 다이어그램의 경우 (mmdc 모드):**
 
 - `mmdc`(mermaid-cli)가 설치되어 있는지 확인
 - 명령 프롬프트에서 `mmdc --version`을 실행하여 확인
 
+**Mermaid 다이어그램의 경우 (브라우저 모드):**
+
+- 브라우저 모드는 추가 설정 없이 작동합니다
+- 브라우저가 자동으로 열리는지 확인
+- SVG 파일이 출력 폴더에 저장되는지 확인
+
 **PlantUML 다이어그램의 경우:**
 
 **JAR 방식:**
+
 - `plantuml.jar`이 존재하는지 확인
 - Java가 설치되어 있는지 확인
 - GUI 설정, 환경 변수 또는 YAML 메타데이터에서 경로 지정
 
 **서버 방식:**
+
 - 인터넷 연결 확인
-- 서버 URL이 올바른지 확인 (기본값: http://www.plantuml.com/plantuml)
+- 서버 URL이 올바른지 확인 (기본값: <http://www.plantuml.com/plantuml>)
 - 방화벽 설정 확인
 
 ### 필터가 적용되지 않음

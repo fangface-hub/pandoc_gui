@@ -146,7 +146,7 @@ PlantUML図を使用する場合、2つの実行方法があります。
 **サーバ方式（オンライン実行）:**
 
 1. 「実行方法」で「サーバ」を選択
-2. PlantUMLサーバURLを指定（デフォルト: http://www.plantuml.com/plantuml）
+2. PlantUMLサーバURLを指定（デフォルト: <http://www.plantuml.com/plantuml>）
 3. Java/JARファイルは不要
 
 ### PlantUML JAR方式の設定
@@ -204,6 +204,59 @@ plantuml_server_url: http://www.plantuml.com/plantuml
 ---
 ```
 
+### Mermaid設定
+
+Mermaid図の生成には2つの方式があります:
+
+#### ブラウザ方式（デフォルト、推奨）
+
+**特徴:**
+
+- コマンドラインツールのインストール不要
+- ブラウザとmermaid.jsを使用して図を自動生成
+- ローカルHTTPサーバを使用してSVGファイルを自動保存
+
+**使い方:**
+
+- GUI設定でMermaid方式として「ブラウザ」を選択（デフォルト）
+- 変換実行時に自動的にブラウザが開き、図が生成されます
+- SVGファイルは出力フォルダに自動保存されます
+
+**利点:**
+
+- セットアップ不要
+- 最新のMermaid.js機能を利用可能
+- 環境に依存しない
+
+#### mmdc方式（コマンドラインツール）
+
+**特徴:**
+
+- mermaid-cli (`mmdc`) を使用
+- ヘッドレスで図を生成
+
+**使い方:**
+
+- GUI設定でMermaid方式として「mmdc」を選択
+- `mmdc`がインストールされているか確認
+- コマンドプロンプトで`mmdc --version`を実行して確認
+
+**インストール方法:**
+
+```bash
+npm install -g @mermaid-js/mermaid-cli
+```
+
+### YAMLメタデータでMermaid方式を指定
+
+Markdownファイルの先頭に追加:
+
+```yaml
+---
+mermaid_mode: browser  # または mmdc
+---
+```
+
 ## 自動更新機能
 
 アプリケーションをアップデートすると、以下のファイルが自動的に更新されます:
@@ -231,7 +284,7 @@ plantuml_server_url: http://www.plantuml.com/plantuml
 
 **解決方法:**
 
-1. Pandocをインストール: https://pandoc.org/installing.html
+1. Pandocをインストール: <https://pandoc.org/installing.html>
 2. インストール後、PATHに追加されているか確認
 3. コマンドプロンプトで`pandoc --version`を実行して確認
 
@@ -250,21 +303,29 @@ plantuml_server_url: http://www.plantuml.com/plantuml
 
 ### 図が生成されない
 
-**Mermaid図の場合:**
+**Mermaid図の場合（mmdcモード）:**
 
 - `mmdc`（mermaid-cli）がインストールされているか確認
 - コマンドプロンプトで`mmdc --version`を実行して確認
 
+**Mermaid図の場合（ブラウザモード）:**
+
+- ブラウザモードは追加セットアップなしで動作するはずです
+- ブラウザが自動的に開くか確認
+- SVGファイルが出力フォルダに保存されているか確認
+
 **PlantUML図の場合:**
 
 **JAR方式:**
+
 - `plantuml.jar`が存在するか確認
 - Javaがインストールされているか確認
 - GUI設定または環境変数、YAMLメタデータでパスを指定
 
 **サーバ方式:**
+
 - インターネット接続を確認
-- サーバURLが正しいか確認（デフォルト: http://www.plantuml.com/plantuml）
+- サーバURLが正しいか確認（デフォルト: <http://www.plantuml.com/plantuml>）
 - ファイアウォール設定を確認
 
 ### フィルタが適用されない

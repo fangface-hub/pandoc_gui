@@ -146,7 +146,7 @@ Bei der Verwendung von PlantUML-Diagrammen stehen zwei Ausführungsmethoden zur 
 **Server-Methode (Online-Ausführung):**
 
 1. Wählen Sie "Server" in "Ausführungsmethode"
-2. Geben Sie die PlantUML-Server-URL an (Standard: http://www.plantuml.com/plantuml)
+2. Geben Sie die PlantUML-Server-URL an (Standard: <http://www.plantuml.com/plantuml>)
 3. Java/JAR-Datei nicht erforderlich
 
 ### PlantUML JAR-Methode Konfiguration
@@ -220,22 +220,6 @@ Wenn Sie die Anwendung aktualisieren, werden die folgenden Dateien automatisch a
 - Vorhandene Einstellungen bleiben erhalten
 - Standardwerte werden aus `profiles/default.json` abgerufen
 
-```bat
-set PLANTUML_JAR=C:\tools\plantuml.jar
-set JAVA_PATH=C:\Program Files\Java\jdk-17\bin\java.exe
-```
-
-### Spezifikation in YAML-Metadaten
-
-Fügen Sie am Anfang der Markdown-Datei hinzu:
-
-```yaml
----
-plantuml_jar: C:\tools\plantuml.jar
-java_path: C:\Program Files\Java\jdk-17\bin\java.exe
----
-```
-
 ## Fehlerbehebung
 
 ### Pandoc nicht gefunden
@@ -247,7 +231,7 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 
 **Lösung:**
 
-1. Pandoc installieren: https://pandoc.org/installing.html
+1. Pandoc installieren: <https://pandoc.org/installing.html>
 2. Nach der Installation überprüfen, ob es zu PATH hinzugefügt wurde
 3. `pandoc --version` in der Eingabeaufforderung ausführen zur Bestätigung
 
@@ -266,21 +250,29 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 
 ### Diagramme werden nicht generiert
 
-**Für Mermaid-Diagramme:**
+**Für Mermaid-Diagramme (mmdc-Modus):**
 
 - Überprüfen Sie, ob `mmdc` (mermaid-cli) installiert ist
 - Führen Sie `mmdc --version` in der Eingabeaufforderung zur Bestätigung aus
 
+**Für Mermaid-Diagramme (Browser-Modus):**
+
+- Der Browser-Modus sollte ohne zusätzliche Einrichtung funktionieren
+- Überprüfen Sie, ob der Browser automatisch geöffnet wird
+- Überprüfen Sie, ob SVG-Dateien im Ausgabeordner gespeichert werden
+
 **Für PlantUML-Diagramme:**
 
 **JAR-Methode:**
+
 - Überprüfen Sie, ob `plantuml.jar` existiert
 - Überprüfen Sie, ob Java installiert ist
 - Geben Sie den Pfad in GUI-Einstellungen, Umgebungsvariablen oder YAML-Metadaten an
 
 **Server-Methode:**
+
 - Überprüfen Sie die Internetverbindung
-- Überprüfen Sie, ob die Server-URL korrekt ist (Standard: http://www.plantuml.com/plantuml)
+- Überprüfen Sie, ob die Server-URL korrekt ist (Standard: <http://www.plantuml.com/plantuml>)
 - Überprüfen Sie die Firewall-Einstellungen
 
 ### Filter werden nicht angewendet

@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>tmpa6ywvq4v</title>
+  <title>tmpy7gxxkog</title>
   <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -236,8 +236,7 @@ auswählen</h3>
 <p><strong>Server-Methode (Online-Ausführung):</strong></p>
 <ol type="1">
 <li>Wählen Sie “Server” in “Ausführungsmethode”</li>
-<li>Geben Sie die PlantUML-Server-URL an (Standard:
-http://www.plantuml.com/plantuml)</li>
+<li>Geben Sie die PlantUML-Server-URL an (Standard: <a href="http://www.plantuml.com/plantuml" class="uri">http://www.plantuml.com/plantuml</a>)</li>
 <li>Java/JAR-Datei nicht erforderlich</li>
 </ol>
 <h3 id="plantuml-jar-methode-konfiguration">PlantUML JAR-Methode
@@ -295,15 +294,6 @@ ergänzt</li>
 <li>Standardwerte werden aus <code>profiles/default.json</code>
 abgerufen</li>
 </ul>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bat"><code class="sourceCode dosbat"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">PLANTUML_JAR</span>=C:\tools\plantuml.jar</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">JAVA_PATH</span>=C:\Program Files\Java\jdk-17\bin\java.exe</span></code></pre></div>
-<h3 id="spezifikation-in-yaml-metadaten">Spezifikation in
-YAML-Metadaten</h3>
-<p>Fügen Sie am Anfang der Markdown-Datei hinzu:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_jar</span><span class="kw">:</span><span class="at"> C:\tools\plantuml.jar</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">java_path</span><span class="kw">:</span><span class="at"> C:\Program Files\Java\jdk-17\bin\java.exe</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
 <h2 id="fehlerbehebung">Fehlerbehebung</h2>
 <h3 id="pandoc-nicht-gefunden">Pandoc nicht gefunden</h3>
 <p><strong>Symptome:</strong></p>
@@ -313,7 +303,7 @@ YAML-Metadaten</h3>
 </ul>
 <p><strong>Lösung:</strong></p>
 <ol type="1">
-<li>Pandoc installieren: https://pandoc.org/installing.html</li>
+<li>Pandoc installieren: <a href="https://pandoc.org/installing.html" class="uri">https://pandoc.org/installing.html</a></li>
 <li>Nach der Installation überprüfen, ob es zu PATH hinzugefügt
 wurde</li>
 <li><code>pandoc --version</code> in der Eingabeaufforderung ausführen
@@ -333,22 +323,35 @@ zur Bestätigung</li>
 </ul>
 <h3 id="diagramme-werden-nicht-generiert">Diagramme werden nicht
 generiert</h3>
-<p><strong>Für Mermaid-Diagramme:</strong></p>
+<p><strong>Für Mermaid-Diagramme (mmdc-Modus):</strong></p>
 <ul>
 <li>Überprüfen Sie, ob <code>mmdc</code> (mermaid-cli) installiert
 ist</li>
 <li>Führen Sie <code>mmdc --version</code> in der Eingabeaufforderung
 zur Bestätigung aus</li>
 </ul>
+<p><strong>Für Mermaid-Diagramme (Browser-Modus):</strong></p>
+<ul>
+<li>Der Browser-Modus sollte ohne zusätzliche Einrichtung
+funktionieren</li>
+<li>Überprüfen Sie, ob der Browser automatisch geöffnet wird</li>
+<li>Überprüfen Sie, ob SVG-Dateien im Ausgabeordner gespeichert
+werden</li>
+</ul>
 <p><strong>Für PlantUML-Diagramme:</strong></p>
-<p><strong>JAR-Methode:</strong> - Überprüfen Sie, ob
-<code>plantuml.jar</code> existiert - Überprüfen Sie, ob Java
-installiert ist - Geben Sie den Pfad in GUI-Einstellungen,
-Umgebungsvariablen oder YAML-Metadaten an</p>
-<p><strong>Server-Methode:</strong> - Überprüfen Sie die
-Internetverbindung - Überprüfen Sie, ob die Server-URL korrekt ist
-(Standard: http://www.plantuml.com/plantuml) - Überprüfen Sie die
-Firewall-Einstellungen</p>
+<p><strong>JAR-Methode:</strong></p>
+<ul>
+<li>Überprüfen Sie, ob <code>plantuml.jar</code> existiert</li>
+<li>Überprüfen Sie, ob Java installiert ist</li>
+<li>Geben Sie den Pfad in GUI-Einstellungen, Umgebungsvariablen oder
+YAML-Metadaten an</li>
+</ul>
+<p><strong>Server-Methode:</strong></p>
+<ul>
+<li>Überprüfen Sie die Internetverbindung</li>
+<li>Überprüfen Sie, ob die Server-URL korrekt ist (Standard: <a href="http://www.plantuml.com/plantuml" class="uri">http://www.plantuml.com/plantuml</a>)</li>
+<li>Überprüfen Sie die Firewall-Einstellungen</li>
+</ul>
 <h3 id="filter-werden-nicht-angewendet">Filter werden nicht
 angewendet</h3>
 <p><strong>Überprüfen:</strong></p>

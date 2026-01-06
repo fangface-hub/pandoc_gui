@@ -122,7 +122,7 @@ Vous pouvez enregistrer les combinaisons de paramètres fréquemment utilisées 
 2. Cliquez sur le bouton "Supprimer"
 3. Cliquez sur "Oui" dans la boîte de dialogue de confirmation
 
-**Remarque:** Le profil par défaut ne peut pas être supprimé.
+**Remarque :** Le profil par défaut ne peut pas être supprimé.
 
 ### Mettre à jour un profil
 
@@ -137,16 +137,16 @@ Lors de l'utilisation de diagrammes PlantUML, deux méthodes d'exécution sont d
 
 ### Sélectionner la méthode d'exécution PlantUML
 
-**Méthode JAR (Exécution locale):**
+**Méthode JAR (Exécution locale) :**
 
 1. Sélectionnez "Fichier JAR" dans "Méthode d'exécution"
 2. Spécifiez le chemin de l'exécutable Java
 3. Spécifiez le chemin du fichier JAR PlantUML
 
-**Méthode serveur (Exécution en ligne):**
+**Méthode serveur (Exécution en ligne) :**
 
 1. Sélectionnez "Serveur" dans "Méthode d'exécution"
-2. Spécifiez l'URL du serveur PlantUML (Par défaut: http://www.plantuml.com/plantuml)
+2. Spécifiez l'URL du serveur PlantUML (Par défaut : <http://www.plantuml.com/plantuml>)
 3. Java/fichier JAR non requis
 
 ### Configuration de la méthode JAR PlantUML
@@ -178,6 +178,7 @@ $env:JAVA_PATH = 'C:\Program Files\Java\jdk-17\bin\java.exe'
 ```
 
 **Invite de commandes :**
+
 ```bat
 set PLANTUML_JAR=C:\tools\plantuml.jar
 set JAVA_PATH=C:\Program Files\Java\jdk-17\bin\java.exe
@@ -194,12 +195,65 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 ---
 ```
 
-**Lors de l'utilisation de la méthode serveur:**
+**Lors de l'utilisation de la méthode serveur :**
 
 ```yaml
 ---
 plantuml_server: true
 plantuml_server_url: http://www.plantuml.com/plantuml
+---
+```
+
+### Configuration Mermaid
+
+Il existe deux méthodes pour générer des diagrammes Mermaid :
+
+#### Mode navigateur (Par défaut, recommandé)
+
+**Caractéristiques :**
+
+- Aucune installation d'outil en ligne de commande requise
+- Génère automatiquement des diagrammes en utilisant le navigateur et mermaid.js
+- Enregistre automatiquement les fichiers SVG en utilisant un serveur HTTP local
+
+**Comment utiliser :**
+
+- Sélectionnez "Navigateur" comme méthode Mermaid dans les paramètres GUI (par défaut)
+- Le navigateur s'ouvre automatiquement pendant la conversion et les diagrammes sont générés
+- Les fichiers SVG sont automatiquement enregistrés dans le dossier de sortie
+
+**Avantages :**
+
+- Aucune configuration requise
+- Accès aux dernières fonctionnalités de Mermaid.js
+- Indépendant de l'environnement
+
+#### Mode mmdc (Outil en ligne de commande)
+
+**Caractéristiques :**
+
+- Utilise mermaid-cli (`mmdc`)
+- Génère des diagrammes sans interface graphique
+
+**Comment utiliser :**
+
+- Sélectionnez "mmdc" comme méthode Mermaid dans les paramètres GUI
+- Vérifiez que `mmdc` est installé
+- Exécutez `mmdc --version` dans l'invite de commande pour confirmer
+
+**Installation :**
+
+```bash
+npm install -g @mermaid-js/mermaid-cli
+```
+
+### Spécification du mode Mermaid dans les métadonnées YAML
+
+Ajouter au début du fichier Markdown :
+
+```yaml
+---
+mermaid_mode: browser  # ou mmdc
 ---
 ```
 
@@ -218,21 +272,6 @@ Lorsque vous mettez à jour l'application, les fichiers suivants sont automatiqu
 - Les nouveaux paramètres ajoutés dans les nouvelles versions sont automatiquement complétés
 - Les paramètres existants sont préservés
 - Les valeurs par défaut sont récupérées depuis `profiles/default.json`
-```bat
-set PLANTUML_JAR=C:\tools\plantuml.jar
-set JAVA_PATH=C:\Program Files\Java\jdk-17\bin\java.exe
-```
-
-### Spécification dans les métadonnées YAML
-
-Ajoutez au début du fichier Markdown :
-
-```yaml
----
-plantuml_jar: C:\tools\plantuml.jar
-java_path: C:\Program Files\Java\jdk-17\bin\java.exe
----
-```
 
 ## Dépannage
 
@@ -245,7 +284,7 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 
 **Solution :**
 
-1. Installer Pandoc : https://pandoc.org/installing.html
+1. Installer Pandoc : <https://pandoc.org/installing.html>
 2. Après l'installation, vérifier qu'il est ajouté à PATH
 3. Exécuter `pandoc --version` dans l'invite de commandes pour confirmer
 
@@ -264,21 +303,29 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 
 ### Les diagrammes ne sont pas générés
 
-**Pour les diagrammes Mermaid :**
+**Pour les diagrammes Mermaid (mode mmdc) :**
 
 - Vérifiez que `mmdc` (mermaid-cli) est installé
-- Exécutez `mmdc --version` dans l'invite de commandes pour confirmer
+- Exécutez `mmdc --version` dans l'invite de commande pour confirmer
+
+**Pour les diagrammes Mermaid (mode navigateur) :**
+
+- Le mode navigateur devrait fonctionner sans configuration supplémentaire
+- Vérifiez que le navigateur s'ouvre automatiquement
+- Vérifiez que les fichiers SVG sont enregistrés dans le dossier de sortie
 
 **Pour les diagrammes PlantUML :**
 
 **Méthode JAR :**
+
 - Vérifiez que `plantuml.jar` existe
 - Vérifiez que Java est installé
 - Spécifiez le chemin dans les paramètres GUI, les variables d'environnement ou les métadonnées YAML
 
 **Méthode serveur :**
+
 - Vérifiez la connexion Internet
-- Vérifiez que l'URL du serveur est correcte (Par défaut : http://www.plantuml.com/plantuml)
+- Vérifiez que l'URL du serveur est correcte (Par défaut : <http://www.plantuml.com/plantuml>)
 - Vérifiez les paramètres du pare-feu
 
 ### Les filtres ne sont pas appliqués

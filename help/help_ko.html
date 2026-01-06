@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>tmphto4ihet</title>
+  <title>tmpuruiz529</title>
   <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -222,8 +222,7 @@ node_modules</code></pre>
 <p><strong>서버 방식 (온라인 실행):</strong></p>
 <ol type="1">
 <li>“실행 방법”에서 “서버” 선택</li>
-<li>PlantUML 서버 URL 지정 (기본값:
-http://www.plantuml.com/plantuml)</li>
+<li>PlantUML 서버 URL 지정 (기본값: <a href="http://www.plantuml.com/plantuml" class="uri">http://www.plantuml.com/plantuml</a>)</li>
 <li>Java/JAR 파일 불필요</li>
 </ol>
 <h3 id="plantuml-jar-방식-구성">PlantUML JAR 방식 구성</h3>
@@ -261,6 +260,47 @@ http://www.plantuml.com/plantuml)</li>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server_url</span><span class="kw">:</span><span class="at"> http://www.plantuml.com/plantuml</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<h3 id="mermaid-구성">Mermaid 구성</h3>
+<p>Mermaid 다이어그램을 생성하는 두 가지 방법이 있습니다:</p>
+<h4 id="브라우저-모드-기본값-권장">브라우저 모드 (기본값, 권장)</h4>
+<p><strong>특징:</strong></p>
+<ul>
+<li>명령줄 도구 설치 불필요</li>
+<li>브라우저와 mermaid.js를 사용하여 다이어그램 자동 생성</li>
+<li>로컬 HTTP 서버를 사용하여 SVG 파일 자동 저장</li>
+</ul>
+<p><strong>사용 방법:</strong></p>
+<ul>
+<li>GUI 설정에서 Mermaid 방법으로 “브라우저” 선택 (기본값)</li>
+<li>변환 중 브라우저가 자동으로 열리고 다이어그램이 생성됩니다</li>
+<li>SVG 파일이 출력 폴더에 자동 저장됩니다</li>
+</ul>
+<p><strong>장점:</strong></p>
+<ul>
+<li>설정 불필요</li>
+<li>최신 Mermaid.js 기능 액세스</li>
+<li>환경 독립적</li>
+</ul>
+<h4 id="mmdc-모드-명령줄-도구">mmdc 모드 (명령줄 도구)</h4>
+<p><strong>특징:</strong></p>
+<ul>
+<li>mermaid-cli (<code>mmdc</code>) 사용</li>
+<li>헤드리스로 다이어그램 생성</li>
+</ul>
+<p><strong>사용 방법:</strong></p>
+<ul>
+<li>GUI 설정에서 Mermaid 방법으로 “mmdc” 선택</li>
+<li><code>mmdc</code>가 설치되어 있는지 확인</li>
+<li>명령 프롬프트에서 <code>mmdc --version</code>을 실행하여 확인</li>
+</ul>
+<p><strong>설치:</strong></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install <span class="at">-g</span> @mermaid-js/mermaid-cli</span></code></pre></div>
+<h3 id="yaml-메타데이터에서-mermaid-모드-지정">YAML 메타데이터에서
+Mermaid 모드 지정</h3>
+<p>Markdown 파일 시작 부분에 추가:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mermaid_mode</span><span class="kw">:</span><span class="at"> browser</span><span class="co">  # 또는 mmdc</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
 <h2 id="자동-업데이트-기능">자동 업데이트 기능</h2>
 <p>애플리케이션을 업데이트하면 다음 파일이 자동으로 업데이트됩니다:</p>
 <h3 id="필터-파일">필터 파일</h3>
@@ -276,14 +316,6 @@ wikilink.lua)</li>
 <li>기존 설정은 보존됨</li>
 <li>기본값은 <code>profiles/default.json</code>에서 가져옴</li>
 </ul>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bat"><code class="sourceCode dosbat"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">PLANTUML_JAR</span>=C:\tools\plantuml.jar</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">JAVA_PATH</span>=C:\Program Files\Java\jdk-17\bin\java.exe</span></code></pre></div>
-<h3 id="yaml-메타데이터에서-지정">YAML 메타데이터에서 지정</h3>
-<p>Markdown 파일 시작 부분에 추가:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_jar</span><span class="kw">:</span><span class="at"> C:\tools\plantuml.jar</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">java_path</span><span class="kw">:</span><span class="at"> C:\Program Files\Java\jdk-17\bin\java.exe</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
 <h2 id="문제-해결">문제 해결</h2>
 <h3 id="pandoc을-찾을-수-없음">Pandoc을 찾을 수 없음</h3>
 <p><strong>증상:</strong></p>
@@ -293,7 +325,7 @@ wikilink.lua)</li>
 </ul>
 <p><strong>해결 방법:</strong></p>
 <ol type="1">
-<li>Pandoc 설치: https://pandoc.org/installing.html</li>
+<li>Pandoc 설치: <a href="https://pandoc.org/installing.html" class="uri">https://pandoc.org/installing.html</a></li>
 <li>설치 후 PATH에 추가되었는지 확인</li>
 <li>명령 프롬프트에서 <code>pandoc --version</code>을 실행하여 확인</li>
 </ol>
@@ -310,17 +342,30 @@ wikilink.lua)</li>
 <li><code>pandoc.log</code> 파일에서 세부 정보 확인</li>
 </ul>
 <h3 id="다이어그램이-생성되지-않음">다이어그램이 생성되지 않음</h3>
-<p><strong>Mermaid 다이어그램의 경우:</strong></p>
+<p><strong>Mermaid 다이어그램의 경우 (mmdc 모드):</strong></p>
 <ul>
 <li><code>mmdc</code>(mermaid-cli)가 설치되어 있는지 확인</li>
 <li>명령 프롬프트에서 <code>mmdc --version</code>을 실행하여 확인</li>
 </ul>
+<p><strong>Mermaid 다이어그램의 경우 (브라우저 모드):</strong></p>
+<ul>
+<li>브라우저 모드는 추가 설정 없이 작동합니다</li>
+<li>브라우저가 자동으로 열리는지 확인</li>
+<li>SVG 파일이 출력 폴더에 저장되는지 확인</li>
+</ul>
 <p><strong>PlantUML 다이어그램의 경우:</strong></p>
-<p><strong>JAR 방식:</strong> - <code>plantuml.jar</code>이 존재하는지
-확인 - Java가 설치되어 있는지 확인 - GUI 설정, 환경 변수 또는 YAML
-메타데이터에서 경로 지정</p>
-<p><strong>서버 방식:</strong> - 인터넷 연결 확인 - 서버 URL이 올바른지
-확인 (기본값: http://www.plantuml.com/plantuml) - 방화벽 설정 확인</p>
+<p><strong>JAR 방식:</strong></p>
+<ul>
+<li><code>plantuml.jar</code>이 존재하는지 확인</li>
+<li>Java가 설치되어 있는지 확인</li>
+<li>GUI 설정, 환경 변수 또는 YAML 메타데이터에서 경로 지정</li>
+</ul>
+<p><strong>서버 방식:</strong></p>
+<ul>
+<li>인터넷 연결 확인</li>
+<li>서버 URL이 올바른지 확인 (기본값: <a href="http://www.plantuml.com/plantuml" class="uri">http://www.plantuml.com/plantuml</a>)</li>
+<li>방화벽 설정 확인</li>
+</ul>
 <h3 id="필터가-적용되지-않음">필터가 적용되지 않음</h3>
 <p><strong>확인 사항:</strong></p>
 <ul>

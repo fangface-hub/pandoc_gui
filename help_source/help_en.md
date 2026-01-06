@@ -146,7 +146,7 @@ When using PlantUML diagrams, there are two execution methods available.
 **Server Method (Online Execution):**
 
 1. Select "Server" in "Execution Method"
-2. Specify PlantUML server URL (Default: http://www.plantuml.com/plantuml)
+2. Specify PlantUML server URL (Default: <http://www.plantuml.com/plantuml>)
 3. Java/JAR file not required
 
 ### PlantUML JAR Method Configuration
@@ -204,6 +204,59 @@ plantuml_server_url: http://www.plantuml.com/plantuml
 ---
 ```
 
+### Mermaid Configuration
+
+There are two methods for generating Mermaid diagrams:
+
+#### Browser Mode (Default, Recommended)
+
+**Features:**
+
+- No command-line tool installation required
+- Automatically generates diagrams using browser and mermaid.js
+- Automatically saves SVG files using local HTTP server
+
+**How to Use:**
+
+- Select "Browser" as Mermaid method in GUI settings (default)
+- Browser opens automatically during conversion and diagrams are generated
+- SVG files are automatically saved to output folder
+
+**Benefits:**
+
+- No setup required
+- Access to latest Mermaid.js features
+- Environment-independent
+
+#### mmdc Mode (Command-Line Tool)
+
+**Features:**
+
+- Uses mermaid-cli (`mmdc`)
+- Generates diagrams headlessly
+
+**How to Use:**
+
+- Select "mmdc" as Mermaid method in GUI settings
+- Verify `mmdc` is installed
+- Run `mmdc --version` in command prompt to confirm
+
+**Installation:**
+
+```bash
+npm install -g @mermaid-js/mermaid-cli
+```
+
+### Specifying Mermaid Mode in YAML Metadata
+
+Add to the beginning of Markdown file:
+
+```yaml
+---
+mermaid_mode: browser  # or mmdc
+---
+```
+
 ## Auto-Update Feature
 
 When you update the application, the following files are automatically updated:
@@ -220,22 +273,6 @@ When you update the application, the following files are automatically updated:
 - Existing settings are preserved
 - Default values are retrieved from `profiles/default.json`
 
-```bat
-set PLANTUML_JAR=C:\tools\plantuml.jar
-set JAVA_PATH=C:\Program Files\Java\jdk-17\bin\java.exe
-```
-
-### Specification in YAML Metadata
-
-Add to the beginning of the Markdown file:
-
-```yaml
----
-plantuml_jar: C:\tools\plantuml.jar
-java_path: C:\Program Files\Java\jdk-17\bin\java.exe
----
-```
-
 ## Troubleshooting
 
 ### Pandoc Not Found
@@ -247,7 +284,7 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 
 **Solution:**
 
-1. Install Pandoc: https://pandoc.org/installing.html
+1. Install Pandoc: <https://pandoc.org/installing.html>
 2. After installation, verify it's added to PATH
 3. Run `pandoc --version` in command prompt to confirm
 
@@ -266,21 +303,29 @@ java_path: C:\Program Files\Java\jdk-17\bin\java.exe
 
 ### Diagrams Not Generated
 
-**For Mermaid diagrams:**
+**For Mermaid diagrams (mmdc mode):**
 
 - Verify `mmdc` (mermaid-cli) is installed
 - Run `mmdc --version` in command prompt to confirm
 
+**For Mermaid diagrams (browser mode):**
+
+- Browser mode should work without additional setup
+- Check if the browser opens automatically
+- Verify SVG files are saved to the output folder
+
 **For PlantUML diagrams:**
 
 **JAR Method:**
+
 - Verify `plantuml.jar` exists
 - Verify Java is installed
 - Specify path in GUI settings, environment variables, or YAML metadata
 
 **Server Method:**
+
 - Verify internet connection
-- Verify server URL is correct (Default: http://www.plantuml.com/plantuml)
+- Verify server URL is correct (Default: <http://www.plantuml.com/plantuml>)
 - Check firewall settings
 
 ### Filters Not Applied

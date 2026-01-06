@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 """Pandoc変換サービス."""
+import http.server
 import json
 import logging
 import os
 import platform
 import shutil
+import socketserver
 import subprocess
 import sys
 import tempfile
+import threading
 from fnmatch import fnmatch
 from pathlib import Path
 
@@ -214,6 +217,7 @@ def init_default_profile():
         "plantuml_jar": None,
         "plantuml_use_server": False,
         "plantuml_server_url": "http://www.plantuml.com/plantuml",
+        "mermaid_mode": "mmdc",  # mmdc or browser
     }
     path = PROFILE_DIR / "default.json"
     if not path.exists():
@@ -247,6 +251,121 @@ class PandocService:
         self.plantuml_jar = None
         self.plantuml_use_server = False
         self.plantuml_server_url = "http://www.plantuml.com/plantuml"
+        self.mermaid_mode = "browser"  # mmdc or browser
+        self.local_server = None
+        self.server_port = None
+        self.server_thread = None
+        self.output_dir = None
+
+    def start_local_server(self, directory: Path) -> int:
+        """ローカルHTTPサーバを起動する（Mermaid SVG保存用）.
+
+        Start local HTTP server for Mermaid SVG saving.
+
+        Parameters
+        ----------
+        directory : Path
+            サーバのルートディレクトリ
+
+        Returns
+        -------
+        int
+            割り当てられたポート番号、失敗時はNone
+        """
+        if self.local_server:
+            self.logger.info("Stopping existing local server...")
+            self.stop_local_server()
+
+        try:
+            if not directory.exists():
+                directory.mkdir(parents=True, exist_ok=True)
+
+            self.output_dir = directory.resolve()
+            logger = self.logger
+
+            class MermaidHTTPRequestHandler(http.server.SimpleHTTPRequestHandler
+                                            ):
+                """Mermaid SVG保存用カスタムHTTPハンドラ."""
+
+                def __init__(self, *args, **kwargs):
+                    super().__init__(*args,
+                                     directory=str(directory.resolve()),
+                                     **kwargs)
+
+                def do_POST(self):
+                    """SVGデータを受け取って保存."""
+                    if self.path.startswith('/save-svg'):
+                        content_length = int(self.headers['Content-Length'])
+                        post_data = self.rfile.read(content_length)
+
+                        # JSONとして解析
+                        try:
+                            data = json.loads(post_data.decode('utf-8'))
+                            svg_content = data.get('svg', '')
+                            filename = data.get('filename', 'diagram.svg')
+
+                            # SVGファイルを保存
+                            svg_path = directory / filename
+                            with open(svg_path, 'w', encoding='utf-8') as f:
+                                f.write(svg_content)
+
+                            logger.info("Saved SVG: %s", svg_path)
+
+                            # 成功レスポンス
+                            self.send_response(200)
+                            self.send_header('Content-type', 'application/json')
+                            self.send_header('Access-Control-Allow-Origin', '*')
+                            self.end_headers()
+                            response = json.dumps({'status': 'success'})
+                            self.wfile.write(response.encode('utf-8'))
+
+                        except (json.JSONDecodeError, IOError) as e:
+                            logger.error("Failed to save SVG: %s", e)
+                            self.send_response(500)
+                            self.end_headers()
+                    else:
+                        self.send_response(404)
+                        self.end_headers()
+
+                def log_message(self, fmt, *args):
+                    """ログ出力を抑制."""
+                    pass
+
+            self.local_server = socketserver.TCPServer(
+                ("127.0.0.1", 0), MermaidHTTPRequestHandler)
+            self.server_port = self.local_server.server_address[1]
+
+            self.server_thread = threading.Thread(
+                target=self.local_server.serve_forever, daemon=True)
+            self.server_thread.start()
+
+            self.logger.info("Local HTTP server started on http://127.0.0.1:%d",
+                             self.server_port)
+            return self.server_port
+
+        except (OSError, IOError) as e:
+            self.logger.error("Failed to start local server: %s", e)
+            self.local_server = None
+            self.server_port = None
+            return None
+
+    def stop_local_server(self):
+        """ローカルHTTPサーバを停止する.
+
+        Stop local HTTP server.
+        """
+        if self.local_server:
+            try:
+                self.local_server.shutdown()
+                self.local_server.server_close()
+                self.logger.info("Local HTTP server stopped")
+            except (OSError, IOError) as e:
+                self.logger.error("Failed to stop local server: %s", e)
+            finally:
+                self.local_server = None
+                self.server_port = None
+                self.server_thread = None
+                self.output_dir = None
 
     def should_exclude(self, relative_path: Path) -> bool:
         """ファイルパスが除外パターンに一致するかチェックする.
@@ -319,8 +438,13 @@ class PandocService:
         use_server = self.plantuml_use_server
         server_url = self.plantuml_server_url if use_server else ""
 
+        # Mermaidモード設定
+        mermaid_mode = self.mermaid_mode
+
         # 全ての設定がない場合は何もしない
-        if not final_java_path and not final_plantuml_jar and not use_server:
+        no_settings = (not final_java_path and not final_plantuml_jar
+                       and not use_server and mermaid_mode == "mmdc")
+        if no_settings:
             return None
 
         # 一時ファイルを作成
@@ -330,6 +454,11 @@ class PandocService:
         try:
             yaml_lines = []
             yaml_lines.append("---\n")
+
+            # Mermaidモード設定
+            if mermaid_mode:
+                yaml_lines.append(f"mermaid_mode: {mermaid_mode}\n")
+
             if use_server:
                 # PlantUMLサーバを使用
                 yaml_lines.append("plantuml_server: true\n")
@@ -654,6 +783,7 @@ class PandocService:
             "plantuml_jar": to_relative_path(self.plantuml_jar),
             "plantuml_use_server": self.plantuml_use_server,
             "plantuml_server_url": self.plantuml_server_url,
+            "mermaid_mode": self.mermaid_mode,
         }
         save_profile(name, data)
         self.logger.info(f"Profile saved: {name}")
@@ -690,6 +820,7 @@ class PandocService:
         self.plantuml_use_server = data.get("plantuml_use_server", False)
         self.plantuml_server_url = data.get("plantuml_server_url",
                                             "http://www.plantuml.com/plantuml")
+        self.mermaid_mode = data.get("mermaid_mode", "mmdc")
 
         self.logger.info(f"Profile loaded: {name}")
         return True
