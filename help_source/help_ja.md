@@ -19,7 +19,9 @@ PandocGUIは、Pandocを使用してMarkdownファイルをHTMLやその他の�
 
 ## 基本的な使い方
 
-### 1. 入力の選択
+### GUIモード
+
+#### 1. 入力の選択
 
 **ファイルを変換する場合:**
 
@@ -92,6 +94,64 @@ node_modules
 1. すべての設定を確認
 2. 「変換実行」ボタンをクリック
 3. ログウィンドウで進行状況を確認
+
+## コマンドラインモード
+
+PandocGUIは、GUIを使わずにコマンドラインから直接実行することもできます。これはバッチ処理やスクリプトからの自動実行に便利です。
+
+### コマンドラインでの基本的な使い方
+
+**単一ファイルの変換:**
+
+```bash
+PandocGUI.exe -i input.md -o output.html
+```
+
+**フォルダの一括変換:**
+
+```bash
+PandocGUI.exe -i input_folder -o output_folder -f pdf
+```
+
+### コマンドライン引数
+
+- `-i, --input`: 入力ファイルまたはフォルダのパス（必須）
+- `-o, --output`: 出力ファイルまたはフォルダのパス（必須）
+- `-f, --format`: 出力形式を指定（デフォルト: html）
+  - 選択肢: `html`, `pdf`, `docx`, `epub`, `markdown`
+- `-p, --profile`: 使用するプロファイル名（デフォルト: default）
+
+### 使用例
+
+**HTML形式で変換（デフォルト）:**
+
+```bash
+PandocGUI.exe -i document.md -o document.html
+```
+
+**PDF形式で変換:**
+
+```bash
+PandocGUI.exe -i document.md -o document.pdf -f pdf
+```
+
+**カスタムプロファイルを使用:**
+
+```bash
+PandocGUI.exe -i document.md -o output.html -p myprofile
+```
+
+**フォルダ全体をMarkdown形式に変換:**
+
+```bash
+PandocGUI.exe -i html_folder -o markdown_folder -f markdown
+```
+
+### 注意事項
+
+- コマンドラインモードでは、指定されたプロファイルの設定（フィルタ、CSS、除外パターンなど）が適用されます
+- 入力パスが存在しない場合や、Pandocがインストールされていない場合はエラーメッセージが表示されます
+- 終了コード: 0（成功）、1（失敗）
 
 ## プロファイル機能
 

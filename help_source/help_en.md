@@ -19,7 +19,9 @@ PandocGUI is a simple GUI tool for converting Markdown files to HTML and other f
 
 ## Basic Usage
 
-### 1. Select Input
+### GUI Mode Usage
+
+#### 1. Select Input
 
 **To convert a file:**
 
@@ -92,6 +94,64 @@ node_modules
 1. Verify all settings
 2. Click "Run Conversion" button
 3. Check progress in the log window
+
+## Command-Line Mode
+
+PandocGUI can also be run directly from the command line without using the GUI. This is useful for batch processing and automated execution from scripts.
+
+### Command-Line Basic Usage
+
+**Convert a single file:**
+
+```bash
+PandocGUI.exe -i input.md -o output.html
+```
+
+**Batch convert a folder:**
+
+```bash
+PandocGUI.exe -i input_folder -o output_folder -f pdf
+```
+
+### Command-Line Arguments
+
+- `-i, --input`: Input file or folder path (required)
+- `-o, --output`: Output file or folder path (required)
+- `-f, --format`: Specify output format (default: html)
+  - Choices: `html`, `pdf`, `docx`, `epub`, `markdown`
+- `-p, --profile`: Profile name to use (default: default)
+
+### Usage Examples
+
+**Convert to HTML format (default):**
+
+```bash
+PandocGUI.exe -i document.md -o document.html
+```
+
+**Convert to PDF format:**
+
+```bash
+PandocGUI.exe -i document.md -o document.pdf -f pdf
+```
+
+**Use a custom profile:**
+
+```bash
+PandocGUI.exe -i document.md -o output.html -p myprofile
+```
+
+**Convert entire folder to Markdown format:**
+
+```bash
+PandocGUI.exe -i html_folder -o markdown_folder -f markdown
+```
+
+### Notes
+
+- In command-line mode, settings from the specified profile (filters, CSS, exclusion patterns, etc.) will be applied
+- Error messages will be displayed if the input path doesn't exist or Pandoc is not installed
+- Exit codes: 0 (success), 1 (failure)
 
 ## Profile Feature
 

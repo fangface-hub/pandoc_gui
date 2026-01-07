@@ -19,7 +19,9 @@ PandocGUI ist ein einfaches GUI-Tool zur Konvertierung von Markdown-Dateien in H
 
 ## Grundlegende Verwendung
 
-### 1. Eingabe auswählen
+### GUI-Modus
+
+#### 1. Eingabe auswählen
 
 **Um eine Datei zu konvertieren:**
 
@@ -92,6 +94,64 @@ node_modules
 1. Überprüfen Sie alle Einstellungen
 2. Klicken Sie auf die Schaltfläche "Konvertierung ausführen"
 3. Überprüfen Sie den Fortschritt im Protokollfenster
+
+## Befehlszeilenmodus
+
+PandocGUI kann auch direkt über die Befehlszeile ohne Verwendung der GUI ausgeführt werden. Dies ist nützlich für die Stapelverarbeitung und die automatisierte Ausführung aus Skripten.
+
+### Grundlegende Verwendung der Befehlszeile
+
+**Eine einzelne Datei konvertieren:**
+
+```bash
+PandocGUI.exe -i input.md -o output.html
+```
+
+**Einen Ordner stapelweise konvertieren:**
+
+```bash
+PandocGUI.exe -i input_folder -o output_folder -f pdf
+```
+
+### Befehlszeilenargumente
+
+- `-i, --input`: Eingabedatei- oder Ordnerpfad (erforderlich)
+- `-o, --output`: Ausgabedatei- oder Ordnerpfad (erforderlich)
+- `-f, --format`: Ausgabeformat angeben (Standard: html)
+  - Optionen: `html`, `pdf`, `docx`, `epub`, `markdown`
+- `-p, --profile`: Zu verwendender Profilname (Standard: default)
+
+### Verwendungsbeispiele
+
+**In HTML-Format konvertieren (Standard):**
+
+```bash
+PandocGUI.exe -i document.md -o document.html
+```
+
+**In PDF-Format konvertieren:**
+
+```bash
+PandocGUI.exe -i document.md -o document.pdf -f pdf
+```
+
+**Ein benutzerdefiniertes Profil verwenden:**
+
+```bash
+PandocGUI.exe -i document.md -o output.html -p myprofile
+```
+
+**Ganzen Ordner in Markdown-Format konvertieren:**
+
+```bash
+PandocGUI.exe -i html_folder -o markdown_folder -f markdown
+```
+
+### Hinweise
+
+- Im Befehlszeilenmodus werden die Einstellungen aus dem angegebenen Profil (Filter, CSS, Ausschlussmuster usw.) angewendet
+- Fehlermeldungen werden angezeigt, wenn der Eingabepfad nicht existiert oder Pandoc nicht installiert ist
+- Exit-Codes: 0 (Erfolg), 1 (Fehler)
 
 ## Profilfunktion
 

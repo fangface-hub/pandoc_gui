@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>tmpbuldmda2</title>
+  <title>tmptvt64ykf</title>
   <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -110,7 +110,8 @@ spécifiques lors de la conversion de dossier</li>
 de la conversion et les erreurs</li>
 </ul>
 <h2 id="utilisation-de-base">Utilisation de base</h2>
-<h3 id="sélectionner-lentrée">1. Sélectionner l’entrée</h3>
+<h3 id="mode-gui">Mode GUI</h3>
+<h4 id="sélectionner-lentrée">1. Sélectionner l’entrée</h4>
 <p><strong>Pour convertir un fichier :</strong></p>
 <ol type="1">
 <li>Cliquez sur le bouton “Sélection de fichier”</li>
@@ -186,6 +187,49 @@ node_modules</code></pre>
 <li>Cliquez sur le bouton “Exécuter la conversion”</li>
 <li>Vérifiez la progression dans la fenêtre de journal</li>
 </ol>
+<h2 id="mode-ligne-de-commande">Mode ligne de commande</h2>
+<p>PandocGUI peut également être exécuté directement depuis la ligne de
+commande sans utiliser l’interface graphique. Ceci est utile pour le
+traitement par lots et l’exécution automatisée à partir de scripts.</p>
+<h3 id="utilisation-en-ligne-de-commande">Utilisation en ligne de
+commande</h3>
+<p><strong>Convertir un fichier unique :</strong></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">PandocGUI.exe</span> <span class="at">-i</span> input.md <span class="at">-o</span> output.html</span></code></pre></div>
+<p><strong>Convertir un dossier par lot :</strong></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">PandocGUI.exe</span> <span class="at">-i</span> input_folder <span class="at">-o</span> output_folder <span class="at">-f</span> pdf</span></code></pre></div>
+<h3 id="arguments-de-ligne-de-commande">Arguments de ligne de
+commande</h3>
+<ul>
+<li><code>-i, --input</code> : Chemin du fichier ou dossier d’entrée
+(requis)</li>
+<li><code>-o, --output</code> : Chemin du fichier ou dossier de sortie
+(requis)</li>
+<li><code>-f, --format</code> : Spécifier le format de sortie (par
+défaut : html)
+<ul>
+<li>Choix : <code>html</code>, <code>pdf</code>, <code>docx</code>,
+<code>epub</code>, <code>markdown</code></li>
+</ul></li>
+<li><code>-p, --profile</code> : Nom du profil à utiliser (par défaut :
+default)</li>
+</ul>
+<h3 id="exemples-dutilisation">Exemples d’utilisation</h3>
+<p><strong>Convertir au format HTML (par défaut) :</strong></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">PandocGUI.exe</span> <span class="at">-i</span> document.md <span class="at">-o</span> document.html</span></code></pre></div>
+<p><strong>Convertir au format PDF :</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">PandocGUI.exe</span> <span class="at">-i</span> document.md <span class="at">-o</span> document.pdf <span class="at">-f</span> pdf</span></code></pre></div>
+<p><strong>Utiliser un profil personnalisé :</strong></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">PandocGUI.exe</span> <span class="at">-i</span> document.md <span class="at">-o</span> output.html <span class="at">-p</span> myprofile</span></code></pre></div>
+<p><strong>Convertir un dossier entier au format Markdown :</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">PandocGUI.exe</span> <span class="at">-i</span> html_folder <span class="at">-o</span> markdown_folder <span class="at">-f</span> markdown</span></code></pre></div>
+<h3 id="remarques">Remarques</h3>
+<ul>
+<li>En mode ligne de commande, les paramètres du profil spécifié
+(filtres, CSS, motifs d’exclusion, etc.) seront appliqués</li>
+<li>Des messages d’erreur seront affichés si le chemin d’entrée n’existe
+pas ou si Pandoc n’est pas installé</li>
+<li>Codes de sortie : 0 (succès), 1 (échec)</li>
+</ul>
 <h2 id="fonction-de-profil">Fonction de profil</h2>
 <p>Vous pouvez enregistrer les combinaisons de paramètres fréquemment
 utilisées en tant que profils.</p>
@@ -262,23 +306,23 @@ méthode JAR PlantUML</h3>
 <h3 id="exemples-de-configuration-de-variables-denvironnement">Exemples
 de configuration de variables d’environnement</h3>
 <p><strong>PowerShell :</strong></p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="va">$env</span><span class="op">:</span><span class="va">PLANTUML_JAR</span> <span class="op">=</span> <span class="st">&#39;C:\tools\plantuml.jar&#39;</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="va">$env</span><span class="op">:</span><span class="va">JAVA_PATH</span> <span class="op">=</span> <span class="st">&#39;C:\Program Files\Java\jdk-17\bin\java.exe&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="va">$env</span><span class="op">:</span><span class="va">PLANTUML_JAR</span> <span class="op">=</span> <span class="st">&#39;C:\tools\plantuml.jar&#39;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="va">$env</span><span class="op">:</span><span class="va">JAVA_PATH</span> <span class="op">=</span> <span class="st">&#39;C:\Program Files\Java\jdk-17\bin\java.exe&#39;</span></span></code></pre></div>
 <p><strong>Invite de commandes :</strong></p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bat"><code class="sourceCode dosbat"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">PLANTUML_JAR</span>=C:\tools\plantuml.jar</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">JAVA_PATH</span>=C:\Program Files\Java\jdk-17\bin\java.exe</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bat"><code class="sourceCode dosbat"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">PLANTUML_JAR</span>=C:\tools\plantuml.jar</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">JAVA_PATH</span>=C:\Program Files\Java\jdk-17\bin\java.exe</span></code></pre></div>
 <h3 id="spécification-des-métadonnées-yaml">Spécification des
 métadonnées YAML</h3>
 <p>Ajouter au début du fichier Markdown :</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_jar</span><span class="kw">:</span><span class="at"> C:\tools\plantuml.jar</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">java_path</span><span class="kw">:</span><span class="at"> C:\Program Files\Java\jdk-17\bin\java.exe</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_jar</span><span class="kw">:</span><span class="at"> C:\tools\plantuml.jar</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">java_path</span><span class="kw">:</span><span class="at"> C:\Program Files\Java\jdk-17\bin\java.exe</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
 <p><strong>Lors de l’utilisation de la méthode serveur :</strong></p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server_url</span><span class="kw">:</span><span class="at"> http://www.plantuml.com/plantuml</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server_url</span><span class="kw">:</span><span class="at"> http://www.plantuml.com/plantuml</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
 <h3 id="configuration-mermaid">Configuration Mermaid</h3>
 <p>Il existe deux méthodes pour générer des diagrammes Mermaid :</p>
 <h4 id="mode-navigateur-par-défaut-recommandé">Mode navigateur (Par
@@ -322,13 +366,13 @@ GUI</li>
 confirmer</li>
 </ul>
 <p><strong>Installation :</strong></p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install <span class="at">-g</span> @mermaid-js/mermaid-cli</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install <span class="at">-g</span> @mermaid-js/mermaid-cli</span></code></pre></div>
 <h3 id="spécification-du-mode-mermaid-dans-les-métadonnées-yaml">Spécification
 du mode Mermaid dans les métadonnées YAML</h3>
 <p>Ajouter au début du fichier Markdown :</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mermaid_mode</span><span class="kw">:</span><span class="at"> browser</span><span class="co">  # ou mmdc</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mermaid_mode</span><span class="kw">:</span><span class="at"> browser</span><span class="co">  # ou mmdc</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
 <h2 id="fonction-de-mise-à-jour-automatique">Fonction de mise à jour
 automatique</h2>
 <p>Lorsque vous mettez à jour l’application, les fichiers suivants sont

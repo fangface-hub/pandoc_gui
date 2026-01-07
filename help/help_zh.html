@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>tmp6avwd0ng</title>
+  <title>tmp1u4i13cb</title>
   <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -104,7 +104,8 @@ PlantUML 等图表。</p>
 <li><strong>日志显示</strong>：监控转换进度和错误</li>
 </ul>
 <h2 id="基本用法">基本用法</h2>
-<h3 id="选择输入">1. 选择输入</h3>
+<h3 id="gui-模式">GUI 模式</h3>
+<h4 id="选择输入">1. 选择输入</h4>
 <p><strong>转换文件：</strong></p>
 <ol type="1">
 <li>点击”文件选择”按钮</li>
@@ -174,6 +175,39 @@ node_modules</code></pre>
 <li>点击”运行转换”按钮</li>
 <li>在日志窗口中检查进度</li>
 </ol>
+<h2 id="命令行模式">命令行模式</h2>
+<p>PandocGUI 也可以在不使用 GUI
+的情况下直接从命令行运行。这对于批处理和从脚本自动执行很有用。</p>
+<h3 id="命令行基本用法">命令行基本用法</h3>
+<p><strong>转换单个文件：</strong></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">PandocGUI.exe</span> <span class="at">-i</span> input.md <span class="at">-o</span> output.html</span></code></pre></div>
+<p><strong>批量转换文件夹：</strong></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">PandocGUI.exe</span> <span class="at">-i</span> input_folder <span class="at">-o</span> output_folder <span class="at">-f</span> pdf</span></code></pre></div>
+<h3 id="命令行参数">命令行参数</h3>
+<ul>
+<li><code>-i, --input</code>：输入文件或文件夹路径（必需）</li>
+<li><code>-o, --output</code>：输出文件或文件夹路径（必需）</li>
+<li><code>-f, --format</code>：指定输出格式（默认：html）
+<ul>
+<li>选项：<code>html</code>、<code>pdf</code>、<code>docx</code>、<code>epub</code>、<code>markdown</code></li>
+</ul></li>
+<li><code>-p, --profile</code>：要使用的配置文件名称（默认：default）</li>
+</ul>
+<h3 id="使用示例">使用示例</h3>
+<p><strong>转换为 HTML 格式（默认）：</strong></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">PandocGUI.exe</span> <span class="at">-i</span> document.md <span class="at">-o</span> document.html</span></code></pre></div>
+<p><strong>转换为 PDF 格式：</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">PandocGUI.exe</span> <span class="at">-i</span> document.md <span class="at">-o</span> document.pdf <span class="at">-f</span> pdf</span></code></pre></div>
+<p><strong>使用自定义配置文件：</strong></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">PandocGUI.exe</span> <span class="at">-i</span> document.md <span class="at">-o</span> output.html <span class="at">-p</span> myprofile</span></code></pre></div>
+<p><strong>将整个文件夹转换为 Markdown 格式：</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">PandocGUI.exe</span> <span class="at">-i</span> html_folder <span class="at">-o</span> markdown_folder <span class="at">-f</span> markdown</span></code></pre></div>
+<h3 id="注意事项">注意事项</h3>
+<ul>
+<li>在命令行模式下，将应用指定配置文件的设置（过滤器、CSS、排除模式等）</li>
+<li>如果输入路径不存在或 Pandoc 未安装，将显示错误消息</li>
+<li>退出代码：0（成功）、1（失败）</li>
+</ul>
 <h2 id="配置文件功能">配置文件功能</h2>
 <p>您可以将常用的设置组合保存为配置文件。</p>
 <h3 id="创建配置文件">创建配置文件</h3>
@@ -243,22 +277,22 @@ node_modules</code></pre>
 </ol>
 <h3 id="环境变量配置示例">环境变量配置示例</h3>
 <p><strong>PowerShell：</strong></p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="va">$env</span><span class="op">:</span><span class="va">PLANTUML_JAR</span> <span class="op">=</span> <span class="st">&#39;C:\tools\plantuml.jar&#39;</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="va">$env</span><span class="op">:</span><span class="va">JAVA_PATH</span> <span class="op">=</span> <span class="st">&#39;C:\Program Files\Java\jdk-17\bin\java.exe&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="va">$env</span><span class="op">:</span><span class="va">PLANTUML_JAR</span> <span class="op">=</span> <span class="st">&#39;C:\tools\plantuml.jar&#39;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="va">$env</span><span class="op">:</span><span class="va">JAVA_PATH</span> <span class="op">=</span> <span class="st">&#39;C:\Program Files\Java\jdk-17\bin\java.exe&#39;</span></span></code></pre></div>
 <p><strong>命令提示符：</strong></p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bat"><code class="sourceCode dosbat"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">PLANTUML_JAR</span>=C:\tools\plantuml.jar</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">JAVA_PATH</span>=C:\Program Files\Java\jdk-17\bin\java.exe</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bat"><code class="sourceCode dosbat"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">PLANTUML_JAR</span>=C:\tools\plantuml.jar</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">JAVA_PATH</span>=C:\Program Files\Java\jdk-17\bin\java.exe</span></code></pre></div>
 <h3 id="yaml-元数据规范">YAML 元数据规范</h3>
 <p>在 Markdown 文件开头添加：</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_jar</span><span class="kw">:</span><span class="at"> C:\tools\plantuml.jar</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">java_path</span><span class="kw">:</span><span class="at"> C:\Program Files\Java\jdk-17\bin\java.exe</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_jar</span><span class="kw">:</span><span class="at"> C:\tools\plantuml.jar</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">java_path</span><span class="kw">:</span><span class="at"> C:\Program Files\Java\jdk-17\bin\java.exe</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
 <p><strong>使用服务器方式时：</strong></p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server_url</span><span class="kw">:</span><span class="at"> http://www.plantuml.com/plantuml</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server_url</span><span class="kw">:</span><span class="at"> http://www.plantuml.com/plantuml</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
 <h3 id="mermaid-配置">Mermaid 配置</h3>
 <p>生成 Mermaid 图表有两种方法：</p>
 <h4 id="浏览器模式默认推荐">浏览器模式（默认，推荐）</h4>
@@ -293,13 +327,13 @@ node_modules</code></pre>
 <li>在命令提示符中运行 <code>mmdc --version</code> 进行确认</li>
 </ul>
 <p><strong>安装：</strong></p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install <span class="at">-g</span> @mermaid-js/mermaid-cli</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">npm</span> install <span class="at">-g</span> @mermaid-js/mermaid-cli</span></code></pre></div>
 <h3 id="在-yaml-元数据中指定-mermaid-模式">在 YAML 元数据中指定 Mermaid
 模式</h3>
 <p>在 Markdown 文件开头添加：</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mermaid_mode</span><span class="kw">:</span><span class="at"> browser</span><span class="co">  # 或 mmdc</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mermaid_mode</span><span class="kw">:</span><span class="at"> browser</span><span class="co">  # 或 mmdc</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
 <h2 id="自动更新功能">自动更新功能</h2>
 <p>当您更新应用程序时，以下文件将自动更新：</p>
 <h3 id="过滤器文件">过滤器文件</h3>

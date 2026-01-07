@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>tmpy7gxxkog</title>
+  <title>tmp6_bncb_u</title>
   <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -111,7 +111,8 @@ Ordnerkonvertierung überspringen</li>
 Fehler überwachen</li>
 </ul>
 <h2 id="grundlegende-verwendung">Grundlegende Verwendung</h2>
-<h3 id="eingabe-auswählen">1. Eingabe auswählen</h3>
+<h3 id="gui-modus">GUI-Modus</h3>
+<h4 id="eingabe-auswählen">1. Eingabe auswählen</h4>
 <p><strong>Um eine Datei zu konvertieren:</strong></p>
 <ol type="1">
 <li>Klicken Sie auf die Schaltfläche “Dateiauswahl”</li>
@@ -184,6 +185,47 @@ node_modules</code></pre>
 <li>Klicken Sie auf die Schaltfläche “Konvertierung ausführen”</li>
 <li>Überprüfen Sie den Fortschritt im Protokollfenster</li>
 </ol>
+<h2 id="befehlszeilenmodus">Befehlszeilenmodus</h2>
+<p>PandocGUI kann auch direkt über die Befehlszeile ohne Verwendung der
+GUI ausgeführt werden. Dies ist nützlich für die Stapelverarbeitung und
+die automatisierte Ausführung aus Skripten.</p>
+<h3 id="grundlegende-verwendung-der-befehlszeile">Grundlegende
+Verwendung der Befehlszeile</h3>
+<p><strong>Eine einzelne Datei konvertieren:</strong></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">PandocGUI.exe</span> <span class="at">-i</span> input.md <span class="at">-o</span> output.html</span></code></pre></div>
+<p><strong>Einen Ordner stapelweise konvertieren:</strong></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">PandocGUI.exe</span> <span class="at">-i</span> input_folder <span class="at">-o</span> output_folder <span class="at">-f</span> pdf</span></code></pre></div>
+<h3 id="befehlszeilenargumente">Befehlszeilenargumente</h3>
+<ul>
+<li><code>-i, --input</code>: Eingabedatei- oder Ordnerpfad
+(erforderlich)</li>
+<li><code>-o, --output</code>: Ausgabedatei- oder Ordnerpfad
+(erforderlich)</li>
+<li><code>-f, --format</code>: Ausgabeformat angeben (Standard: html)
+<ul>
+<li>Optionen: <code>html</code>, <code>pdf</code>, <code>docx</code>,
+<code>epub</code>, <code>markdown</code></li>
+</ul></li>
+<li><code>-p, --profile</code>: Zu verwendender Profilname (Standard:
+default)</li>
+</ul>
+<h3 id="verwendungsbeispiele">Verwendungsbeispiele</h3>
+<p><strong>In HTML-Format konvertieren (Standard):</strong></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">PandocGUI.exe</span> <span class="at">-i</span> document.md <span class="at">-o</span> document.html</span></code></pre></div>
+<p><strong>In PDF-Format konvertieren:</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">PandocGUI.exe</span> <span class="at">-i</span> document.md <span class="at">-o</span> document.pdf <span class="at">-f</span> pdf</span></code></pre></div>
+<p><strong>Ein benutzerdefiniertes Profil verwenden:</strong></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">PandocGUI.exe</span> <span class="at">-i</span> document.md <span class="at">-o</span> output.html <span class="at">-p</span> myprofile</span></code></pre></div>
+<p><strong>Ganzen Ordner in Markdown-Format konvertieren:</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">PandocGUI.exe</span> <span class="at">-i</span> html_folder <span class="at">-o</span> markdown_folder <span class="at">-f</span> markdown</span></code></pre></div>
+<h3 id="hinweise">Hinweise</h3>
+<ul>
+<li>Im Befehlszeilenmodus werden die Einstellungen aus dem angegebenen
+Profil (Filter, CSS, Ausschlussmuster usw.) angewendet</li>
+<li>Fehlermeldungen werden angezeigt, wenn der Eingabepfad nicht
+existiert oder Pandoc nicht installiert ist</li>
+<li>Exit-Codes: 0 (Erfolg), 1 (Fehler)</li>
+</ul>
 <h2 id="profilfunktion">Profilfunktion</h2>
 <p>Sie können häufig verwendete Einstellungskombinationen als Profile
 speichern.</p>
@@ -260,22 +302,22 @@ Konfiguration</h3>
 <h3 id="beispiele-für-umgebungsvariablenkonfiguration">Beispiele für
 Umgebungsvariablenkonfiguration</h3>
 <p><strong>PowerShell:</strong></p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="va">$env</span><span class="op">:</span><span class="va">PLANTUML_JAR</span> <span class="op">=</span> <span class="st">&#39;C:\tools\plantuml.jar&#39;</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="va">$env</span><span class="op">:</span><span class="va">JAVA_PATH</span> <span class="op">=</span> <span class="st">&#39;C:\Program Files\Java\jdk-17\bin\java.exe&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="va">$env</span><span class="op">:</span><span class="va">PLANTUML_JAR</span> <span class="op">=</span> <span class="st">&#39;C:\tools\plantuml.jar&#39;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="va">$env</span><span class="op">:</span><span class="va">JAVA_PATH</span> <span class="op">=</span> <span class="st">&#39;C:\Program Files\Java\jdk-17\bin\java.exe&#39;</span></span></code></pre></div>
 <p><strong>Eingabeaufforderung:</strong></p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bat"><code class="sourceCode dosbat"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">PLANTUML_JAR</span>=C:\tools\plantuml.jar</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">JAVA_PATH</span>=C:\Program Files\Java\jdk-17\bin\java.exe</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bat"><code class="sourceCode dosbat"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">PLANTUML_JAR</span>=C:\tools\plantuml.jar</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="va">JAVA_PATH</span>=C:\Program Files\Java\jdk-17\bin\java.exe</span></code></pre></div>
 <h3 id="yaml-metadaten-spezifikation">YAML-Metadaten-Spezifikation</h3>
 <p>Am Anfang der Markdown-Datei hinzufügen:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_jar</span><span class="kw">:</span><span class="at"> C:\tools\plantuml.jar</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">java_path</span><span class="kw">:</span><span class="at"> C:\Program Files\Java\jdk-17\bin\java.exe</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_jar</span><span class="kw">:</span><span class="at"> C:\tools\plantuml.jar</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">java_path</span><span class="kw">:</span><span class="at"> C:\Program Files\Java\jdk-17\bin\java.exe</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
 <p><strong>Bei Verwendung der Server-Methode:</strong></p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server_url</span><span class="kw">:</span><span class="at"> http://www.plantuml.com/plantuml</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plantuml_server_url</span><span class="kw">:</span><span class="at"> http://www.plantuml.com/plantuml</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div>
 <h2 id="auto-update-funktion">Auto-Update-Funktion</h2>
 <p>Wenn Sie die Anwendung aktualisieren, werden die folgenden Dateien
 automatisch aktualisiert:</p>

@@ -19,7 +19,9 @@ PandocGUI 是一个简单的 GUI 工具，用于使用 Pandoc 将 Markdown 文�
 
 ## 基本用法
 
-### 1. 选择输入
+### GUI 模式
+
+#### 1. 选择输入
 
 **转换文件：**
 
@@ -92,6 +94,64 @@ node_modules
 1. 验证所有设置
 2. 点击"运行转换"按钮
 3. 在日志窗口中检查进度
+
+## 命令行模式
+
+PandocGUI 也可以在不使用 GUI 的情况下直接从命令行运行。这对于批处理和从脚本自动执行很有用。
+
+### 命令行基本用法
+
+**转换单个文件：**
+
+```bash
+PandocGUI.exe -i input.md -o output.html
+```
+
+**批量转换文件夹：**
+
+```bash
+PandocGUI.exe -i input_folder -o output_folder -f pdf
+```
+
+### 命令行参数
+
+- `-i, --input`：输入文件或文件夹路径（必需）
+- `-o, --output`：输出文件或文件夹路径（必需）
+- `-f, --format`：指定输出格式（默认：html）
+  - 选项：`html`、`pdf`、`docx`、`epub`、`markdown`
+- `-p, --profile`：要使用的配置文件名称（默认：default）
+
+### 使用示例
+
+**转换为 HTML 格式（默认）：**
+
+```bash
+PandocGUI.exe -i document.md -o document.html
+```
+
+**转换为 PDF 格式：**
+
+```bash
+PandocGUI.exe -i document.md -o document.pdf -f pdf
+```
+
+**使用自定义配置文件：**
+
+```bash
+PandocGUI.exe -i document.md -o output.html -p myprofile
+```
+
+**将整个文件夹转换为 Markdown 格式：**
+
+```bash
+PandocGUI.exe -i html_folder -o markdown_folder -f markdown
+```
+
+### 注意事项
+
+- 在命令行模式下，将应用指定配置文件的设置（过滤器、CSS、排除模式等）
+- 如果输入路径不存在或 Pandoc 未安装，将显示错误消息
+- 退出代码：0（成功）、1（失败）
 
 ## 配置文件功能
 

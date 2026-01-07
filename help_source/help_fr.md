@@ -19,7 +19,9 @@ PandocGUI est un outil GUI simple pour convertir des fichiers Markdown en HTML e
 
 ## Utilisation de base
 
-### 1. Sélectionner l'entrée
+### Mode GUI
+
+#### 1. Sélectionner l'entrée
 
 **Pour convertir un fichier :**
 
@@ -92,6 +94,64 @@ node_modules
 1. Vérifiez tous les paramètres
 2. Cliquez sur le bouton "Exécuter la conversion"
 3. Vérifiez la progression dans la fenêtre de journal
+
+## Mode ligne de commande
+
+PandocGUI peut également être exécuté directement depuis la ligne de commande sans utiliser l'interface graphique. Ceci est utile pour le traitement par lots et l'exécution automatisée à partir de scripts.
+
+### Utilisation en ligne de commande
+
+**Convertir un fichier unique :**
+
+```bash
+PandocGUI.exe -i input.md -o output.html
+```
+
+**Convertir un dossier par lot :**
+
+```bash
+PandocGUI.exe -i input_folder -o output_folder -f pdf
+```
+
+### Arguments de ligne de commande
+
+- `-i, --input` : Chemin du fichier ou dossier d'entrée (requis)
+- `-o, --output` : Chemin du fichier ou dossier de sortie (requis)
+- `-f, --format` : Spécifier le format de sortie (par défaut : html)
+  - Choix : `html`, `pdf`, `docx`, `epub`, `markdown`
+- `-p, --profile` : Nom du profil à utiliser (par défaut : default)
+
+### Exemples d'utilisation
+
+**Convertir au format HTML (par défaut) :**
+
+```bash
+PandocGUI.exe -i document.md -o document.html
+```
+
+**Convertir au format PDF :**
+
+```bash
+PandocGUI.exe -i document.md -o document.pdf -f pdf
+```
+
+**Utiliser un profil personnalisé :**
+
+```bash
+PandocGUI.exe -i document.md -o output.html -p myprofile
+```
+
+**Convertir un dossier entier au format Markdown :**
+
+```bash
+PandocGUI.exe -i html_folder -o markdown_folder -f markdown
+```
+
+### Remarques
+
+- En mode ligne de commande, les paramètres du profil spécifié (filtres, CSS, motifs d'exclusion, etc.) seront appliqués
+- Des messages d'erreur seront affichés si le chemin d'entrée n'existe pas ou si Pandoc n'est pas installé
+- Codes de sortie : 0 (succès), 1 (échec)
 
 ## Fonction de profil
 

@@ -19,7 +19,9 @@ PandocGUI는 Pandoc을 사용하여 Markdown 파일을 HTML 및 기타 형식으
 
 ## 기본 사용법
 
-### 1. 입력 선택
+### GUI 모드
+
+#### 1. 입력 선택
 
 **파일을 변환하려면:**
 
@@ -92,6 +94,64 @@ node_modules
 1. 모든 설정 확인
 2. "변환 실행" 버튼 클릭
 3. 로그 창에서 진행 상황 확인
+
+## 명령줄 모드
+
+PandocGUI는 GUI를 사용하지 않고 명령줄에서 직접 실행할 수도 있습니다. 이는 일괄 처리 및 스크립트에서의 자동 실행에 유용합니다.
+
+### 명령줄 기본 사용법
+
+**단일 파일 변환:**
+
+```bash
+PandocGUI.exe -i input.md -o output.html
+```
+
+**폴더 일괄 변환:**
+
+```bash
+PandocGUI.exe -i input_folder -o output_folder -f pdf
+```
+
+### 명령줄 인수
+
+- `-i, --input`: 입력 파일 또는 폴더 경로 (필수)
+- `-o, --output`: 출력 파일 또는 폴더 경로 (필수)
+- `-f, --format`: 출력 형식 지정 (기본값: html)
+  - 선택 항목: `html`, `pdf`, `docx`, `epub`, `markdown`
+- `-p, --profile`: 사용할 프로필 이름 (기본값: default)
+
+### 사용 예제
+
+**HTML 형식으로 변환 (기본값):**
+
+```bash
+PandocGUI.exe -i document.md -o document.html
+```
+
+**PDF 형식으로 변환:**
+
+```bash
+PandocGUI.exe -i document.md -o document.pdf -f pdf
+```
+
+**사용자 지정 프로필 사용:**
+
+```bash
+PandocGUI.exe -i document.md -o output.html -p myprofile
+```
+
+**전체 폴더를 Markdown 형식으로 변환:**
+
+```bash
+PandocGUI.exe -i html_folder -o markdown_folder -f markdown
+```
+
+### 참고 사항
+
+- 명령줄 모드에서는 지정된 프로필의 설정(필터, CSS, 제외 패턴 등)이 적용됩니다
+- 입력 경로가 존재하지 않거나 Pandoc이 설치되지 않은 경우 오류 메시지가 표시됩니다
+- 종료 코드: 0 (성공), 1 (실패)
 
 ## 프로필 기능
 

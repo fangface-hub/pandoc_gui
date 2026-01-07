@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 """Pandoc GUI Application."""
+import argparse
 import json
 import logging
 import os
 import platform
 import shutil
 import subprocess
+import sys
 import threading
 import tkinter as tk
 import webbrowser
@@ -19,8 +21,9 @@ from exclude_window import ExcludeWindow
 from filter_window import FilterWindow
 from i18n import I18n
 from log_window import LogWindow
-from pandoc_service import (PandocService, get_app_dir, get_data_dir,
-                            init_default_profile, load_profile, save_profile)
+from pandoc_service import (PandocService, check_pandoc_installed, get_app_dir,
+                            get_data_dir, init_default_profile, load_profile,
+                            save_profile)
 
 # Windowsでのプロセス管理用フラグ
 if platform.system() == "Windows":
@@ -35,27 +38,6 @@ SCRIPT_DIR = get_app_dir()
 
 # データディレクトリ（プラットフォームごとに適切な場所を使用）
 DATA_DIR = get_data_dir()
-
-
-def _check_pandoc_installed():
-    """pandocがインストールされているかチェックする.
-
-    Check if pandoc is installed.
-
-    Returns
-    -------
-    bool
-        pandocが利用可能な場合True (True if pandoc is available)
-    """
-    try:
-        result = subprocess.run(["pandoc", "--version"],
-                                capture_output=True,
-                                text=True,
-                                timeout=5,
-                                check=False)
-        return result.returncode == 0
-    except (FileNotFoundError, subprocess.SubprocessError, OSError):
-        return False
 
 
 def _init_data_folders():
@@ -81,16 +63,17 @@ def _init_data_folders():
     filters_src = SCRIPT_DIR / "filters"
     filters_dest = DATA_DIR / "filters"
 
-    if filters_src.exists():
-        # DATA_DIR/filters が存在する場合は、SCRIPT_DIRにある同名ファイルのみ上書き
-        if filters_dest.exists():
-            for filter_file in filters_src.glob("*"):
-                if filter_file.is_file():
-                    dest_file = filters_dest / filter_file.name
-                    shutil.copy2(filter_file, dest_file)
-        else:
-            # DATA_DIR/filters が存在しない場合は丸ごとコピー
-            shutil.copytree(filters_src, filters_dest)
+    if not filters_src.exists():
+        return
+    # DATA_DIR/filters が存在しない場合は丸ごとコピー
+    if not filters_dest.exists():
+        shutil.copytree(filters_src, filters_dest)
+        return
+    # DATA_DIR/filters が存在する場合は、SCRIPT_DIRにある同名ファイルのみ上書き
+    for filter_file in filters_src.glob("*"):
+        if filter_file.is_file():
+            dest_file = filters_dest / filter_file.name
+            shutil.copy2(filter_file, dest_file)
 
 
 class MainWindow(tk.Tk):
@@ -154,7 +137,7 @@ class MainWindow(tk.Tk):
         self.pandoc_service = PandocService(self.logger)
 
         # pandocのインストール状況をチェック
-        if not _check_pandoc_installed():
+        if not check_pandoc_installed():
             self.logger.warning("Pandoc is not installed or not in PATH")
             # 警告メッセージを表示（afterで少し遅延させてUI構築後に表示）
             self.after(
@@ -354,7 +337,7 @@ class MainWindow(tk.Tk):
                  text=self.i18n.t("output_format")).pack(side=tk.LEFT, padx=5)
 
         self.format_var = tk.StringVar(value="html")
-        format_options = ["html", "pdf", "docx", "epub"]
+        format_options = ["html", "pdf", "docx", "epub", "markdown"]
         self.format_combo = ttk.Combobox(format_sub_frame,
                                          textvariable=self.format_var,
                                          values=format_options,
@@ -1282,9 +1265,141 @@ class MainWindow(tk.Tk):
         self.destroy()
 
 
+def run_cli_mode(cli_args):
+    """コマンドラインモードで実行.
+
+    Run in command-line mode.
+
+    Parameters
+    ----------
+    cli_args : argparse.Namespace
+        コマンドライン引数
+
+    Returns
+    -------
+    int
+        終了コード (0: 成功, 1: 失敗)
+    """
+    # 初回起動時にDATA_DIRにフォルダを複製
+    _init_data_folders()
+
+    # デフォルトプロファイルを初期化
+    init_default_profile()
+
+    # プロファイルを読み込み
+    profile_data = load_profile(cli_args.profile)
+    if not profile_data:
+        print(f"Error: Profile '{cli_args.profile}' not found.",
+              file=sys.stderr)
+        return 1
+
+    # ロガーの設定
+    logger = logging.getLogger("PandocGUI_CLI")
+    logger.setLevel(logging.INFO)
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(levelname)s: %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+    # pandocのチェック
+    if not check_pandoc_installed():
+        logger.error("Pandoc is not installed or not in PATH")
+        return 1
+
+    # PandocServiceのインスタンスを作成
+    pandoc_service = PandocService(logger)
+
+    # プロファイルから設定を読み込み
+    pandoc_service.load_profile_data(cli_args.profile)
+
+    # コマンドライン引数で上書き
+    pandoc_service.output_format = cli_args.format
+
+    # 入出力パスの処理
+    input_path = Path(cli_args.input)
+    output_path = Path(cli_args.output)
+
+    if not input_path.exists():
+        logger.error("Input path does not exist: %s", input_path)
+        return 1
+
+    # 入力がファイルかフォルダかを判定
+    if input_path.is_file():
+        # ファイル変換
+        logger.info("Converting file: %s -> %s", input_path, output_path)
+        success, stdout, stderr, returncode = pandoc_service.convert_file(
+            input_path, output_path)
+
+        if success:
+            logger.info("Conversion successful: %s", output_path)
+            if stdout.strip():
+                print(stdout)
+            return 0
+        else:
+            logger.error("Conversion failed (exit code %s)", returncode)
+            if stderr.strip():
+                print(stderr, file=sys.stderr)
+            return 1
+
+    elif input_path.is_dir():
+        # フォルダ変換
+        if not output_path.exists():
+            output_path.mkdir(parents=True)
+
+        # 出力拡張子を決定
+        format_ext_map = {
+            "html": ".html",
+            "pdf": ".pdf",
+            "docx": ".docx",
+            "epub": ".epub",
+            "markdown": ".md"
+        }
+        ext = format_ext_map.get(cli_args.format, ".html")
+
+        logger.info("Converting folder: %s -> %s", input_path, output_path)
+
+        success_count, fail_count, _errors = pandoc_service.convert_folder(
+            input_path, output_path, ext)
+
+        total_count = success_count + fail_count
+        logger.info("Conversion completed: %s/%s files successful",
+                    success_count, total_count)
+
+        if success_count == total_count:
+            return 0
+        return 1
+    else:
+        logger.error("Invalid input path: %s", input_path)
+        return 1
+
+
 # -------------------------
 # 起動
 # -------------------------
 if __name__ == "__main__":
+    # コマンドライン引数のパース
+    parser = argparse.ArgumentParser(
+        description="Pandoc GUI - Markdown/HTML converter with GUI or CLI mode")
+    parser.add_argument('-i', '--input', help='Input file or folder path')
+    parser.add_argument('-o', '--output', help='Output file or folder path')
+    parser.add_argument('-f',
+                        '--format',
+                        choices=['html', 'pdf', 'docx', 'epub', 'markdown'],
+                        default='html',
+                        help='Output format (default: html)')
+    parser.add_argument('-p',
+                        '--profile',
+                        default='default',
+                        help='Profile name to use (default: default)')
+
+    args = parser.parse_args()
+
+    # 入力が指定されている場合はCLIモード
+    if args.input:
+        if not args.output:
+            parser.error("--output is required when --input is specified")
+        sys.exit(run_cli_mode(args))
+
+    # GUIモード
     app = MainWindow()
     app.mainloop()

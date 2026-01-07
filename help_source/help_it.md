@@ -19,7 +19,9 @@ PandocGUI è un semplice strumento GUI per convertire file Markdown in HTML e al
 
 ## Utilizzo di base
 
-### 1. Seleziona input
+### Modalità GUI
+
+#### 1. Seleziona input
 
 **Per convertire un file:**
 
@@ -92,6 +94,64 @@ node_modules
 1. Verifica tutte le impostazioni
 2. Fai clic sul pulsante "Esegui conversione"
 3. Controlla l'avanzamento nella finestra del log
+
+## Modalità da riga di comando
+
+PandocGUI può anche essere eseguito direttamente dalla riga di comando senza utilizzare la GUI. Questo è utile per l'elaborazione batch e l'esecuzione automatizzata da script.
+
+### Utilizzo di base da riga di comando
+
+**Converti un singolo file:**
+
+```bash
+PandocGUI.exe -i input.md -o output.html
+```
+
+**Converti una cartella in batch:**
+
+```bash
+PandocGUI.exe -i input_folder -o output_folder -f pdf
+```
+
+### Argomenti da riga di comando
+
+- `-i, --input`: Percorso del file o della cartella di input (obbligatorio)
+- `-o, --output`: Percorso del file o della cartella di output (obbligatorio)
+- `-f, --format`: Specifica il formato di output (predefinito: html)
+  - Scelte: `html`, `pdf`, `docx`, `epub`, `markdown`
+- `-p, --profile`: Nome del profilo da utilizzare (predefinito: default)
+
+### Esempi di utilizzo
+
+**Converti in formato HTML (predefinito):**
+
+```bash
+PandocGUI.exe -i document.md -o document.html
+```
+
+**Converti in formato PDF:**
+
+```bash
+PandocGUI.exe -i document.md -o document.pdf -f pdf
+```
+
+**Usa un profilo personalizzato:**
+
+```bash
+PandocGUI.exe -i document.md -o output.html -p myprofile
+```
+
+**Converti l'intera cartella in formato Markdown:**
+
+```bash
+PandocGUI.exe -i html_folder -o markdown_folder -f markdown
+```
+
+### Note
+
+- In modalità riga di comando, verranno applicate le impostazioni del profilo specificato (filtri, CSS, pattern di esclusione, ecc.)
+- Verranno visualizzati messaggi di errore se il percorso di input non esiste o Pandoc non è installato
+- Codici di uscita: 0 (successo), 1 (fallimento)
 
 ## Funzione profilo
 

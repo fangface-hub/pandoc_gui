@@ -23,6 +23,27 @@ else:
     CREATE_NEW_PROCESS_GROUP = 0
 
 
+def check_pandoc_installed():
+    """pandocがインストールされているかチェックする.
+
+    Check if pandoc is installed.
+
+    Returns
+    -------
+    bool
+        pandocが利用可能な場合True (True if pandoc is available)
+    """
+    try:
+        result = subprocess.run(["pandoc", "--version"],
+                                capture_output=True,
+                                text=True,
+                                timeout=5,
+                                check=False)
+        return result.returncode == 0
+    except (FileNotFoundError, subprocess.SubprocessError, OSError):
+        return False
+
+
 def get_app_dir() -> Path:
     """アプリケーションのルートディレクトリを取得.
 
@@ -292,8 +313,26 @@ class PandocService:
                                      directory=str(directory.resolve()),
                                      **kwargs)
 
-                def do_POST(self):
-                    """SVGデータを受け取って保存."""
+                def do_POST(self) -> None:  # pylint: disable=C0103
+                    """Handle POST requests to save SVG data / SVGデータを受け取って保存.
+                    This method processes POST requests to the '/save-svg'
+                    endpoint. It receives JSON data containing SVG content and
+                    filename, saves the SVG file to disk, and returns a JSON
+                    response indicating success or failure.
+                    The method name 'do_POST' follows the naming convention
+                    required by http.server.BaseHTTPRequestHandler and cannot
+                    be changed to snake_case.
+                    Returns:
+                        None
+                    Raises:
+                        json.JSONDecodeError: If the POST data cannot be
+                            parsed as JSON.
+                        IOError: If the SVG file cannot be written to disk.
+                    Response Codes:
+                        200: SVG file saved successfully
+                        500: Error occurred while processing or saving the SVG
+                        404: Request path does not match '/save-svg'
+                    """
                     if self.path.startswith('/save-svg'):
                         content_length = int(self.headers['Content-Length'])
                         post_data = self.rfile.read(content_length)
@@ -327,9 +366,8 @@ class PandocService:
                         self.send_response(404)
                         self.end_headers()
 
-                def log_message(self, fmt, *args):
+                def log_message(self, fmt, *args):  # pylint: disable=W0221
                     """ログ出力を抑制."""
-                    pass
 
             self.local_server = socketserver.TCPServer(
                 ("127.0.0.1", 0), MermaidHTTPRequestHandler)
@@ -527,6 +565,21 @@ class PandocService:
 
         for f in self.enabled_filters:
             cmd.extend(["--lua-filter", str(f)])
+
+        # 入力形式を判定
+        input_format = input_file.suffix.lower().lstrip('.')
+
+        # --extract-media オプションを追加する条件
+        extract_media_conditions = [
+            (input_format == "docx" and self.output_format == "markdown"),
+            (input_format == "docx" and self.output_format == "html"),
+            (input_format == "html" and self.output_format == "markdown"),
+        ]
+
+        if any(extract_media_conditions):
+            # 出力ファイルと同じディレクトリにmediaフォルダを作成
+            media_dir = output_file.parent / "media"
+            cmd.extend(["--extract-media", str(media_dir)])
 
         # CSSを適用（DOCX以外）
         if (self.output_format != "docx" and self.css_file
