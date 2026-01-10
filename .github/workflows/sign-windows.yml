@@ -26,11 +26,14 @@ jobs:
       - name: Build with PyInstaller
         run: python -m PyInstaller PandocGUI.spec
 
-      - name: Create ZIP from dist/PandocGUI
-        run: Compress-Archive -Path dist/PandocGUI -DestinationPath PandocGUI-windows.zip
-
       - name: Install cosign
         uses: sigstore/cosign-installer@v3
+
+      - name: Sign PandocGUI.exe with OIDC
+        run: cosign sign-blob --yes --output-signature dist/PandocGUI/PandocGUI.exe.sig dist/PandocGUI/PandocGUI.exe
+
+      - name: Create ZIP from dist/PandocGUI
+        run: Compress-Archive -Path dist/PandocGUI -DestinationPath PandocGUI-windows.zip
 
       - name: Sign ZIP with OIDC
         run: cosign sign-blob --yes --output-signature PandocGUI-windows.zip.sig PandocGUI-windows.zip
@@ -41,7 +44,7 @@ jobs:
           name: pandocgui-windows-zip
           path: PandocGUI-windows.zip
 
-      - name: Upload signature
+      - name: Upload ZIP signature
         uses: actions/upload-artifact@v4
         with:
           name: pandocgui-windows-signature
