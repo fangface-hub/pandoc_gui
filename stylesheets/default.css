@@ -49,9 +49,12 @@ h6 {
 body {
     font-size: var(--step-0);
     font-family:
-    /* 日本語等幅優先 */
     "MyricaM M", "Migu 1M", "Ricty Diminished",
-    /* OS 標準 */
+    "Hiragino Sans", "Yu Gothic", "Noto Sans JP",
+    "Helvetica Neue", "Segoe UI", "Roboto", "Noto Sans",
+    "Noto Sans SC", "Microsoft YaHei", "PingFang SC",
+    "Noto Sans TC", "PingFang TC", "Microsoft JhengHei",
+    "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic",
     "MeiryoKe_Console", "Consolas", "Menlo", "Ubuntu Mono",
     "DejaVu Sans Mono", "Liberation Mono",
     monospace;
@@ -66,9 +69,12 @@ body {
 code {
     font-size: var(--step-0);
     font-family:
-    /* 日本語等幅優先 */
     "MyricaM M", "Migu 1M", "Ricty Diminished",
-    /* OS 標準 */
+    "Hiragino Sans", "Yu Gothic", "Noto Sans JP",
+    "Helvetica Neue", "Segoe UI", "Roboto", "Noto Sans",
+    "Noto Sans SC", "Microsoft YaHei", "PingFang SC",
+    "Noto Sans TC", "PingFang TC", "Microsoft JhengHei",
+    "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic",
     "MeiryoKe_Console", "Consolas", "Menlo", "Ubuntu Mono",
     "DejaVu Sans Mono", "Liberation Mono",
     monospace;
@@ -81,9 +87,12 @@ code {
 pre code {
     font-size: var(--step-0);
     font-family:
-    /* 日本語等幅優先 */
     "MyricaM M", "Migu 1M", "Ricty Diminished",
-    /* OS 標準 */
+    "Hiragino Sans", "Yu Gothic", "Noto Sans JP",
+    "Helvetica Neue", "Segoe UI", "Roboto", "Noto Sans",
+    "Noto Sans SC", "Microsoft YaHei", "PingFang SC",
+    "Noto Sans TC", "PingFang TC", "Microsoft JhengHei",
+    "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic",
     "MeiryoKe_Console", "Consolas", "Menlo", "Ubuntu Mono",
     "DejaVu Sans Mono", "Liberation Mono",
     monospace;
@@ -98,9 +107,12 @@ pre code {
 .sourceCode {
     font-size: var(--step-0);
     font-family:
-    /* 日本語等幅優先 */
     "MyricaM M", "Migu 1M", "Ricty Diminished",
-    /* OS 標準 */
+    "Hiragino Sans", "Yu Gothic", "Noto Sans JP",
+    "Helvetica Neue", "Segoe UI", "Roboto", "Noto Sans",
+    "Noto Sans SC", "Microsoft YaHei", "PingFang SC",
+    "Noto Sans TC", "PingFang TC", "Microsoft JhengHei",
+    "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic",
     "MeiryoKe_Console", "Consolas", "Menlo", "Ubuntu Mono",
     "DejaVu Sans Mono", "Liberation Mono",
     monospace;
@@ -122,13 +134,13 @@ table {
 table th {
     font-size: var(--step-0);
     background: lightgreen;
-    border: 1px solid #000; /* ← セルの罫線を実線に */
+    border: 1px solid #000;
     padding: 0.5em 1em;
 }
 
 table td {
     font-size: var(--step-0);
-    border: 1px solid #000; /* ← セルの罫線を実線に */
+    border: 1px solid #000;
     padding: 0.5em 1em;
 }
 
@@ -142,22 +154,22 @@ blockquote {
 
 a:link {
     font-size: var(--step-0);
-    color: #0066cc; /* 未訪問 */
+    color: #0066cc;
 }
 
 a:visited {
     font-size: var(--step-0);
-    color: #551a8b; /* 訪問済み */
+    color: #551a8b;
 }
 
 a:hover {
     font-size: var(--step-0);
-    color: #cc0000; /* ホバー時 */
+    color: #cc0000;
 }
 
 a:active {
     font-size: var(--step-0);
-    color: #ff6600; /* クリック中 */
+    color: #ff6600;
 }
 
 ul, ol {

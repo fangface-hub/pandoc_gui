@@ -6,7 +6,6 @@ import logging
 import os
 import platform
 import shutil
-import subprocess
 import sys
 import threading
 import tkinter as tk
@@ -24,6 +23,7 @@ from log_window import LogWindow
 from pandoc_service import (PandocService, check_pandoc_installed, get_app_dir,
                             get_data_dir, init_default_profile, load_profile,
                             save_profile)
+from subprocessex import terminate_process
 
 # Windowsでのプロセス管理用フラグ
 if platform.system() == "Windows":
@@ -1198,49 +1198,13 @@ class MainWindow(tk.Tk):
 
         self.logger.info(self.i18n.t("terminating_child_process", pid=proc.pid))
 
-        # Windowsではプロセスグループ全体を終了
-        if platform.system() == "Windows":
-            try:
-                # taskkill でプロセスツリー全体を終了
-                result = subprocess.run(
-                    ["taskkill", "/F", "/T", "/PID",
-                     str(proc.pid)],
-                    capture_output=True,
-                    text=True,
-                    timeout=5,
-                    check=False)
-                if result.returncode == 0:
-                    self.logger.info(self.i18n.t("process_tree_terminated"))
-                else:
-                    self.logger.warning(
-                        self.i18n.t("taskkill_exit_code",
-                                    code=result.returncode))
-            except (FileNotFoundError, OSError, subprocess.TimeoutExpired) as e:
-                self.logger.exception(
-                    self.i18n.t("taskkill_failed", error=str(e)))
-                # フォールバック: terminate/kill
-                try:
-                    proc.terminate()
-                    proc.wait(timeout=2)
-                except subprocess.TimeoutExpired:
-                    proc.kill()
-                except (ProcessLookupError, PermissionError, OSError) as e2:
-                    self.logger.exception(
-                        self.i18n.t("process_termination_failed",
-                                    error=str(e2)))
-        else:
-            # Linux/Macでは通常の終了処理
-            try:
-                proc.terminate()
-                try:
-                    proc.wait(timeout=2)
-                except subprocess.TimeoutExpired:
-                    self.logger.warning(self.i18n.t("child_process_force_kill"))
-                    proc.kill()
-            except (OSError, ValueError, AttributeError) as e:
-                self.logger.exception(
-                    self.i18n.t("child_process_termination_error",
-                                error=str(e)))
+        # プラットフォーム依存のプロセス停止処理を共通関数に移管
+        try:
+            terminate_process(proc, logger=self.logger, timeout=5.0)
+        except (OSError, IOError, ValueError) as e:
+            self.logger.exception("terminate_process failed: %s", e)
+            self.logger.exception(
+                self.i18n.t("child_process_termination_error", error=str(e)))
 
         self._cleanup_and_close()
 
