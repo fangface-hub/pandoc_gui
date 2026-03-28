@@ -236,3 +236,5 @@ python -m unittest discover -v
 - 我们将Lua过滤器放在`filters/`目录中（例如：`filters/diagram.lua`）。
 - 我们将CSS文件放在`stylesheets/`目录中。您可以从GUI中选择它们，并将其应用为嵌入或外部链接。
 - 系统在后台线程中执行转换，并在应用退出时终止/结束子进程。
+
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-%E6%94%AF%E6%8C%81%E8%BF%99%E4%B8%AA%E9%A1%B9%E7%9B%AE-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/fangface-hub)

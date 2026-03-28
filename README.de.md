@@ -236,3 +236,5 @@ Testdateien:
 - Wir platzieren Lua-Filter im Verzeichnis `filters/` (z.B. `filters/diagram.lua`).
 - Wir platzieren CSS-Dateien im Verzeichnis `stylesheets/`. Sie können sie über die GUI auswählen und als eingebettet oder als externe Links anwenden.
 - Das System führt die Konvertierung in einem Hintergrund-Thread aus und beendet/killt untergeordnete Prozesse beim Beenden der App.
+
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-Projekt%20unterst%C3%BCtzen-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/fangface-hub)

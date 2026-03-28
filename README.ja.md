@@ -236,3 +236,5 @@ python -m unittest discover -v
 - Lua フィルターは `filters/` 配下に置いています（例: `filters/diagram.lua`）。
 - CSS ファイルは `stylesheets/` 配下に置いています。GUI から選択して埋め込みまたは外部リンクとして適用できます。
 - 変換はバックグラウンドスレッドで行われ、アプリ終了時に子プロセスを terminate/kill します。
+
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-%E3%81%93%E3%81%AE%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%82%92%E6%94%AF%E6%8F%B4-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/fangface-hub)

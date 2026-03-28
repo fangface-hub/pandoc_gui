@@ -236,3 +236,5 @@ File di test:
 - Posizioniamo i filtri Lua nella directory `filters/` (ad es. `filters/diagram.lua`).
 - Posizioniamo i file CSS nella directory `stylesheets/`. È possibile selezionarli dalla GUI e applicarli come incorporati o collegamenti esterni.
 - Il sistema esegue la conversione in un thread in background e termina/uccide i processi figlio all'uscita dell'app.
+
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-Sostieni%20il%20progetto-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/fangface-hub)

@@ -236,3 +236,5 @@ Test Files:
 - We locate Lua filters in the `filters/` directory (e.g., `filters/diagram.lua`).
 - We locate CSS files in the `stylesheets/` directory. You can select them from the GUI and apply them as embedded or external links.
 - The system performs conversion in a background thread, and terminates/kills child processes on app exit.
+
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-Support%20this%20project-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/fangface-hub)

@@ -236,3 +236,5 @@ python -m unittest discover -v
 - Lua 필터를 `filters/` 디렉토리에 배치합니다(예: `filters/diagram.lua`).
 - CSS 파일을 `stylesheets/` 디렉토리에 배치합니다. GUI에서 선택하여 임베디드 또는 외부 링크로 적용할 수 있습니다.
 - 시스템은 백그라운드 스레드에서 변환을 수행하고 앱 종료 시 하위 프로세스를 종료/중지합니다.
+
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-%EC%9D%B4%20%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%20%ED%9B%84%EC%9B%90-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/fangface-hub)
