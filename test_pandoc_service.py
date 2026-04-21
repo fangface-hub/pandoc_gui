@@ -9,7 +9,7 @@ from pathlib import Path
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
-from pandoc_service import PandocService
+from pandoc_service import PandocService, check_pandoc_installed, get_app_dir
 
 
 class TestPandocServiceMermaidMode(unittest.TestCase):
@@ -179,6 +179,38 @@ class TestPandocServiceLocalServer(unittest.TestCase):
             except URLError as e:
                 self.fail(f"Failed to POST to save-svg endpoint: {e}")
 
+    def test_server_save_html_endpoint(self):
+        """サーバがHTML保存エンドポイントを持つ."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            temp_path = Path(tmpdir)
+
+            port = self.service.start_local_server(temp_path)
+            self.assertIsNotNone(port)
+
+            time.sleep(0.5)
+
+            html_content = '<html><body><svg><circle/></svg></body></html>'
+            payload = {'html': html_content, 'filename': 'output.html'}
+
+            try:
+                data = json.dumps(payload).encode('utf-8')
+                req = Request(f"http://127.0.0.1:{port}/save-html",
+                              data=data,
+                              headers={'Content-Type': 'application/json'})
+
+                with urlopen(req, timeout=2) as response:
+                    self.assertEqual(response.status, 200)
+
+                    saved_file = temp_path / 'output.html'
+                    self.assertTrue(saved_file.exists())
+
+                    with open(saved_file, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    self.assertEqual(content, html_content)
+
+            except URLError as e:
+                self.fail(f"Failed to POST to save-html endpoint: {e}")
+
     def test_restart_server_with_new_directory(self):
         """既存のサーバを停止して新しいディレクトリで再起動できる."""
         with tempfile.TemporaryDirectory() as tmpdir1, \
@@ -197,6 +229,28 @@ class TestPandocServiceLocalServer(unittest.TestCase):
 
             # 出力ディレクトリが更新されている
             self.assertEqual(self.service.output_dir, path2.resolve())
+
+    def test_prepare_browser_mode_server_returns_url(self):
+        """browserモード用サーバを起動してHTMLのURLを返せる."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            temp_path = Path(tmpdir)
+            html_file = temp_path / "test.html"
+            html_file.write_text("<html><body>Test</body></html>",
+                                 encoding='utf-8')
+
+            self.service.output_format = "html"
+            self.service.mermaid_mode = "browser"
+
+            url = self.service.prepare_browser_mode_server(html_file)
+
+            self.assertIsNotNone(url)
+            self.assertTrue(url.endswith("/test.html"))
+            self.assertEqual(self.service.output_dir, temp_path.resolve())
+
+            with urlopen(url, timeout=2) as response:
+                self.assertEqual(response.status, 200)
+                content = response.read().decode('utf-8')
+            self.assertIn("Test", content)
 
 
 class TestMetadataFileCreation(unittest.TestCase):
@@ -264,6 +318,49 @@ class TestMetadataFileCreation(unittest.TestCase):
 
                 # クリーンアップ
                 metadata_file.unlink()
+
+
+class TestBrowserModeConversion(unittest.TestCase):
+    """browserモード変換の回帰テスト."""
+
+    def setUp(self):
+        """テストの初期化."""
+        self.logger = logging.getLogger("test")
+        self.service = PandocService(self.logger)
+
+    @unittest.skipUnless(check_pandoc_installed(), "pandoc is not installed")
+    def test_browser_mode_does_not_execute_mmdc(self):
+        """browserモードではmmdcを実行せず、browser用HTMLを出力する."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            temp_path = Path(tmpdir)
+            input_file = temp_path / "test.md"
+            output_file = temp_path / "test.html"
+            script_dir = get_app_dir()
+
+            with open(input_file, 'w', encoding='utf-8') as f:
+                f.write("# Test\n\n```mermaid\ngraph TD\n  A --> B\n```\n")
+
+            self.service.output_format = "html"
+            self.service.mermaid_mode = "browser"
+            self.service.css_file = None
+            self.service.enabled_filters = [
+                script_dir / "filters" / "md2html.lua",
+                script_dir / "filters" / "diaglam.lua",
+                script_dir / "filters" / "wikilink.lua",
+            ]
+
+            success, _stdout, stderr, _returncode = self.service.convert_file(
+                input_file, output_file)
+
+            self.assertTrue(success)
+            self.assertNotIn("Executing mermaid command", stderr)
+            self.assertIn("Mermaid browser mode:", stderr)
+
+            html = output_file.read_text(encoding='utf-8')
+            self.assertIn("mermaid.min.js", html)
+            self.assertNotIn("data:image/svg+xml;base64", html)
+            self.assertFalse(
+                (output_file.parent / "mermaid" / "mermaid.min.js").exists())
 
 
 class TestProfileManagement(unittest.TestCase):

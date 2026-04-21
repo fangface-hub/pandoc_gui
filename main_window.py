@@ -1019,6 +1019,10 @@ class MainWindow(tk.Tk):
             self.logger.error(self.i18n.t("error_no_input_output"))
             return
 
+        # 実行時点のMermaid設定をサービスに反映
+        if hasattr(self, 'mermaid_mode_var'):
+            self.pandoc_service.mermaid_mode = self.mermaid_mode_var.get()
+
         # 出力形式に応じた拡張子マップ
         format_ext_map = {
             "html": ".html",
@@ -1115,6 +1119,10 @@ class MainWindow(tk.Tk):
                                                    plantuml_jar_override,
                                                    progress_callback))
 
+            if (ext == ".html"
+                    and self.pandoc_service.mermaid_mode == 'browser'):
+                self._open_mermaid_htmls_in_folder_with_server(output_folder)
+
             self.logger.info(self.i18n.t("folder_conversion_complete"))
 
         finally:
@@ -1155,9 +1163,10 @@ class MainWindow(tk.Tk):
             self._set_converting_status(False)
 
     def _open_html_with_server(self, html_file: Path):
-        """HTMLファイルをローカルサーバ経由でブラウザで開く（Mermaid自動保存用）.
+        """HTMLをheadlessで最終化する（Mermaid自動保存用）.
 
-        Open HTML file in browser via local server for automatic Mermaid saving.
+        Finalize Mermaid rendering in background without opening visible
+        browser tabs.
 
         Parameters
         ----------
@@ -1165,20 +1174,50 @@ class MainWindow(tk.Tk):
             HTMLファイルのパス
         """
         try:
-            # 出力ディレクトリでローカルサーバを起動
-            output_dir = html_file.parent
-            port = self.pandoc_service.start_local_server(output_dir)
-
-            if port:
-                # ブラウザで開く
-                url = f"http://127.0.0.1:{port}/{html_file.name}"
-                webbrowser.open(url)
-                self.logger.info("Opened HTML in browser: %s", url)
+            ok = self.pandoc_service.render_html_in_background_browser(
+                html_file)
+            if ok:
+                self.logger.info("Finalized HTML in background: %s", html_file)
             else:
-                self.logger.warning("Failed to start local server")
+                self.logger.warning("Failed to finalize HTML in background: %s",
+                                    html_file)
 
         except (OSError, IOError, ValueError) as e:
             self.logger.error("Failed to open HTML with server: %s", e)
+
+    def _open_mermaid_htmls_in_folder_with_server(self, output_folder: Path):
+        """フォルダ変換後にMermaidを含むHTMLをサーバ経由で開く.
+
+        Open all generated HTML files that contain Mermaid blocks in browser
+        mode via the background local server.
+        """
+        html_files = sorted(output_folder.rglob("*.html"),
+                            key=lambda path: str(path).lower())
+        if not html_files:
+            self.logger.info("No HTML file found to open via local server")
+            return
+
+        mermaid_html_files = []
+        for html_file in html_files:
+            try:
+                content = html_file.read_text(encoding='utf-8', errors='ignore')
+            except (OSError, IOError, UnicodeDecodeError) as e:
+                self.logger.warning("Failed to read HTML file %s: %s",
+                                    html_file, e)
+                continue
+
+            if ('class="mermaid"' in content or "class='mermaid'" in content):
+                mermaid_html_files.append(html_file)
+
+        if not mermaid_html_files:
+            self.logger.info(
+                "No Mermaid HTML file found to open via local server")
+            return
+
+        self.logger.info("Opening Mermaid HTML files via local server: %d",
+                         len(mermaid_html_files))
+        for html_file in mermaid_html_files:
+            self._open_html_with_server(html_file)
 
     def on_close(self):
         """アプリ終了時に実行中プロセスを終了させてからウィンドウを破棄する.

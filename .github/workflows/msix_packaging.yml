@@ -39,11 +39,23 @@ jobs:
           $publisherCN = if ($env:MSIX_PUBLISHER_CN) { $env:MSIX_PUBLISHER_CN } else { "CN=" + [guid]::NewGuid().ToString().ToUpper() }
           $identityName = if ($env:MSIX_IDENTITY_NAME) { $env:MSIX_IDENTITY_NAME } else { "$env:GITHUB_REPOSITORY_OWNER.PandocGUI" }
           $publisherName = if ($env:MSIX_PUBLISHER_NAME) { $env:MSIX_PUBLISHER_NAME } else { $env:GITHUB_REPOSITORY_OWNER }
+
+          # pyproject.toml からバージョンを読み取り、MSIX形式 (x.y.z.0) に変換
+          $projectVersion = python -c "import tomllib;print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])"
+          $versionParts = $projectVersion.Split('.')
+          if ($versionParts.Length -eq 3) {
+            $msixVersion = "$projectVersion.0"
+          } elseif ($versionParts.Length -eq 4) {
+            $msixVersion = $projectVersion
+          } else {
+            throw "Invalid project version format: $projectVersion"
+          }
           
           # AppxManifest.xml を更新
           [xml]$manifest = Get-Content AppxManifest.xml
           $manifest.Package.Identity.Publisher = $publisherCN
           $manifest.Package.Identity.Name = $identityName
+          $manifest.Package.Identity.Version = $msixVersion
           $manifest.Package.Properties.PublisherDisplayName = $publisherName
           $manifest.Save("$PWD\AppxManifest.xml")
           

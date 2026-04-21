@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 """フィルターウィンドウクラス定義."""
+import shutil
 import tkinter as tk
 from pathlib import Path
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
+
+from pandoc_service import get_app_dir, get_data_dir
+
+SCRIPT_DIR = get_app_dir()
+DATA_DIR = get_data_dir()
 
 
 class FilterWindow(tk.Toplevel):
@@ -56,6 +62,12 @@ class FilterWindow(tk.Toplevel):
         tk.Button(btn_frame,
                   text=self.i18n.t("remove"),
                   command=self.remove_filter).pack(side=tk.LEFT, padx=2)
+        reset_button_args = {
+            "text": self.i18n.t("reset_filters"),
+            "command": self.reset_filters,
+        }
+        reset_button = tk.Button(btn_frame, **reset_button_args)
+        reset_button.pack(side=tk.LEFT, padx=2)
         tk.Button(btn_frame, text=self.i18n.t("move_up"),
                   command=self.move_up).pack(side=tk.LEFT, padx=2)
         tk.Button(btn_frame,
@@ -109,6 +121,45 @@ class FilterWindow(tk.Toplevel):
         removed = self.enabled_filters.pop(i)
         self._refresh_enabled_list()
         self.logger.info("フィルター削除: %s", removed)
+
+    def reset_filters(self):
+        """組み込みフィルターを再同期して、既定構成に初期化する."""
+        if not messagebox.askyesno(self.i18n.t("confirm_delete"),
+                                   self.i18n.t("confirm_reset_filters"),
+                                   parent=self):
+            return
+
+        filters_src = SCRIPT_DIR / "filters"
+        filters_dest = DATA_DIR / "filters"
+
+        try:
+            if not filters_src.exists():
+                raise FileNotFoundError(filters_src)
+
+            filters_dest.mkdir(parents=True, exist_ok=True)
+            for filter_file in filters_src.glob("*"):
+                if filter_file.is_file():
+                    shutil.copy2(filter_file, filters_dest / filter_file.name)
+
+            default_filters = [
+                filters_dest / "md2html.lua",
+                filters_dest / "diaglam.lua",
+                filters_dest / "wikilink.lua",
+            ]
+            self.enabled_filters = [f for f in default_filters if f.exists()]
+            self._refresh_enabled_list()
+            self.parent.last_filter_dir = filters_dest
+
+            self.logger.info("%s: %s", self.i18n.t("filters_reset_done"),
+                             filters_dest)
+            messagebox.showinfo(self.i18n.t("info"),
+                                self.i18n.t("filters_reset_done"),
+                                parent=self)
+        except (OSError, IOError, FileNotFoundError) as e:
+            self.logger.error("%s: %s", self.i18n.t("filters_reset_failed"), e)
+            messagebox.showerror(self.i18n.t("error"),
+                                 f"{self.i18n.t('filters_reset_failed')}: {e}",
+                                 parent=self)
 
     def move_up(self):
         """有効フィルターを上に移動する.

@@ -11,8 +11,10 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 from fnmatch import fnmatch
 from pathlib import Path
+from urllib.parse import quote
 
 # Windowsでのプロセス管理用フラグ
 if platform.system() == "Windows":
@@ -238,7 +240,7 @@ def init_default_profile():
         "plantuml_jar": None,
         "plantuml_use_server": False,
         "plantuml_server_url": "http://www.plantuml.com/plantuml",
-        "mermaid_mode": "mmdc",  # mmdc or browser
+        "mermaid_mode": "browser",  # mmdc or browser
     }
     path = PROFILE_DIR / "default.json"
     if not path.exists():
@@ -278,6 +280,173 @@ class PandocService:
         self.server_thread = None
         self.output_dir = None
 
+    def get_mermaid_browser_asset_path(self) -> Path:
+        """browserモード用 mermaid.min.js の配置元パスを返す."""
+        source_candidates = [
+            SCRIPT_DIR / "mermaid" / "mermaid.min.js",
+            DATA_DIR / "mermaid" / "mermaid.min.js",
+        ]
+        return next((path for path in source_candidates if path.exists()), None)
+
+    def cleanup_output_mermaid_asset(self, output_dir: Path) -> None:
+        """出力先に残った不要な mermaid/min.js を削除する."""
+        mermaid_file = output_dir / "mermaid" / "mermaid.min.js"
+        mermaid_dir = output_dir / "mermaid"
+
+        try:
+            if mermaid_file.exists():
+                mermaid_file.unlink()
+                self.logger.info("Removed unnecessary Mermaid asset: %s",
+                                 mermaid_file)
+            if mermaid_dir.exists() and not any(mermaid_dir.iterdir()):
+                mermaid_dir.rmdir()
+                self.logger.info("Removed empty Mermaid asset folder: %s",
+                                 mermaid_dir)
+        except (OSError, IOError) as e:
+            self.logger.warning("Failed to cleanup Mermaid asset folder: %s", e)
+
+    def _find_headless_browser_executable(self) -> Path:
+        """headless実行可能なブラウザ実行ファイルを探索する."""
+        candidates = [
+            shutil.which("msedge"),
+            shutil.which("chrome"),
+            shutil.which("chromium"),
+            shutil.which("google-chrome"),
+        ]
+
+        if platform.system() == "Windows":
+            candidates.extend([
+                (r"C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\"
+                 r"msedge.exe"),
+                r"C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
+                r"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+                (r"C:\\Program Files (x86)\\Google\\Chrome\\"
+                 r"Application\\chrome.exe"),
+            ])
+
+        for candidate in candidates:
+            if candidate and Path(candidate).exists():
+                return Path(candidate)
+        return None
+
+    def render_html_in_background_browser(self,
+                                          html_file: Path,
+                                          timeout_sec: int = 20) -> bool:
+        """HTMLをheadlessブラウザで開き、Mermaid最終化を裏側で実行する."""
+        url = self.prepare_browser_mode_server(html_file)
+        if not url:
+            return False
+
+        browser_exe = self._find_headless_browser_executable()
+        if not browser_exe:
+            self.logger.error(
+                "No headless-capable browser found (Edge/Chrome/Chromium)")
+            return False
+
+        creationflags = 0
+        if platform.system() == "Windows":
+            creationflags = CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP
+
+        cmd_variants = [
+            [
+                str(browser_exe), "--headless=new", "--disable-gpu",
+                "--virtual-time-budget=15000", "--hide-scrollbars", url
+            ],
+            [
+                str(browser_exe), "--headless", "--disable-gpu",
+                "--virtual-time-budget=15000", "--hide-scrollbars", url
+            ],
+        ]
+
+        launched = False
+        for cmd in cmd_variants:
+            try:
+                proc = subprocess.run(cmd,
+                                      capture_output=True,
+                                      text=True,
+                                      encoding="utf-8",
+                                      errors="replace",
+                                      timeout=timeout_sec,
+                                      check=False,
+                                      creationflags=creationflags)
+                launched = True
+                if proc.returncode not in (0, 1):
+                    self.logger.warning(
+                        "Headless browser returned code=%s for %s",
+                        proc.returncode, html_file)
+                break
+            except (FileNotFoundError, OSError, subprocess.SubprocessError,
+                    ValueError) as e:
+                self.logger.warning("Headless launch failed: %s", e)
+
+        if not launched:
+            self.logger.error("Failed to launch headless browser")
+            return False
+
+        # save-html の反映を短時間待機して確認
+        deadline = time.time() + max(timeout_sec, 3)
+        while time.time() < deadline:
+            try:
+                html = html_file.read_text(encoding='utf-8', errors='ignore')
+                has_mermaid_block = ('class="mermaid"' in html
+                                     or "class='mermaid'" in html)
+                if not has_mermaid_block and "<svg" in html:
+                    self.cleanup_output_mermaid_asset(html_file.parent)
+                    self.logger.info("Mermaid HTML finalized in background: %s",
+                                     html_file)
+                    return True
+            except (OSError, IOError):
+                pass
+            time.sleep(0.2)
+
+        self.cleanup_output_mermaid_asset(html_file.parent)
+        self.logger.warning(
+            "Background Mermaid finalization timeout or incomplete: %s",
+            html_file)
+        return False
+
+    def get_local_server_url(self, file_path: Path) -> str:
+        """ローカルサーバ上のURLを返す.
+
+        Build a local server URL for a file under the current output
+        directory.
+        """
+        if not self.server_port or not self.output_dir:
+            return None
+
+        resolved_path = file_path.resolve()
+        try:
+            relative_path = resolved_path.relative_to(self.output_dir)
+        except ValueError:
+            return None
+
+        encoded_path = "/".join(quote(part) for part in relative_path.parts)
+        return f"http://127.0.0.1:{self.server_port}/{encoded_path}"
+
+    def prepare_browser_mode_server(self, html_file: Path) -> str:
+        """browserモード用のローカルサーバを起動し、HTMLのURLを返す.
+
+        Start the background local server used by browser mode and return the
+        URL for the requested HTML file.
+        """
+        if (self.output_format != "html" or self.mermaid_mode != "browser"
+                or html_file.suffix.lower() != ".html"):
+            return None
+
+        port = self.start_local_server(html_file.parent)
+        if not port:
+            return None
+
+        url = self.get_local_server_url(html_file)
+        if not url:
+            self.logger.warning("Failed to build local server URL: %s",
+                                html_file)
+            return None
+
+        self.logger.info(
+            "Mermaid browser mode uses background local server: %s", url)
+        return url
+
     def start_local_server(self, directory: Path) -> int:
         """ローカルHTTPサーバを起動する（Mermaid SVG保存用）.
 
@@ -303,6 +472,7 @@ class PandocService:
 
             self.output_dir = directory.resolve()
             logger = self.logger
+            service_self = self
 
             class MermaidHTTPRequestHandler(http.server.SimpleHTTPRequestHandler
                                             ):
@@ -362,15 +532,77 @@ class PandocService:
                             logger.error("Failed to save SVG: %s", e)
                             self.send_response(500)
                             self.end_headers()
+
+                    elif self.path.startswith('/save-html'):
+                        content_length = int(self.headers['Content-Length'])
+                        post_data = self.rfile.read(content_length)
+
+                        try:
+                            data = json.loads(post_data.decode('utf-8'))
+                            html_content = data.get('html', '')
+                            # セキュリティ: ファイル名はベース名のみ許可
+                            filename = os.path.basename(
+                                data.get('filename', 'output.html'))
+                            if not filename.endswith('.html'):
+                                filename = 'output.html'
+
+                            html_path = directory / filename
+                            with open(html_path, 'w', encoding='utf-8') as f:
+                                f.write(html_content)
+
+                            logger.info("Saved HTML with inline SVGs: %s",
+                                        html_path)
+
+                            self.send_response(200)
+                            self.send_header('Content-type', 'application/json')
+                            self.send_header('Access-Control-Allow-Origin', '*')
+                            self.end_headers()
+                            response = json.dumps({'status': 'success'})
+                            self.wfile.write(response.encode('utf-8'))
+
+                        except (json.JSONDecodeError, IOError) as e:
+                            logger.error("Failed to save HTML: %s", e)
+                            self.send_response(500)
+                            self.end_headers()
+
                     else:
                         self.send_response(404)
                         self.end_headers()
 
+                def do_GET(self):  # pylint: disable=C0103
+                    """必要な静的アセットを仮想パスで配信する."""
+                    path_only = self.path.split('?', 1)[0]
+                    if path_only.endswith('/mermaid/mermaid.min.js'):
+                        service = service_self
+                        asset_file = service.get_mermaid_browser_asset_path()
+                        if asset_file and asset_file.exists():
+                            try:
+                                with open(asset_file, 'rb') as f:
+                                    content = f.read()
+                                self.send_response(200)
+                                self.send_header(
+                                    'Content-type',
+                                    'application/javascript; charset=utf-8')
+                                self.send_header('Content-Length',
+                                                 str(len(content)))
+                                self.send_header('Cache-Control', 'no-store')
+                                self.end_headers()
+                                self.wfile.write(content)
+                                return
+                            except (OSError, IOError):
+                                self.send_response(500)
+                                self.end_headers()
+                                return
+                    super().do_GET()
+
                 def log_message(self, fmt, *args):  # pylint: disable=W0221
                     """ログ出力を抑制."""
 
-            self.local_server = socketserver.TCPServer(
-                ("127.0.0.1", 0), MermaidHTTPRequestHandler)
+            class _ReusableTCPServer(socketserver.TCPServer):
+                allow_reuse_address = True
+
+            self.local_server = _ReusableTCPServer(("127.0.0.1", 0),
+                                                   MermaidHTTPRequestHandler)
             self.server_port = self.local_server.server_address[1]
 
             self.server_thread = threading.Thread(
@@ -480,6 +712,8 @@ class PandocService:
         mermaid_mode = self.mermaid_mode
 
         # 全ての設定がない場合は何もしない
+        # diaglam.lua defaults to mmdc, so browser mode must keep metadata
+        # injection to override the filter default.
         no_settings = (not final_java_path and not final_plantuml_jar
                        and not use_server and mermaid_mode == "mmdc")
         if no_settings:
@@ -701,6 +935,13 @@ class PandocService:
         tuple
             (success: bool, stdout: str, stderr: str, returncode: int)
         """
+        is_browser_html = (output_file.suffix.lower() == ".html"
+                           and self.mermaid_mode == "browser")
+        if is_browser_html:
+            self.logger.info(
+                "Mermaid mode: browser (render via background local server)")
+            self.cleanup_output_mermaid_asset(output_file.parent)
+
         temp_metadata_file = self.create_metadata_file(input_file,
                                                        java_path_override,
                                                        plantuml_jar_override)
@@ -873,7 +1114,7 @@ class PandocService:
         self.plantuml_use_server = data.get("plantuml_use_server", False)
         self.plantuml_server_url = data.get("plantuml_server_url",
                                             "http://www.plantuml.com/plantuml")
-        self.mermaid_mode = data.get("mermaid_mode", "mmdc")
+        self.mermaid_mode = data.get("mermaid_mode", "browser")
 
         self.logger.info(f"Profile loaded: {name}")
         return True

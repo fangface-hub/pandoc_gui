@@ -2,6 +2,7 @@
 """Pandoc GUIアプリケーションのテストコード."""
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
@@ -221,6 +222,8 @@ class TestMainWindow(unittest.TestCase):
         self.window.plantuml_server_url_var = Mock()
         self.window.plantuml_server_url_var.get = Mock(
             return_value="http://www.plantuml.com/plantuml")
+        self.window.mermaid_mode_var = Mock()
+        self.window.mermaid_mode_var.get = Mock(return_value="browser")
         # その他の必要な属性
         self.window.input_type = "single"
         self.window.toc_enabled = False
@@ -315,6 +318,51 @@ class TestMainWindow(unittest.TestCase):
             self.window.run_pandoc()
             # スレッドが作成されたことを確認
             # (実際の変換はバックグラウンドで実行される)
+
+    def test_run_pandoc_syncs_mermaid_mode_from_ui(self):
+        """run_pandocでUIのMermaid設定がサービスへ反映される."""
+        self.window.input_path = Path("test.md")
+        self.window.output_path = Path("output")
+        self.window.mermaid_mode_var.get.return_value = "browser"
+        self.window.pandoc_service.mermaid_mode = "mmdc"
+
+        with patch.object(Path, 'is_file', return_value=True), \
+             patch('main_window.threading.Thread'):
+            self.window.run_pandoc()
+
+        self.assertEqual(self.window.pandoc_service.mermaid_mode, "browser")
+
+    def test_open_html_with_server_uses_background_renderer(self):
+        """browserモードのHTMLは背景レンダラで処理される."""
+        html_file = Path("output/test.html")
+        self.window.pandoc_service.render_html_in_background_browser = Mock(
+            return_value=True)
+
+        renderer = self.window.pandoc_service.render_html_in_background_browser
+        open_html_with_server = getattr(self.window, '_open_html_with_server')
+        open_html_with_server(html_file)
+
+        renderer.assert_called_once_with(html_file)
+
+    def test_open_mermaid_htmls_in_folder_with_server(self):
+        """フォルダ変換後はMermaidを含むHTMLのみサーバ経由で開く."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_folder = Path(tmpdir)
+            first_html = output_folder / "a.html"
+            second_html = output_folder / "b.html"
+            first_html.write_text(
+                '<html><body><pre class="mermaid">graph TD</pre></body></html>',
+                encoding='utf-8')
+            second_html.write_text("<html><body>No diagram</body></html>",
+                                   encoding='utf-8')
+            open_html_with_server = Mock()
+            setattr(self.window, '_open_html_with_server',
+                    open_html_with_server)
+
+            getattr(self.window,
+                    '_open_mermaid_htmls_in_folder_with_server')(output_folder)
+
+        open_html_with_server.assert_called_once_with(first_html)
 
     def test_should_exclude_pattern_matching(self):
         """除外パターンのマッチングテスト."""

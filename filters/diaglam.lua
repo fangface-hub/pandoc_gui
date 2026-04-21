@@ -42,6 +42,8 @@ local plantuml_server_url = "http://www.plantuml.com/plantuml"
 
 -- Mermaidモード設定 (mmdc or browser)
 local mermaid_mode = "mmdc"
+-- ブラウザモードで処理したブロック数（handle_doc で参照）
+local diagram_count = 0
 
 -- Mermaid.jsのパス設定（スタンドアロン版を使用）
 local mermaid_js_path = "mermaid/mermaid.min.js"
@@ -79,7 +81,7 @@ local function base64_encode(filepath)
   end
 end
 
-function Meta(meta)
+local function handle_meta(meta)
   if meta.plantuml_server then
     plantuml_use_server = meta.plantuml_server == true or pandoc.utils.stringify(meta.plantuml_server) == "true"
   end
@@ -101,83 +103,21 @@ function Meta(meta)
   return meta
 end
 
-function CodeBlock(el)
+local function handle_code_block(el)
   -- Mermaid
   if el.classes:includes("mermaid") then
     -- browserモードの場合は、mermaid.jsを使うHTMLを出力
     if mermaid_mode == "browser" then
-      -- ユニークなIDを生成
-      local diagram_id = "mermaid-" .. tostring(os.time()) .. "-" .. tostring(math.random(1000, 9999))
-      local filename = diagram_id .. ".svg"
-      
-      local html = string.format([[
-<div class="mermaid-container" style="margin: 20px 0; padding: 10px; border: 1px solid #ddd;">
-  <div class="mermaid" id="%s">
-%s
-  </div>
-  <p id="status-%s" style="margin-top: 10px; color: #666;">描画中...</p>
-</div>
-<script src="./%s"></script>
-<script>
-  // 初期化
-  mermaid.initialize({ startOnLoad: false });
-  
-  // 描画と自動保存
-  (async () => {
-    const statusElement = document.getElementById('status-%s');
-    try {
-      const element = document.getElementById('%s');
-      if (element) {
-        // Mermaid図を描画
-        const { svg } = await mermaid.render('%s-rendered', `%s`);
-        element.innerHTML = svg;
-        statusElement.textContent = '描画完了。保存中...';
-        statusElement.style.color = '#28a745';
-        
-        // SVGを取得
-        const svgElement = element.querySelector('svg');
-        if (svgElement) {
-          const svgData = new XMLSerializer().serializeToString(svgElement);
-          
-          // サーバにPOST（自動保存）
-          try {
-            const response = await fetch('/save-svg', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                svg: svgData,
-                filename: '%s'
-              })
-            });
-            
-            if (response.ok) {
-              statusElement.textContent = '✓ 保存完了: %s';
-              statusElement.style.color = '#28a745';
-              console.log('SVG saved successfully: %s');
-            } else {
-              statusElement.textContent = '⚠ 保存失敗';
-              statusElement.style.color = '#dc3545';
-            }
-          } catch (error) {
-            console.error('Failed to save SVG:', error);
-            statusElement.textContent = '⚠ 保存エラー: ' + error.message;
-            statusElement.style.color = '#dc3545';
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Failed to render mermaid diagram:', error);
-      document.getElementById('%s').innerHTML = '<p style="color: red;">描画エラー: ' + error.message + '</p>';
-      statusElement.textContent = '✗ 描画失敗';
-      statusElement.style.color = '#dc3545';
-    }
-  })();
-</script>]], diagram_id, el.text, diagram_id, mermaid_js_path, diagram_id, diagram_id, diagram_id, el.text, filename, filename, filename, diagram_id)
-      return pandoc.RawBlock('html', html)
+      -- ブロックを連番IDで識別
+      diagram_count = diagram_count + 1
+      local diagram_id = string.format("mermaid-%d", diagram_count)
+      io.stderr:write(string.format("🌐 Mermaid browser mode: %s\n", diagram_id))
+      -- HTML エスケープ
+      local escaped = el.text:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
+      return pandoc.RawBlock('html',
+        string.format('<pre class="mermaid" id="%s">%s</pre>', diagram_id, escaped))
     end
-    
+
     -- mmdcモード（従来の方法）
     local input = tmp(".mmd")
     local output = tmp(".svg")
@@ -394,3 +334,64 @@ if (typeof showImageModal === 'undefined') {
     end
   end
 end
+
+-- ドキュメント末尾にmermaid.jsローダースクリプトを追加（browser モード用）
+local function handle_doc(doc)
+  if mermaid_mode == "browser" and diagram_count > 0 then
+    io.stderr:write(string.format("🌐 Adding mermaid finalizer script (%d block(s))\n", diagram_count))
+    local script_html = string.format([[<script type="text/javascript">
+(function() {
+  var _self = document.currentScript;
+  var _mjs  = document.createElement('script');
+  _mjs.id   = 'pandoc-gui-mermaid-js';
+  _mjs.src  = '%s';
+  _mjs.onload = async function() {
+    mermaid.initialize({ startOnLoad: false, securityLevel: 'loose' });
+    var els = document.querySelectorAll('pre.mermaid');
+    for (var i = 0; i < els.length; i++) {
+      var el    = els[i];
+      var diagId = el.id || ('mermaid-' + i);
+      try {
+        var res = await mermaid.render(diagId + '-svg', el.textContent.trim());
+        var tmp = document.createElement('div');
+        tmp.innerHTML = res.svg;
+        el.parentNode.replaceChild(tmp.firstChild, el);
+      } catch(e) {
+        console.error('[PandocGUI] Mermaid render error (' + diagId + '):', e);
+      }
+    }
+    // mermaid.js スクリプトとこのスクリプトをDOMから除去
+    var mjs = document.getElementById('pandoc-gui-mermaid-js');
+    if (mjs) mjs.parentNode.removeChild(mjs);
+    if (_self && _self.parentNode) _self.parentNode.removeChild(_self);
+    // SVGインライン埋め込み済みHTMLを /save-html に POST して上書き
+    var fname = decodeURIComponent(window.location.pathname.split('/').pop());
+    try {
+      var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      var r = await fetch('/save-html', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ html: html, filename: fname })
+      });
+      if (r.ok) {
+        console.log('[PandocGUI] SVGインライン埋め込みHTML保存完了: ' + fname);
+      } else {
+        console.warn('[PandocGUI] /save-html returned ' + r.status);
+      }
+    } catch(e) {
+      console.error('[PandocGUI] /save-html failed:', e);
+    }
+  };
+  document.body.appendChild(_mjs);
+})();
+</script>]], mermaid_js_path)
+    table.insert(doc.blocks, pandoc.RawBlock('html', script_html))
+  end
+  return doc
+end
+
+return {
+  { Meta = handle_meta },
+  { CodeBlock = handle_code_block },
+  { Pandoc = handle_doc }
+}

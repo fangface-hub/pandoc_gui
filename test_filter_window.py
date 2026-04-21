@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """フィルター管理ウィンドウのテストコード."""
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
@@ -16,6 +17,8 @@ class TestFilterWindow(unittest.TestCase):
         self.parent = Mock()
         self.parent.logger = MagicMock()
         self.parent.last_filter_dir = Path(".")
+        self.parent.i18n = Mock()
+        self.parent.i18n.t.side_effect = lambda key, **kwargs: key
 
         # FilterWindowのGUI初期化をモックして回避
         with patch.object(FilterWindow, '__init__', return_value=None):
@@ -24,6 +27,7 @@ class TestFilterWindow(unittest.TestCase):
         # 必要な属性を手動で設定
         self.window.parent = self.parent
         self.window.logger = self.parent.logger
+        self.window.i18n = self.parent.i18n
         self.window.enabled_filters = []
         self.window.result = None
         self.window.enabled_list = Mock()
@@ -195,6 +199,32 @@ class TestFilterWindow(unittest.TestCase):
 
         self.assertIsNone(self.window.result)
         self.window.destroy.assert_called_once()
+
+    def test_reset_filters(self):
+        """初期化で組み込みフィルターに戻る."""
+        with tempfile.TemporaryDirectory() as src_tmp, \
+             tempfile.TemporaryDirectory() as dst_tmp, \
+             patch('filter_window.messagebox.askyesno', return_value=True), \
+             patch('filter_window.messagebox.showinfo'):
+            src_filters = Path(src_tmp) / "filters"
+            dst_filters = Path(dst_tmp) / "filters"
+            src_filters.mkdir(parents=True, exist_ok=True)
+            (src_filters / "md2html.lua").write_text("-- md2html",
+                                                     encoding='utf-8')
+            (src_filters / "diaglam.lua").write_text("-- diaglam",
+                                                     encoding='utf-8')
+            (src_filters / "wikilink.lua").write_text("-- wikilink",
+                                                      encoding='utf-8')
+
+            with patch('filter_window.SCRIPT_DIR', Path(src_tmp)), \
+                 patch('filter_window.DATA_DIR', Path(dst_tmp)):
+                self.window.reset_filters()
+
+            self.assertEqual(len(self.window.enabled_filters), 3)
+            self.assertEqual(self.parent.last_filter_dir, dst_filters)
+            self.assertTrue((dst_filters / "md2html.lua").exists())
+            self.assertTrue((dst_filters / "diaglam.lua").exists())
+            self.assertTrue((dst_filters / "wikilink.lua").exists())
 
 
 if __name__ == "__main__":
