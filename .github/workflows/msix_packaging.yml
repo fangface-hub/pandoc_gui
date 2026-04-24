@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 # For fork users: To customize the MSIX package identity, set Repository Variables:
 # 1. Go to Settings → Secrets and variables → Actions → Variables tab
@@ -27,6 +27,13 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Set release tag from project version
+        id: rel
+        run: |
+          $projectVersion = python -c "import pathlib,tomllib;print(tomllib.loads(pathlib.Path('pyproject.toml').read_text(encoding='utf-8-sig'))['project']['version'])"
+          echo "tag=v$projectVersion" >> $env:GITHUB_OUTPUT
+          echo "name=PandocGUI v$projectVersion" >> $env:GITHUB_OUTPUT
+
       - name: Install PyInstaller
         run: pip install pyinstaller
 
@@ -41,7 +48,7 @@ jobs:
           $publisherName = if ($env:MSIX_PUBLISHER_NAME) { $env:MSIX_PUBLISHER_NAME } else { $env:GITHUB_REPOSITORY_OWNER }
 
           # pyproject.toml からバージョンを読み取り、MSIX形式 (x.y.z.0) に変換
-          $projectVersion = python -c "import tomllib;print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])"
+          $projectVersion = python -c "import pathlib,tomllib;print(tomllib.loads(pathlib.Path('pyproject.toml').read_text(encoding='utf-8-sig'))['project']['version'])"
           $versionParts = $projectVersion.Split('.')
           if ($versionParts.Length -eq 3) {
             $msixVersion = "$projectVersion.0"
@@ -99,10 +106,14 @@ jobs:
           $signtool = Join-Path $latest "x64\signtool.exe"
           & $signtool sign /fd SHA256 /a /f PandocGUI.pfx /p "$env:CERT_PASSWORD" PandocGUI.msix
 
-      - name: Upload MSIX
-        uses: actions/upload-artifact@v4
+      - name: Publish Release assets (non-zip download)
+        uses: softprops/action-gh-release@v2
         with:
-          name: msix-package
-          path: |
+          tag_name: ${{ steps.rel.outputs.tag }}
+          name: ${{ steps.rel.outputs.name }}
+          draft: false
+          prerelease: true
+          overwrite_files: true
+          files: |
             PandocGUI.msix
             PandocGUI.cer

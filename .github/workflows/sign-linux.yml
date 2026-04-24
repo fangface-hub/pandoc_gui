@@ -5,7 +5,7 @@ on:
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
 
 jobs:
   build-sign-linux:
@@ -19,6 +19,13 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
+      - name: Set release tag from project version
+        id: rel
+        run: |
+          ver=$(python -c "import pathlib,tomllib;print(tomllib.loads(pathlib.Path('pyproject.toml').read_text(encoding='utf-8-sig'))['project']['version'])")
+          echo "tag=v$ver" >> "$GITHUB_OUTPUT"
+          echo "name=PandocGUI v$ver" >> "$GITHUB_OUTPUT"
 
       - name: Install PyInstaller
         run: pip install pyinstaller
@@ -40,14 +47,14 @@ jobs:
       - name: Sign ZIP with OIDC
         run: cosign sign-blob --yes --output-signature PandocGUI-linux.zip.sig PandocGUI-linux.zip
 
-      - name: Upload ZIP
-        uses: actions/upload-artifact@v4
+      - name: Publish Release assets
+        uses: softprops/action-gh-release@v2
         with:
-          name: pandocgui-linux-zip
-          path: PandocGUI-linux.zip
-
-      - name: Upload ZIP signature
-        uses: actions/upload-artifact@v4
-        with:
-          name: pandocgui-linux-signature
-          path: PandocGUI-linux.zip.sig
+          tag_name: ${{ steps.rel.outputs.tag }}
+          name: ${{ steps.rel.outputs.name }}
+          draft: false
+          prerelease: true
+          overwrite_files: true
+          files: |
+            PandocGUI-linux.zip
+            PandocGUI-linux.zip.sig

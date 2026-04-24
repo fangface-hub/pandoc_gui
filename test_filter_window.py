@@ -215,16 +215,21 @@ class TestFilterWindow(unittest.TestCase):
                                                      encoding='utf-8')
             (src_filters / "wikilink.lua").write_text("-- wikilink",
                                                       encoding='utf-8')
+            dst_filters.mkdir(parents=True, exist_ok=True)
+            (dst_filters / "custom.lua").write_text("-- custom",
+                                                    encoding='utf-8')
 
             with patch('filter_window.SCRIPT_DIR', Path(src_tmp)), \
                  patch('filter_window.DATA_DIR', Path(dst_tmp)):
                 self.window.reset_filters()
 
-            self.assertEqual(len(self.window.enabled_filters), 3)
+            self.assertEqual(len(self.window.enabled_filters), 4)
             self.assertEqual(self.parent.last_filter_dir, dst_filters)
             self.assertTrue((dst_filters / "md2html.lua").exists())
             self.assertTrue((dst_filters / "diaglam.lua").exists())
             self.assertTrue((dst_filters / "wikilink.lua").exists())
+            self.assertIn(dst_filters / "custom.lua",
+                          self.window.enabled_filters)
 
 
 if __name__ == "__main__":

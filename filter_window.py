@@ -141,12 +141,10 @@ class FilterWindow(tk.Toplevel):
                 if filter_file.is_file():
                     shutil.copy2(filter_file, filters_dest / filter_file.name)
 
-            default_filters = [
-                filters_dest / "md2html.lua",
-                filters_dest / "diaglam.lua",
-                filters_dest / "wikilink.lua",
-            ]
-            self.enabled_filters = [f for f in default_filters if f.exists()]
+            self.enabled_filters = sorted([
+                filter_file for filter_file in filters_dest.glob("*.lua")
+                if filter_file.is_file()
+            ])
             self._refresh_enabled_list()
             self.parent.last_filter_dir = filters_dest
 

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """バージョン情報を管理するモジュール.
 
 バージョン番号の取得優先順位:
@@ -15,7 +15,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 # Keep this in sync with pyproject.toml [project].version.
-PROJECT_FALLBACK_VERSION = "1.3.2"
+PROJECT_FALLBACK_VERSION = "1.3.4"
 
 # Python 3.11+ では標準のtomllib、それ以前はtomliを使用
 if sys.version_info >= (3, 11):
