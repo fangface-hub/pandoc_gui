@@ -358,6 +358,8 @@ class TestBrowserModeConversion(unittest.TestCase):
 
             html = output_file.read_text(encoding='utf-8')
             self.assertIn("mermaid.min.js", html)
+            self.assertIn("showImageModal", html)
+            self.assertIn("svg.style.cursor = 'zoom-in'", html)
             self.assertNotIn("data:image/svg+xml;base64", html)
             self.assertFalse(
                 (output_file.parent / "mermaid" / "mermaid.min.js").exists())

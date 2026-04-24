@@ -81,6 +81,28 @@ local function base64_encode(filepath)
   end
 end
 
+local function render_zoomable_image_html(src, alt)
+  return string.format([[
+
+<div style="margin: 10px 0;">
+  <img src="%s" style="max-width: 600px; cursor: zoom-in; display: block;" onclick="showImageModal(this.src)" alt="%s" />
+</div>
+<script>
+if (typeof showImageModal === 'undefined') {
+  function showImageModal(src) {
+    var modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%%;height:100%%;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+    modal.onclick = function() { document.body.removeChild(modal); };
+    var img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'max-width:90%%;max-height:90%%;background:white;';
+    modal.appendChild(img);
+    document.body.appendChild(modal);
+  }
+}
+</script>]], src, alt)
+end
+
 local function handle_meta(meta)
   if meta.plantuml_server then
     plantuml_use_server = meta.plantuml_server == true or pandoc.utils.stringify(meta.plantuml_server) == "true"
@@ -168,26 +190,7 @@ local function handle_code_block(el)
     if base64_data and base64_data ~= "" then
       io.stderr:write(string.format("✅ Base64 encoded, length: %d\n", #base64_data))
       local data_uri = "data:image/svg+xml;base64," .. base64_data
-      -- クリックでモーダル表示するHTMLを出力
-      local html = string.format([[
-
-<div style="margin: 10px 0;">
-  <img src="%s" style="max-width: 600px; cursor: zoom-in;" onclick="showImageModal(this.src)" alt="Mermaid Diagram" />
-</div>
-<script>
-if (typeof showImageModal === 'undefined') {
-  function showImageModal(src) {
-    var modal = document.createElement('div');
-    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%%;height:100%%;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
-    modal.onclick = function() { document.body.removeChild(modal); };
-    var img = document.createElement('img');
-    img.src = src;
-    img.style.cssText = 'max-width:90%%;max-height:90%%;';
-    modal.appendChild(img);
-    document.body.appendChild(modal);
-  }
-}
-</script>]], data_uri)
+      local html = render_zoomable_image_html(data_uri, "Mermaid Diagram")
       return pandoc.RawBlock('html', html)
     else
       -- Base64エンコードに失敗した場合は通常のファイルパスを返す
@@ -307,26 +310,7 @@ if (typeof showImageModal === 'undefined') {
     local base64_data = base64_encode(actual_output)
     if base64_data and base64_data ~= "" then
       local data_uri = "data:image/svg+xml;base64," .. base64_data
-      -- クリックでモーダル表示するHTMLを出力
-      local html = string.format([[
-
-<div style="margin: 10px 0;">
-  <img src="%s" style="max-width: 600px; cursor: zoom-in;" onclick="showImageModal(this.src)" alt="PlantUML Diagram" />
-</div>
-<script>
-if (typeof showImageModal === 'undefined') {
-  function showImageModal(src) {
-    var modal = document.createElement('div');
-    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%%;height:100%%;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
-    modal.onclick = function() { document.body.removeChild(modal); };
-    var img = document.createElement('img');
-    img.src = src;
-    img.style.cssText = 'max-width:90%%;max-height:90%%;';
-    modal.appendChild(img);
-    document.body.appendChild(modal);
-  }
-}
-</script>]], data_uri)
+      local html = render_zoomable_image_html(data_uri, "PlantUML Diagram")
       return pandoc.RawBlock('html', html)
     else
       -- Base64エンコードに失敗した場合は通常のファイルパスを返す
@@ -339,6 +323,21 @@ end
 local function handle_doc(doc)
   if mermaid_mode == "browser" and diagram_count > 0 then
     io.stderr:write(string.format("🌐 Adding mermaid finalizer script (%d block(s))\n", diagram_count))
+    local modal_script_html = [[<script>
+if (typeof window.showImageModal === 'undefined') {
+  window.showImageModal = function(src) {
+    var modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+    modal.onclick = function() { document.body.removeChild(modal); };
+    var img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'max-width:90%;max-height:90%;background:white;';
+    modal.appendChild(img);
+    document.body.appendChild(modal);
+  };
+}
+</script>]]
+    table.insert(doc.blocks, pandoc.RawBlock('html', modal_script_html))
     local script_html = string.format([[<script type="text/javascript">
 (function() {
   var _self = document.currentScript;
@@ -355,7 +354,15 @@ local function handle_doc(doc)
         var res = await mermaid.render(diagId + '-svg', el.textContent.trim());
         var tmp = document.createElement('div');
         tmp.innerHTML = res.svg;
-        el.parentNode.replaceChild(tmp.firstChild, el);
+        var svg = tmp.firstChild;
+        var container = document.createElement('div');
+        container.style.margin = '10px 0';
+        svg.style.display = 'block';
+        svg.style.maxWidth = '600px';
+        svg.style.cursor = 'zoom-in';
+        svg.setAttribute('onclick', "showImageModal('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(this.outerHTML))");
+        container.appendChild(svg);
+        el.parentNode.replaceChild(container, el);
       } catch(e) {
         console.error('[PandocGUI] Mermaid render error (' + diagId + '):', e);
       }
