@@ -332,6 +332,23 @@ class TestMainWindow(unittest.TestCase):
 
         self.assertEqual(self.window.pandoc_service.mermaid_mode, "browser")
 
+    @patch('main_window.filedialog.asksaveasfilename')
+    def test_select_output_file_mode_uses_service_output_format(
+            self, mock_save):
+        """select_outputは未定義属性ではなくサービスの出力形式を使う."""
+        self.window.input_type_var.get.return_value = "file"
+        self.window.input_path = Path("sample.md")
+        self.window.last_output_dir = Path(".")
+        self.window.pandoc_service.output_format = "docx"
+        self.window.i18n.t = Mock(side_effect=lambda key, **kwargs: key)
+        mock_save.return_value = "result.docx"
+
+        self.window.select_output()
+
+        self.assertEqual(self.window.output_path, Path("result.docx"))
+        self.assertEqual(self.window.last_output_dir, Path("."))
+        mock_save.assert_called_once()
+
     def test_open_html_with_server_uses_background_renderer(self):
         """browserモードのHTMLは背景レンダラで処理される."""
         html_file = Path("output/test.html")

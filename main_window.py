@@ -769,20 +769,25 @@ class MainWindow(tk.Tk):
 
         Select output destination (dynamically changes according to input type).
         """
+        output_format = self.pandoc_service.output_format
+        if not output_format:
+            output_format = self.format_var.get() or "html"
+
         if self.input_type_var.get() == "file":
             # 入力がファイルの場合は出力ファイルを選択
             # 入力ファイルが選択されていれば、その拡張子を変えたファイル名を初期表示
             initial_filename = ""
             if self.input_path and self.input_path.is_file():
-                initial_filename = (self.input_path.stem +
-                                    f".{self.output_format}")
+                initial_filename = self.input_path.stem + f".{output_format}"
 
             file = filedialog.asksaveasfilename(
                 initialdir=str(self.last_output_dir),
                 initialfile=initial_filename,
-                defaultextension=f".{self.output_format}",
-                filetypes=[(f"{self.output_format.upper()}ファイル",
-                            f"*.{self.output_format}"), ("すべてのファイル", "*.*")])
+                defaultextension=f".{output_format}",
+                filetypes=[(self.i18n.t("output_file_format",
+                                        format=output_format.upper()),
+                            f"*.{output_format}"),
+                           (self.i18n.t("all_files"), "*.*")])
             if not file:
                 return
             self.output_path = Path(file)
