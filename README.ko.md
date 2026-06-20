@@ -117,48 +117,59 @@ java_path: C:\path\to\java.exe
 
 ## 배포 패키지 생성
 
-### PyInstaller로 폴더 배포 생성
+### Nuitka로 폴더 배포 생성
 
-1. PyInstaller 설치:
+1. Nuitka 설치:
 
     ```powershell
-    uv tool install pyinstaller
+    uv tool install nuitka
     ```
 
 2. 실행 파일 생성:
 
-    __참고__: `PandocGUI.spec`는 저장소에 포함되어 있으며 `filters/` 및 `locales/`를 `_internal/` 외부에 배치하도록 빌드 후 처리가 구성되어 있습니다.
+    __참고__: `main_window.py`는 저장소에 포함되어 있으며 `filters/` 및 `locales/`를 `main_window.dist/` 외부에 배치하도록 빌드 후 처리가 구성되어 있습니다.
 
     ```powershell
-    uvx pyinstaller PandocGUI.spec
+    uv run python -m nuitka --standalone --output-dir=dist --output-filename=PandocGUI --include-data-dir=filters=filters --include-data-dir=locales=locales --include-data-dir=stylesheets=stylesheets --include-data-dir=help=help --include-data-dir=profiles=profiles --include-data-dir=mermaid=mermaid --include-data-dir=LICENSES=LICENSES main_window.py
     ```
 
-    `.spec` 파일을 재생성해야 하는 경우에만(일반적으로 필요하지 않음):
+    `Nuitka` 파일을 재생성해야 하는 경우에만(일반적으로 필요하지 않음):
 
     ```powershell
-    uvx pyinstaller --noconsole --onedir --name "PandocGUI" `
-      --add-data "locales;locales" `
-      --add-data "filters;filters" `
-      --add-data "stylesheets;stylesheets" `
-      main_window.py
+    uv run python -m nuitka --standalone --clang --msvc=latest --windows-console-mode=disable --output-dir=dist --output-filename=PandocGUI.exe --include-data-dir=filters=filters --include-data-dir=locales=locales --include-data-dir=stylesheets=stylesheets --include-data-dir=help=help --include-data-dir=profiles=profiles --include-data-dir=mermaid=mermaid --include-data-dir=LICENSES=LICENSES main_window.py
     ```
 
-    __중요__: 위 명령으로 생성된 `.spec` 파일에 빌드 후 처리를 수동으로 추가해야 합니다.
+    __중요__: 위 명령으로 생성된 `Nuitka` 파일에 빌드 후 처리를 수동으로 추가해야 합니다.
 
-3. 빌드 출력은 `dist/PandocGUI/`에 있습니다:
+3. 빌드 출력은 `dist/main_window.dist/`에 있습니다:
 
     ```text
-    dist/PandocGUI/
+    dist/main_window.dist/
     ├── PandocGUI.exe        # 실행 파일
     ├── filters/             # Lua 필터
     ├── locales/             # 번역 파일
     ├── stylesheets/         # CSS 스타일시트
     ├── help/                # 도움말 파일(HTML)
     ├── profiles/            # 프로필(런타임에 생성)
-    └── _internal/           # Python 종속성
+    └── *.dll / *.pyd ...  # Runtime dependencies
     ```
 
-    `.spec` 파일의 빌드 후 처리는 `filters/`, `locales/`, `stylesheets/`를 `_internal/` 외부에 배치합니다
+    `Nuitka` 파일의 빌드 후 처리는 `filters/`, `locales/`, `stylesheets/`를 `main_window.dist/` 외부에 배치합니다
+
+### 버전 번호 올리기
+
+리포지토리 루트에서 다음 스크립트를 사용합니다:
+
+- `./bump_patch.ps1`: `X.Y.Z` -> `X.Y.(Z+1)`
+- `./bump_minor.ps1`: `X.Y.Z` -> `X.(Y+1).0`
+- `./bump_major.ps1`: `X.Y.Z` -> `(X+1).0.0`
+
+상위 버전을 올리면 하위 버전은 0으로 초기화됩니다.
+모든 스크립트는 다음 파일을 동시에 업데이트합니다:
+
+- `pyproject.toml`
+- `__version__.py`
+- `AppxManifest.xml`
 
 ### MSIX Packaging Tool로 Windows 설치 프로그램 생성
 
@@ -178,7 +189,7 @@ java_path: C:\path\to\java.exe
 
 5. 설치 프로그램 선택:
 
-    - "Browse"를 클릭하고 `dist/PandocGUI/PandocGUI.exe` 선택
+    - "Browse"를 클릭하고 `dist/main_window.dist/PandocGUI.exe` 선택
     - Installation location: `C:\Program Files\PandocGUI`
 
 6. 설치 실행 및 캡처:

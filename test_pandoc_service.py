@@ -6,10 +6,13 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
-from pandoc_service import PandocService, check_pandoc_installed, get_app_dir
+from pandoc_service import (PandocService, check_pandoc_installed, get_app_dir,
+                            get_data_dir, get_default_data_dir,
+                            get_settings_file)
 
 
 class TestPandocServiceMermaidMode(unittest.TestCase):
@@ -395,6 +398,145 @@ class TestProfileManagement(unittest.TestCase):
 
         # 検証
         self.assertEqual(profile_data["mermaid_mode"], "browser")
+
+
+class TestDataDirSettings(unittest.TestCase):
+    """setting.json による DATA_DIR 管理のテスト."""
+
+    def test_first_launch_creates_setting_json(self):
+        """初回起動時に setting.json が作成される."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            base_dir = Path(tmpdir) / "PandocGUI"
+            settings_path = base_dir / "setting.json"
+
+            with patch("pandoc_service.get_default_data_dir",
+                       return_value=base_dir), \
+                 patch("pandoc_service.get_settings_file",
+                       return_value=settings_path):
+                data_dir = get_data_dir()
+
+            self.assertEqual(data_dir, base_dir)
+            self.assertTrue(settings_path.exists())
+
+            with open(settings_path, "r", encoding="utf-8") as f:
+                settings_data = json.load(f)
+            self.assertEqual(settings_data.get("data_dir"), str(base_dir))
+
+    def test_data_dir_is_loaded_from_setting_json(self):
+        """setting.json の data_dir 設定が優先される."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            base_dir = Path(tmpdir) / "PandocGUI"
+            settings_path = base_dir / "setting.json"
+            custom_data_dir = Path(tmpdir) / "CustomDataDir"
+
+            settings_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(settings_path, "w", encoding="utf-8") as f:
+                json.dump({"data_dir": str(custom_data_dir)},
+                          f,
+                          indent=2,
+                          ensure_ascii=False)
+
+            with patch("pandoc_service.get_default_data_dir",
+                       return_value=base_dir), \
+                 patch("pandoc_service.get_settings_file",
+                       return_value=settings_path):
+                data_dir = get_data_dir()
+
+            self.assertEqual(data_dir, custom_data_dir)
+
+    def test_default_data_dir_windows_documents(self):
+        """Windows既定のDATA_DIRは Documents/PandocGUI."""
+        with patch("pandoc_service.platform.system",
+                   return_value="Windows"), \
+             patch("pandoc_service.Path.home",
+                   return_value=Path("C:/Users/TestUser")):
+            data_dir = get_default_data_dir()
+
+        self.assertEqual(data_dir,
+                         Path("C:/Users/TestUser") / "Documents" / "PandocGUI")
+
+    def test_settings_file_windows_localappdata(self):
+        """Windowsのsetting.jsonはLOCALAPPDATA/PandocGUI配下."""
+        with patch("pandoc_service.platform.system", return_value="Windows"), \
+             patch("pandoc_service.os.getenv",
+                   return_value="C:/Users/TestUser/AppData/Local"):
+            settings_path = get_settings_file()
+
+        self.assertEqual(
+            settings_path,
+            Path("C:/Users/TestUser/AppData/Local") / "PandocGUI" /
+            "setting.json")
+
+    def test_settings_file_macos_preferences(self):
+        """macOSのsetting.jsonはLibrary/Preferences/PandocGUI配下."""
+        with patch("pandoc_service.platform.system", return_value="Darwin"), \
+             patch("pandoc_service.Path.home",
+                   return_value=Path("/Users/testuser")):
+            settings_path = get_settings_file()
+
+        self.assertEqual(
+            settings_path,
+            Path("/Users/testuser") / "Library" / "Preferences" / "PandocGUI" /
+            "setting.json")
+
+    def test_settings_file_linux_xdg_config_home(self):
+        """Linuxのsetting.jsonはXDG_CONFIG_HOME/PandocGUI配下."""
+        with patch("pandoc_service.platform.system", return_value="Linux"), \
+             patch("pandoc_service.os.getenv",
+                   return_value="/home/testuser/.config"):
+            settings_path = get_settings_file()
+
+        self.assertEqual(
+            settings_path,
+            Path("/home/testuser/.config") / "PandocGUI" / "setting.json")
+
+    def test_windows_settings_dir_is_not_used_as_data_dir(self):
+        """Windowsではsetting.json配置フォルダをDATA_DIRにしない."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            default_data_dir = Path(tmpdir) / "Documents" / "PandocGUI"
+            settings_path = (Path(tmpdir) / "LocalAppData" / "PandocGUI" /
+                             "setting.json")
+
+            settings_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(settings_path, "w", encoding="utf-8") as f:
+                json.dump({"data_dir": str(settings_path.parent)},
+                          f,
+                          indent=2,
+                          ensure_ascii=False)
+
+            with patch("pandoc_service.platform.system",
+                       return_value="Windows"), \
+                 patch("pandoc_service.get_default_data_dir",
+                       return_value=default_data_dir), \
+                 patch("pandoc_service.get_settings_file",
+                       return_value=settings_path):
+                data_dir = get_data_dir()
+
+            self.assertEqual(data_dir, default_data_dir)
+
+    def test_linux_settings_dir_is_not_used_as_data_dir(self):
+        """Linuxでもsetting.json配置フォルダをDATA_DIRにしない."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            default_data_dir = Path(tmpdir) / "data" / "PandocGUI"
+            settings_path = (Path(tmpdir) / "config" / "PandocGUI" /
+                             "setting.json")
+
+            settings_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(settings_path, "w", encoding="utf-8") as f:
+                json.dump({"data_dir": str(settings_path.parent)},
+                          f,
+                          indent=2,
+                          ensure_ascii=False)
+
+            with patch("pandoc_service.platform.system",
+                       return_value="Linux"), \
+                 patch("pandoc_service.get_default_data_dir",
+                       return_value=default_data_dir), \
+                 patch("pandoc_service.get_settings_file",
+                       return_value=settings_path):
+                data_dir = get_data_dir()
+
+            self.assertEqual(data_dir, default_data_dir)
 
 
 if __name__ == '__main__':

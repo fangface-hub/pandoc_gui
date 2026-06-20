@@ -8,7 +8,6 @@ from tkinter import filedialog, messagebox
 from pandoc_service import get_app_dir, get_data_dir
 
 SCRIPT_DIR = get_app_dir()
-DATA_DIR = get_data_dir()
 
 
 class FilterWindow(tk.Toplevel):
@@ -130,7 +129,7 @@ class FilterWindow(tk.Toplevel):
             return
 
         filters_src = SCRIPT_DIR / "filters"
-        filters_dest = DATA_DIR / "filters"
+        filters_dest = get_data_dir(create_if_missing=False) / "filters"
 
         try:
             if not filters_src.exists():

@@ -35,21 +35,21 @@ jobs:
           echo "tag=v$ver" >> "$GITHUB_OUTPUT"
           echo "name=PandocGUI v$ver" >> "$GITHUB_OUTPUT"
 
-      - name: Build with PyInstaller
+      - name: Build with Nuitka
         run: |
           uv sync --group build --no-dev
-          uv run pyinstaller PandocGUI.spec
+          uv run python -m nuitka --standalone --clang --assume-yes-for-downloads --output-dir=dist --output-filename=PandocGUI --include-data-dir=filters=filters --include-data-dir=locales=locales --include-data-dir=stylesheets=stylesheets --include-data-dir=help=help --include-data-dir=profiles=profiles --include-data-dir=mermaid=mermaid --include-data-dir=LICENSES=LICENSES main_window.py
 
       - name: Install cosign
         uses: sigstore/cosign-installer@v3
 
       - name: Sign PandocGUI executable with OIDC
-        run: cosign sign-blob --yes --output-signature dist/PandocGUI/PandocGUI.sig dist/PandocGUI/PandocGUI
+        run: cosign sign-blob --yes --output-signature dist/main_window.dist/PandocGUI.sig dist/main_window.dist/PandocGUI
 
-      - name: Create ZIP from dist/PandocGUI
+      - name: Create ZIP from dist/main_window.dist
         run: |
           cd dist
-          zip -r ../PandocGUI-linux.zip PandocGUI
+          zip -r ../PandocGUI-linux.zip main_window.dist
 
       - name: Sign ZIP with OIDC
         run: cosign sign-blob --yes --output-signature PandocGUI-linux.zip.sig PandocGUI-linux.zip

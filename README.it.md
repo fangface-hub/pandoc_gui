@@ -117,48 +117,59 @@ Esempi di corrispondenza modelli:
 
 ## Creazione di pacchetti di distribuzione
 
-### Creare una distribuzione di cartelle con PyInstaller
+### Creare una distribuzione di cartelle con Nuitka
 
-1. Installare PyInstaller:
+1. Installare Nuitka:
 
     ```powershell
-    uv tool install pyinstaller
+    uv tool install nuitka
     ```
 
 2. Creare l'eseguibile:
 
-    __Nota__: `PandocGUI.spec` è incluso nel repository con l'elaborazione post-build configurata per posizionare `filters/` e `locales/` all'esterno di `_internal/`.
+    __Nota__: `main_window.py` è incluso nel repository con l'elaborazione post-build configurata per posizionare `filters/` e `locales/` all'esterno di `main_window.dist/`.
 
     ```powershell
-    uvx pyinstaller PandocGUI.spec
+    uv run python -m nuitka --standalone --output-dir=dist --output-filename=PandocGUI --include-data-dir=filters=filters --include-data-dir=locales=locales --include-data-dir=stylesheets=stylesheets --include-data-dir=help=help --include-data-dir=profiles=profiles --include-data-dir=mermaid=mermaid --include-data-dir=LICENSES=LICENSES main_window.py
     ```
 
-    Solo se è necessario rigenerare il file `.spec` (normalmente non richiesto):
+    Solo se è necessario rigenerare il file `Nuitka` (normalmente non richiesto):
 
     ```powershell
-    uvx pyinstaller --noconsole --onedir --name "PandocGUI" `
-      --add-data "locales;locales" `
-      --add-data "filters;filters" `
-      --add-data "stylesheets;stylesheets" `
-      main_window.py
+    uv run python -m nuitka --standalone --clang --msvc=latest --windows-console-mode=disable --output-dir=dist --output-filename=PandocGUI.exe --include-data-dir=filters=filters --include-data-dir=locales=locales --include-data-dir=stylesheets=stylesheets --include-data-dir=help=help --include-data-dir=profiles=profiles --include-data-dir=mermaid=mermaid --include-data-dir=LICENSES=LICENSES main_window.py
     ```
 
-    __Importante__: È necessario aggiungere manualmente l'elaborazione post-build al file `.spec` generato dal comando sopra.
+    __Importante__: È necessario aggiungere manualmente l'elaborazione post-build al file `Nuitka` generato dal comando sopra.
 
-3. L'output della build si trova in `dist/PandocGUI/`:
+3. L'output della build si trova in `dist/main_window.dist/`:
 
     ```text
-    dist/PandocGUI/
+    dist/main_window.dist/
     ├── PandocGUI.exe        # Eseguibile
     ├── filters/             # Filtri Lua
     ├── locales/             # File di traduzione
     ├── stylesheets/         # Fogli di stile CSS
     ├── help/                # File di aiuto (HTML)
     ├── profiles/            # Profili (creati in fase di esecuzione)
-    └── _internal/           # Dipendenze Python
+    └── *.dll / *.pyd ...  # Runtime dependencies
     ```
 
-    L'elaborazione post-build nel file `.spec` posiziona `filters/`, `locales/` e `stylesheets/` all'esterno di `_internal/`
+    L'elaborazione post-build nel file `Nuitka` posiziona `filters/`, `locales/` e `stylesheets/` all'esterno di `main_window.dist/`
+
+### Aggiornare il numero di versione
+
+Usare questi script nella root del repository:
+
+- `./bump_patch.ps1`: `X.Y.Z` -> `X.Y.(Z+1)`
+- `./bump_minor.ps1`: `X.Y.Z` -> `X.(Y+1).0`
+- `./bump_major.ps1`: `X.Y.Z` -> `(X+1).0.0`
+
+Quando si incrementa una versione superiore, le versioni inferiori vengono azzerate.
+Tutti gli script aggiornano contemporaneamente questi file:
+
+- `pyproject.toml`
+- `__version__.py`
+- `AppxManifest.xml`
 
 ### Creare un programma di installazione Windows con MSIX Packaging Tool
 
@@ -178,7 +189,7 @@ Esempi di corrispondenza modelli:
 
 5. Selezionare il programma di installazione:
 
-    - Fare clic su "Browse" e selezionare `dist/PandocGUI/PandocGUI.exe`
+    - Fare clic su "Browse" e selezionare `dist/main_window.dist/PandocGUI.exe`
     - Installation location: `C:\Program Files\PandocGUI`
 
 6. Eseguire l'installazione e acquisire:

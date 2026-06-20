@@ -21,8 +21,9 @@ from filter_window import FilterWindow
 from i18n import I18n
 from log_window import LogWindow
 from pandoc_service import (PandocService, check_pandoc_installed, get_app_dir,
-                            get_data_dir, init_default_profile, load_profile,
-                            save_profile)
+                            get_data_dir, get_default_data_dir,
+                            get_settings_file, init_default_profile,
+                            load_profile, save_profile, set_data_dir)
 from subprocessex import terminate_process
 
 # Windowsでのプロセス管理用フラグ
@@ -33,11 +34,11 @@ else:
     CREATE_NO_WINDOW = 0
     CREATE_NEW_PROCESS_GROUP = 0
 
-# PyInstallerビルド時のパス解決
+# Nuitka/実行ファイル化ビルド時のパス解決
 SCRIPT_DIR = get_app_dir()
 
 # データディレクトリ（プラットフォームごとに適切な場所を使用）
-DATA_DIR = get_data_dir()
+DATA_DIR = get_data_dir(create_if_missing=False)
 
 
 def _init_data_folders():
@@ -87,10 +88,14 @@ class MainWindow(tk.Tk):
 
         Initialize.
         """
-        super().__init__()
+        if not self._ensure_data_dir_on_first_launch():
+            self.destroy()
+            raise SystemExit(0)
 
         # 初回起動時にDATA_DIRにフォルダを複製
         _init_data_folders()
+
+        super().__init__()
 
         # デフォルトプロファイルを初期化
         init_default_profile()
@@ -696,6 +701,113 @@ class MainWindow(tk.Tk):
         # 再起動が必要であることを通知
         messagebox.showinfo(self.i18n.t("language_settings"),
                             self.i18n.t("restart_required"))
+
+    def _ensure_data_dir_on_first_launch(self) -> bool:
+        """初回起動時のDATA_DIR設定を確定する.
+
+        Returns
+        -------
+        bool
+            起動を継続する場合True。キャンセル終了の場合False。
+        """
+        default_data_dir = get_default_data_dir()
+        settings_path = get_settings_file()
+
+        settings_data = {}
+        if settings_path.exists():
+            try:
+                with open(settings_path, "r", encoding="utf-8-sig") as f:
+                    settings_data = json.load(f)
+            except (OSError, ValueError, json.JSONDecodeError):
+                settings_data = {}
+
+        configured_data_dir = settings_data.get("data_dir")
+        if configured_data_dir:
+            selected_data_dir = Path(configured_data_dir)
+        else:
+            selected_data_dir = self._prompt_initial_data_dir(default_data_dir)
+            if selected_data_dir is None:
+                return False
+
+            settings_data["data_dir"] = str(selected_data_dir)
+            try:
+                settings_path.parent.mkdir(parents=True, exist_ok=True)
+                with open(settings_path, "w", encoding="utf-8") as f:
+                    json.dump(settings_data, f, indent=2, ensure_ascii=False)
+            except OSError as e:
+                messagebox.showerror(
+                    "Pandoc GUI",
+                    f"Failed to save setting.json: {e}",
+                )
+                return False
+
+        if not selected_data_dir.exists():
+            if not self._confirm_data_dir_creation(selected_data_dir,
+                                                   default_data_dir):
+                return False
+
+            try:
+                selected_data_dir.mkdir(parents=True, exist_ok=True)
+            except OSError as e:
+                messagebox.showerror(
+                    "Pandoc GUI",
+                    f"Failed to create data directory: {e}",
+                )
+                return False
+
+        globals()["DATA_DIR"] = selected_data_dir
+        set_data_dir(selected_data_dir)
+        return True
+
+    def _prompt_initial_data_dir(self, default_data_dir: Path):
+        """初回起動時のデータディレクトリをユーザーに確認する."""
+        use_default = messagebox.askyesno(
+            "Pandoc GUI",
+            "Use the default data folder?\n\n"
+            f"{default_data_dir}\n\n"
+            "Yes: Use this folder\n"
+            "No: Select a parent folder",
+        )
+        if use_default:
+            return default_data_dir
+
+        # 一時的なTkウィンドウを作成してから親にする
+        temp_root = tk.Tk()
+        temp_root.withdraw()  # ウィンドウを非表示にする
+
+        try:
+            while True:
+                initial_parent = default_data_dir.parent
+                selected_parent = filedialog.askdirectory(
+                    title="Select parent folder for PandocGUI data",
+                    initialdir=str(initial_parent),
+                    mustexist=True,
+                )
+                if selected_parent:
+                    return Path(selected_parent) / "PandocGUI"
+
+                # フォルダが選択されなかった場合、再度選択を促す
+                # (ユーザーがキャンセルした場合でもループを続ける)
+        finally:
+            temp_root.destroy()
+
+    def _confirm_data_dir_creation(self, selected_data_dir: Path,
+                                   default_data_dir: Path) -> bool:
+        """DATA_DIR作成前に確認ダイアログを表示する."""
+        try:
+            is_default = (
+                selected_data_dir.resolve() == default_data_dir.resolve())
+        except OSError:
+            is_default = False
+
+        if is_default:
+            message = ("The data folder does not exist yet.\n\n"
+                       f"Create it now?\n{selected_data_dir}")
+        else:
+            message = ("The selected data folder does not exist yet.\n\n"
+                       f"Create it now?\n{selected_data_dir}")
+
+        return messagebox.askyesno("Pandoc GUI", message)
 
     def show_about(self):
         """バージョン情報を表示する.

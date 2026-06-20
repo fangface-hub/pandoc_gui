@@ -11,7 +11,7 @@ def get_app_dir() -> Path:
 
     Get application root directory.
 
-    PyInstallerでビルドされた場合は実行ファイルのディレクトリ、
+    Nuitkaなどで実行ファイル化した場合は実行ファイルのディレクトリ、
     開発環境ではスクリプトのディレクトリを返します。
 
     Returns
@@ -20,7 +20,7 @@ def get_app_dir() -> Path:
         アプリケーションのルートディレクトリ
     """
     if getattr(sys, 'frozen', False):
-        # PyInstallerでビルドされた場合
+        # 実行ファイル化ビルド時
         return Path(sys.executable).parent
     else:
         # 通常のPythonスクリプトとして実行される場合
@@ -45,7 +45,7 @@ class I18n:
             (Language code ('ja', 'en', etc.).
             Auto-detect from system locale if None)
         """
-        # PyInstallerビルド時のパス解決
+        # Nuitka/実行ファイル化ビルド時のパス解決
         self.base_dir = get_app_dir()
 
         if lang is None:
