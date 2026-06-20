@@ -15,7 +15,7 @@ Una semplice interfaccia grafica per Pandoc che genera diagrammi (Mermaid, Plant
 
 ## Requisiti
 
-- Python 3.8+
+- Python 3.14+
 - Pandoc (aggiunto a PATH)
 - Per Mermaid: `mmdc` (mermaid-cli)
 - Per PlantUML: `plantuml.jar` e Java (jdk/jre)
@@ -23,11 +23,37 @@ Una semplice interfaccia grafica per Pandoc che genera diagrammi (Mermaid, Plant
 
 ## Come eseguire
 
-1. Installare gli strumenti richiesti (Pandoc, Node/mmdc, Java, ecc.)
-2. Eseguire dalla radice del repository:
+### Sviluppo locale con uv
+
+1. Installare uv (se non e installato):
 
     ```powershell
-    python main_window.py
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    ```
+
+2. Sincronizzare le dipendenze:
+
+    ```powershell
+    uv sync --group build
+    ```
+
+3. Avviare l'applicazione:
+
+    ```powershell
+    uv run python main_window.py
+    ```
+
+4. Eseguire i test:
+
+    ```powershell
+    uv run python -m unittest discover -v
+    ```
+
+5. Installare gli strumenti richiesti (Pandoc, Node/mmdc, Java, ecc.)
+6. Eseguire dalla radice del repository:
+
+    ```powershell
+    uv run python main_window.py
     ```
 
 ## Specificare i percorsi PlantUML / Java
@@ -96,7 +122,7 @@ Esempi di corrispondenza modelli:
 1. Installare PyInstaller:
 
     ```powershell
-    pip install pyinstaller
+    uv tool install pyinstaller
     ```
 
 2. Creare l'eseguibile:
@@ -104,13 +130,13 @@ Esempi di corrispondenza modelli:
     __Nota__: `PandocGUI.spec` è incluso nel repository con l'elaborazione post-build configurata per posizionare `filters/` e `locales/` all'esterno di `_internal/`.
 
     ```powershell
-    python -m PyInstaller PandocGUI.spec
+    uvx pyinstaller PandocGUI.spec
     ```
 
     Solo se è necessario rigenerare il file `.spec` (normalmente non richiesto):
 
     ```powershell
-    pyinstaller --noconsole --onedir --name "PandocGUI" `
+    uvx pyinstaller --noconsole --onedir --name "PandocGUI" `
       --add-data "locales;locales" `
       --add-data "filters;filters" `
       --add-data "stylesheets;stylesheets" `

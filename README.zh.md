@@ -15,7 +15,7 @@
 
 ## 系统要求
 
-- Python 3.8+
+- Python 3.14+
 - Pandoc（添加到PATH）
 - Mermaid需要：`mmdc`（mermaid-cli）
 - PlantUML需要：`plantuml.jar`和Java（jdk/jre）
@@ -23,11 +23,37 @@
 
 ## 运行方法
 
-1. 安装所需工具（Pandoc、Node/mmdc、Java等）
-2. 从仓库根目录运行：
+### 使用 uv 进行本地开发
+
+1. 安装 uv（如未安装）：
 
     ```powershell
-    python main_window.py
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    ```
+
+2. 同步依赖：
+
+    ```powershell
+    uv sync --group build
+    ```
+
+3. 运行应用：
+
+    ```powershell
+    uv run python main_window.py
+    ```
+
+4. 运行测试：
+
+    ```powershell
+    uv run python -m unittest discover -v
+    ```
+
+5. 安装所需工具（Pandoc、Node/mmdc、Java等）
+6. 从仓库根目录运行：
+
+    ```powershell
+    uv run python main_window.py
     ```
 
 ## 指定PlantUML / Java路径
@@ -96,7 +122,7 @@ java_path: C:\path\to\java.exe
 1. 安装PyInstaller：
 
     ```powershell
-    pip install pyinstaller
+    uv tool install pyinstaller
     ```
 
 2. 创建可执行文件：
@@ -104,13 +130,13 @@ java_path: C:\path\to\java.exe
     **注意**：仓库中包含`PandocGUI.spec`，已配置构建后处理，将`filters/`和`locales/`放置在`_internal/`之外。
 
     ```powershell
-    python -m PyInstaller PandocGUI.spec
+    uvx pyinstaller PandocGUI.spec
     ```
 
     仅在需要重新生成`.spec`文件时（通常不需要）：
 
     ```powershell
-    pyinstaller --noconsole --onedir --name "PandocGUI" `
+    uvx pyinstaller --noconsole --onedir --name "PandocGUI" `
       --add-data "locales;locales" `
       --add-data "filters;filters" `
       --add-data "stylesheets;stylesheets" `

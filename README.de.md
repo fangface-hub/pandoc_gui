@@ -15,7 +15,7 @@ Ein einfaches GUI-Frontend für Pandoc, das Diagramme (Mermaid, PlantUML usw.) m
 
 ## Anforderungen
 
-- Python 3.8+
+- Python 3.14+
 - Pandoc (zu PATH hinzufügen)
 - Für Mermaid: `mmdc` (mermaid-cli)
 - Für PlantUML: `plantuml.jar` und Java (jdk/jre)
@@ -23,11 +23,37 @@ Ein einfaches GUI-Frontend für Pandoc, das Diagramme (Mermaid, PlantUML usw.) m
 
 ## Ausführen
 
-1. Erforderliche Tools installieren (Pandoc, Node/mmdc, Java usw.)
-2. Vom Repository-Root ausführen:
+### Lokale Entwicklung mit uv
+
+1. uv installieren (falls noch nicht installiert):
 
     ```powershell
-    python main_window.py
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    ```
+
+2. Abhängigkeiten synchronisieren:
+
+    ```powershell
+    uv sync --group build
+    ```
+
+3. Anwendung starten:
+
+    ```powershell
+    uv run python main_window.py
+    ```
+
+4. Tests ausführen:
+
+    ```powershell
+    uv run python -m unittest discover -v
+    ```
+
+5. Erforderliche Tools installieren (Pandoc, Node/mmdc, Java usw.)
+6. Vom Repository-Root ausführen:
+
+    ```powershell
+    uv run python main_window.py
     ```
 
 ## PlantUML / Java-Pfade angeben
@@ -96,7 +122,7 @@ Beispiele für Musterabgleich:
 1. PyInstaller installieren:
 
     ```powershell
-    pip install pyinstaller
+    uv tool install pyinstaller
     ```
 
 2. Ausführbare Datei erstellen:
@@ -104,13 +130,13 @@ Beispiele für Musterabgleich:
     __Hinweis__: `PandocGUI.spec` ist im Repository enthalten und die Nachbearbeitung ist so konfiguriert, dass `filters/` und `locales/` außerhalb von `_internal/` platziert werden.
 
     ```powershell
-    python -m PyInstaller PandocGUI.spec
+    uvx pyinstaller PandocGUI.spec
     ```
 
     Nur wenn Sie die `.spec`-Datei neu generieren müssen (normalerweise nicht erforderlich):
 
     ```powershell
-    pyinstaller --noconsole --onedir --name "PandocGUI" `
+    uvx pyinstaller --noconsole --onedir --name "PandocGUI" `
       --add-data "locales;locales" `
       --add-data "filters;filters" `
       --add-data "stylesheets;stylesheets" `

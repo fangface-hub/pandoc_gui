@@ -15,7 +15,7 @@
 
 ## 必要なもの
 
-- Python 3.8+
+- Python 3.14+
 - Pandoc（PATH に通す）
 - Mermaid 用: `mmdc`（mermaid-cli）
 - PlantUML 用: `plantuml.jar` と Java（jdk/jre）
@@ -23,11 +23,37 @@
 
 ## 起動方法
 
-1. 必要なツールをインストール（Pandoc, Node/mmdc, Java 等）
-2. リポジトリのルートで実行:
+### uv でのローカル開発
+
+1. uv をインストール（未導入の場合）:
 
     ```powershell
-    python main_window.py
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    ```
+
+2. 依存関係を同期:
+
+    ```powershell
+    uv sync --group build
+    ```
+
+3. アプリを起動:
+
+    ```powershell
+    uv run python main_window.py
+    ```
+
+4. テストを実行:
+
+    ```powershell
+    uv run python -m unittest discover -v
+    ```
+
+5. 必要なツールをインストール（Pandoc, Node/mmdc, Java 等）
+6. リポジトリのルートで実行:
+
+    ```powershell
+    uv run python main_window.py
     ```
 
 ## PlantUML / Java の指定方法
@@ -96,7 +122,7 @@ java_path: C:\path\to\java.exe
 1. PyInstallerをインストール:
 
     ```powershell
-    pip install pyinstaller
+    uv tool install pyinstaller
     ```
 
 2. 実行ファイルを作成:
@@ -104,13 +130,13 @@ java_path: C:\path\to\java.exe
     __注意__: `PandocGUI.spec`はリポジトリに含まれており、ビルド後処理（`filters/`と`locales/`を`_internal/`の外に配置）が設定済みです。
 
     ```powershell
-    python -m PyInstaller PandocGUI.spec
+    uvx pyinstaller PandocGUI.spec
     ```
 
     `.spec`ファイルを再生成したい場合のみ、以下のコマンドを実行してください（通常は不要）:
 
     ```powershell
-    pyinstaller --noconsole --onedir --name "PandocGUI" `
+    uvx pyinstaller --noconsole --onedir --name "PandocGUI" `
       --add-data "locales;locales" `
       --add-data "filters;filters" `
       --add-data "stylesheets;stylesheets" `

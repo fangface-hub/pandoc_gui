@@ -15,7 +15,7 @@ Une interface graphique simple pour Pandoc qui génère des diagrammes (Mermaid,
 
 ## Exigences
 
-- Python 3.8+
+- Python 3.14+
 - Pandoc (ajouté au PATH)
 - Pour Mermaid : `mmdc` (mermaid-cli)
 - Pour PlantUML : `plantuml.jar` et Java (jdk/jre)
@@ -23,11 +23,37 @@ Une interface graphique simple pour Pandoc qui génère des diagrammes (Mermaid,
 
 ## Comment exécuter
 
-1. Installer les outils requis (Pandoc, Node/mmdc, Java, etc.)
-2. Exécuter depuis la racine du dépôt :
+### Développement local avec uv
+
+1. Installer uv (s'il n'est pas installé) :
 
     ```powershell
-    python main_window.py
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    ```
+
+2. Synchroniser les dépendances :
+
+    ```powershell
+    uv sync --group build
+    ```
+
+3. Lancer l'application :
+
+    ```powershell
+    uv run python main_window.py
+    ```
+
+4. Exécuter les tests :
+
+    ```powershell
+    uv run python -m unittest discover -v
+    ```
+
+5. Installer les outils requis (Pandoc, Node/mmdc, Java, etc.)
+6. Exécuter depuis la racine du dépôt :
+
+    ```powershell
+    uv run python main_window.py
     ```
 
 ## Spécifier les chemins PlantUML / Java
@@ -96,7 +122,7 @@ Exemples de correspondance de modèles :
 1. Installer PyInstaller :
 
     ```powershell
-    pip install pyinstaller
+    uv tool install pyinstaller
     ```
 
 2. Créer l'exécutable :
@@ -104,13 +130,13 @@ Exemples de correspondance de modèles :
     __Note__ : `PandocGUI.spec` est inclus dans le dépôt avec un traitement post-construction configuré pour placer `filters/` et `locales/` en dehors de `_internal/`.
 
     ```powershell
-    python -m PyInstaller PandocGUI.spec
+    uvx pyinstaller PandocGUI.spec
     ```
 
     Seulement si vous devez régénérer le fichier `.spec` (normalement pas nécessaire) :
 
     ```powershell
-    pyinstaller --noconsole --onedir --name "PandocGUI" `
+    uvx pyinstaller --noconsole --onedir --name "PandocGUI" `
       --add-data "locales;locales" `
       --add-data "filters;filters" `
       --add-data "stylesheets;stylesheets" `

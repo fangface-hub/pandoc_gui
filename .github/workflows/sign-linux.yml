@@ -18,7 +18,15 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.14"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
 
       - name: Set release tag from project version
         id: rel
@@ -27,11 +35,10 @@ jobs:
           echo "tag=v$ver" >> "$GITHUB_OUTPUT"
           echo "name=PandocGUI v$ver" >> "$GITHUB_OUTPUT"
 
-      - name: Install PyInstaller
-        run: pip install pyinstaller
-
       - name: Build with PyInstaller
-        run: python -m PyInstaller PandocGUI.spec
+        run: |
+          uv sync --group build --no-dev
+          uv run pyinstaller PandocGUI.spec
 
       - name: Install cosign
         uses: sigstore/cosign-installer@v3

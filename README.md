@@ -15,7 +15,7 @@ A simple GUI frontend for Pandoc that generates diagrams (Mermaid, PlantUML, etc
 
 ## Requirements
 
-- Python 3.8+
+- Python 3.14+
 - Pandoc (add to PATH)
 - For Mermaid: `mmdc` (mermaid-cli)
 - For PlantUML: `plantuml.jar` and Java (jdk/jre)
@@ -23,11 +23,37 @@ A simple GUI frontend for Pandoc that generates diagrams (Mermaid, PlantUML, etc
 
 ## How to Run
 
-1. Install required tools (Pandoc, Node/mmdc, Java, etc.)
-2. Run from the repository root:
+### Local Development with uv
+
+1. Install uv (if not installed):
 
     ```powershell
-    python main_window.py
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    ```
+
+2. Sync dependencies:
+
+    ```powershell
+    uv sync --group build
+    ```
+
+3. Run application:
+
+    ```powershell
+    uv run python main_window.py
+    ```
+
+4. Run tests:
+
+    ```powershell
+    uv run python -m unittest discover -v
+    ```
+
+5. Install required tools (Pandoc, Node/mmdc, Java, etc.)
+6. Run from the repository root:
+
+    ```powershell
+    uv run python main_window.py
     ```
 
 ## Specifying PlantUML / Java Paths
@@ -96,7 +122,7 @@ Pattern Matching Examples:
 1. Install PyInstaller:
 
     ```powershell
-    pip install pyinstaller
+    uv tool install pyinstaller
     ```
 
 2. Create executable:
@@ -104,13 +130,13 @@ Pattern Matching Examples:
     __Note__: `PandocGUI.spec` is included in the repository with post-build processing configured to place `filters/` and `locales/` outside `_internal/`.
 
     ```powershell
-    python -m PyInstaller PandocGUI.spec
+    uvx pyinstaller PandocGUI.spec
     ```
 
     Only if you need to regenerate the `.spec` file (normally not required):
 
     ```powershell
-    pyinstaller --noconsole --onedir --name "PandocGUI" `
+    uvx pyinstaller --noconsole --onedir --name "PandocGUI" `
       --add-data "locales;locales" `
       --add-data "filters;filters" `
       --add-data "stylesheets;stylesheets" `
