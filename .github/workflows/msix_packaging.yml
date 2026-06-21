@@ -25,7 +25,15 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.14"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
 
       - name: Set release tag from project version
         id: rel
@@ -34,11 +42,37 @@ jobs:
           echo "tag=v$projectVersion" >> $env:GITHUB_OUTPUT
           echo "name=PandocGUI v$projectVersion" >> $env:GITHUB_OUTPUT
 
-      - name: Install PyInstaller
-        run: pip install pyinstaller
+      - name: Install LLVM/Clang
+        run: choco install llvm -y
 
-      - name: Build EXE with PyInstaller
-        run: python -m PyInstaller PandocGUI.spec
+      - name: Add LLVM to PATH
+        run: echo "C:\Program Files\LLVM\bin" >> $env:GITHUB_PATH
+
+      - name: Build EXE with Nuitka onefile (LLVM/clang-cl)
+        run: |
+          uv sync --group build --no-dev
+          $env:CC = "clang-cl"
+          $env:CXX = "clang-cl"
+          $nuitkaArgs = @(
+            "-m", "nuitka",
+            "--onefile",
+            "--windows-console-mode=disable",
+            "--enable-plugin=tk-inter",
+            "--clang",
+            "--msvc=latest",
+            "--assume-yes-for-downloads",
+            "--output-dir=dist",
+            "--output-filename=PandocGUI",
+            "--include-data-dir=filters=filters",
+            "--include-data-dir=locales=locales",
+            "--include-data-dir=stylesheets=stylesheets",
+            "--include-data-dir=help=help",
+            "--include-data-dir=profiles=profiles",
+            "--include-data-dir=mermaid=mermaid",
+            "--include-data-dir=LICENSES=LICENSES",
+            "main_window.py"
+          )
+          uv run python @nuitkaArgs
 
       - name: Configure MSIX identity
         run: |
@@ -76,7 +110,15 @@ jobs:
       - name: Prepare MSIX folder structure
         run: |
           mkdir msix
-          Copy-Item dist\PandocGUI msix\PandocGUI -Recurse
+          mkdir msix\PandocGUI
+          Copy-Item dist\PandocGUI.exe msix\PandocGUI\PandocGUI.exe
+          Copy-Item filters msix\PandocGUI\filters -Recurse
+          Copy-Item help msix\PandocGUI\help -Recurse
+          Copy-Item LICENSES msix\PandocGUI\LICENSES -Recurse
+          Copy-Item locales msix\PandocGUI\locales -Recurse
+          Copy-Item mermaid msix\PandocGUI\mermaid -Recurse
+          Copy-Item profiles msix\PandocGUI\profiles -Recurse
+          Copy-Item stylesheets msix\PandocGUI\stylesheets -Recurse
           Copy-Item AppxManifest.xml msix\
           Copy-Item Square150x150Logo.png msix\
           Copy-Item Square44x44Logo.png msix\
@@ -91,7 +133,7 @@ jobs:
 
       - name: Create self-signed certificate
         run: |
-          $cert = New-SelfSignedCertificate -Type Custom -Subject "CN=BC42F866-1485-41CB-B9BE-EE450FA32809" -KeyUsage DigitalSignature -FriendlyName "PandocGUI Certificate" -CertStoreLocation "Cert:\CurrentUser\My" -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+          $cert = New-SelfSignedCertificate -Type Custom -Subject "$env:PUBLISHER_CN" -KeyUsage DigitalSignature -FriendlyName "PandocGUI Certificate" -CertStoreLocation "Cert:\CurrentUser\My" -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
           $randomPassword = -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 32 | % {[char]$_})
           $password = ConvertTo-SecureString -String $randomPassword -Force -AsPlainText
           Export-PfxCertificate -Cert $cert -FilePath PandocGUI.pfx -Password $password

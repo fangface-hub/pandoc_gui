@@ -18,7 +18,15 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.14"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
 
       - name: Set release tag from project version
         id: rel
@@ -27,20 +35,27 @@ jobs:
           echo "tag=v$projectVersion" >> $env:GITHUB_OUTPUT
           echo "name=PandocGUI v$projectVersion" >> $env:GITHUB_OUTPUT
 
-      - name: Install PyInstaller
-        run: pip install pyinstaller
+      - name: Install LLVM/Clang
+        run: choco install llvm -y
 
-      - name: Build with PyInstaller
-        run: python -m PyInstaller PandocGUI.spec
+      - name: Add LLVM to PATH
+        run: echo "C:\Program Files\LLVM\bin" >> $env:GITHUB_PATH
+
+      - name: Build with Nuitka (LLVM/clang-cl)
+        run: |
+          uv sync --group build --no-dev
+          $env:CC = "clang-cl"
+          $env:CXX = "clang-cl"
+          uv run python -m nuitka --standalone --clang --msvc=latest --assume-yes-for-downloads --output-dir=dist --output-filename=PandocGUI.exe --windows-console-mode=disable --include-data-dir=filters=filters --include-data-dir=locales=locales --include-data-dir=stylesheets=stylesheets --include-data-dir=help=help --include-data-dir=profiles=profiles --include-data-dir=mermaid=mermaid --include-data-dir=LICENSES=LICENSES main_window.py
 
       - name: Install cosign
         uses: sigstore/cosign-installer@v3
 
       - name: Sign PandocGUI.exe with OIDC
-        run: cosign sign-blob --yes --output-signature dist/PandocGUI/PandocGUI.exe.sig dist/PandocGUI/PandocGUI.exe
+        run: cosign sign-blob --yes --output-signature dist/main_window.dist/PandocGUI.exe.sig dist/main_window.dist/PandocGUI.exe
 
-      - name: Create ZIP from dist/PandocGUI
-        run: Compress-Archive -Path dist/PandocGUI -DestinationPath PandocGUI-windows.zip
+      - name: Create ZIP from dist/main_window.dist
+        run: Compress-Archive -Path dist/main_window.dist -DestinationPath PandocGUI-windows.zip
 
       - name: Sign ZIP with OIDC
         run: cosign sign-blob --yes --output-signature PandocGUI-windows.zip.sig PandocGUI-windows.zip

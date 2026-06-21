@@ -21,8 +21,9 @@ from filter_window import FilterWindow
 from i18n import I18n
 from log_window import LogWindow
 from pandoc_service import (PandocService, check_pandoc_installed, get_app_dir,
-                            get_data_dir, init_default_profile, load_profile,
-                            save_profile)
+                            get_data_dir, get_default_data_dir,
+                            get_settings_file, init_default_profile,
+                            load_profile, save_profile, set_data_dir)
 from subprocessex import terminate_process
 
 # Windowsでのプロセス管理用フラグ
@@ -33,11 +34,11 @@ else:
     CREATE_NO_WINDOW = 0
     CREATE_NEW_PROCESS_GROUP = 0
 
-# PyInstallerビルド時のパス解決
+# Nuitka/実行ファイル化ビルド時のパス解決
 SCRIPT_DIR = get_app_dir()
 
 # データディレクトリ（プラットフォームごとに適切な場所を使用）
-DATA_DIR = get_data_dir()
+DATA_DIR = get_data_dir(create_if_missing=False)
 
 
 def _init_data_folders():
@@ -76,6 +77,52 @@ def _init_data_folders():
             shutil.copy2(filter_file, dest_file)
 
 
+class PathEntryField(tk.Frame):
+    """パス入力フィールド（Entry + ボタン）のカスタムウィジェット."""
+
+    def __init__(self, parent, label_text="", button_command=None, **kwargs):
+        """初期化.
+
+        Parameters
+        ----------
+        parent : tk.Widget
+            親ウィジェット
+        label_text : str
+            ラベルテキスト
+        button_command : callable
+            ボタン押下時のコールバック
+        """
+        super().__init__(parent, **kwargs)
+
+        # ラベル
+        if label_text:
+            tk.Label(self, text=label_text, width=18,
+                     anchor=tk.W).pack(side=tk.LEFT, padx=2)
+
+        # StringVar
+        self.var = tk.StringVar()
+
+        # Entry
+        self.entry = tk.Entry(self, textvariable=self.var, width=40)
+        self.entry.pack(side=tk.LEFT, padx=2, fill=tk.X, expand=True)
+
+        # ボタン
+        if button_command:
+            self.button = tk.Button(self,
+                                    text="...",
+                                    command=button_command,
+                                    width=3)
+            self.button.pack(side=tk.LEFT, padx=2)
+
+    def get(self):
+        """入力値を取得."""
+        return self.var.get()
+
+    def set(self, value):
+        """入力値を設定."""
+        self.var.set(value if value else "")
+
+
 class MainWindow(tk.Tk):
     """Pandoc GUIアプリケーションのメインクラス.
 
@@ -87,10 +134,14 @@ class MainWindow(tk.Tk):
 
         Initialize.
         """
-        super().__init__()
+        if not self._ensure_data_dir_on_first_launch():
+            self.destroy()
+            raise SystemExit(0)
 
         # 初回起動時にDATA_DIRにフォルダを複製
         _init_data_folders()
+
+        super().__init__()
 
         # デフォルトプロファイルを初期化
         init_default_profile()
@@ -146,9 +197,15 @@ class MainWindow(tk.Tk):
                     self.i18n.t("pandoc_not_installed_warning")))
 
         # 環境変数の初期値をログ出力
-        env_java = os.getenv("JAVA_PATH") or ""
+        self.detected_java_path = os.getenv("JAVA_PATH") or ""
+        # JAVA_PATH が設定されていない場合、java コマンドが利用可能かを確認
+        if not self.detected_java_path:
+            java_cmd = shutil.which("java")
+            if java_cmd:
+                self.detected_java_path = java_cmd
         env_plantuml = os.getenv("PLANTUML_JAR") or ""
-        self.logger.info(self.i18n.t("startup_java_path_env", path=env_java))
+        self.logger.info(
+            self.i18n.t("startup_java_path_env", path=self.detected_java_path))
         self.logger.info(
             self.i18n.t("startup_plantuml_jar_env", path=env_plantuml))
 
@@ -225,43 +282,18 @@ class MainWindow(tk.Tk):
                            side=tk.LEFT, padx=10)
 
         # Java Path
-        java_frame = tk.Frame(plantuml_frame)
-        java_frame.pack(fill=tk.X, pady=2)
-        tk.Label(java_frame,
-                 text=self.i18n.t("java_path"),
-                 width=18,
-                 anchor=tk.W).pack(side=tk.LEFT, padx=2)
-        self.java_path_var = tk.StringVar()
-        self.java_path_entry = tk.Entry(java_frame,
-                                        textvariable=self.java_path_var,
-                                        width=40)
-        self.java_path_entry.pack(side=tk.LEFT, padx=2, fill=tk.X, expand=True)
-        self.java_path_button = tk.Button(java_frame,
-                                          text="...",
-                                          command=self.select_java_path,
-                                          width=3)
-        self.java_path_button.pack(side=tk.LEFT, padx=2)
+        self.java_path_field = PathEntryField(
+            plantuml_frame,
+            label_text=self.i18n.t("java_path"),
+            button_command=self.select_java_path)
+        self.java_path_field.pack(fill=tk.X, pady=2)
 
         # PlantUML JAR
-        jar_frame = tk.Frame(plantuml_frame)
-        jar_frame.pack(fill=tk.X, pady=2)
-        tk.Label(jar_frame,
-                 text=self.i18n.t("plantuml_jar"),
-                 width=18,
-                 anchor=tk.W).pack(side=tk.LEFT, padx=2)
-        self.plantuml_jar_var = tk.StringVar()
-        self.plantuml_jar_entry = tk.Entry(jar_frame,
-                                           textvariable=self.plantuml_jar_var,
-                                           width=40)
-        self.plantuml_jar_entry.pack(side=tk.LEFT,
-                                     padx=2,
-                                     fill=tk.X,
-                                     expand=True)
-        self.plantuml_jar_button = tk.Button(jar_frame,
-                                             text="...",
-                                             command=self.select_plantuml_jar,
-                                             width=3)
-        self.plantuml_jar_button.pack(side=tk.LEFT, padx=2)
+        self.plantuml_jar_field = PathEntryField(
+            plantuml_frame,
+            label_text=self.i18n.t("plantuml_jar"),
+            button_command=self.select_plantuml_jar)
+        self.plantuml_jar_field.pack(fill=tk.X, pady=2)
 
         # PlantUML Server URL
         server_frame = tk.Frame(plantuml_frame)
@@ -405,6 +437,10 @@ class MainWindow(tk.Tk):
 
         # ウィンドウクローズで子プロセスを終了させる
         self.protocol("WM_DELETE_WINDOW", self.on_close)
+
+        # 取得した Java パスを pandoc_service に設定
+        if self.detected_java_path:
+            self.pandoc_service.java_path = self.detected_java_path
 
         # デフォルトプロファイルが存在する場合、起動時に自動ロード
         self._load_default_profile_on_startup()
@@ -575,14 +611,16 @@ class MainWindow(tk.Tk):
         self.format_var.set(self.pandoc_service.output_format)
 
         # Java/PlantUML設定を読み込む
-        if self.pandoc_service.java_path:
-            self.java_path_var.set(str(self.pandoc_service.java_path))
+        # プロファイルから Java パスが設定されていない場合は、検出されたパスを使用
+        java_path = self.pandoc_service.java_path or self.detected_java_path
+        if java_path:
+            self.java_path_field.set(str(java_path))
         else:
-            self.java_path_var.set("")
+            self.java_path_field.set("")
         if self.pandoc_service.plantuml_jar:
-            self.plantuml_jar_var.set(str(self.pandoc_service.plantuml_jar))
+            self.plantuml_jar_field.set(str(self.pandoc_service.plantuml_jar))
         else:
-            self.plantuml_jar_var.set("")
+            self.plantuml_jar_field.set("")
 
         # PlantUMLサーバ設定を読み込む
         if hasattr(self.pandoc_service, 'plantuml_use_server'):
@@ -616,7 +654,7 @@ class MainWindow(tk.Tk):
                                                      ("All files", "*.*")],
                                           initialdir=str(self.last_input_dir))
         if file:
-            self.java_path_var.set(file)
+            self.java_path_field.set(file)
             self.pandoc_service.java_path = Path(file)
             self.logger.info(self.i18n.t("java_path_selected", path=file))
 
@@ -630,7 +668,7 @@ class MainWindow(tk.Tk):
             filetypes=[("JAR files", "*.jar"), ("All files", "*.*")],
             initialdir=str(self.last_input_dir))
         if file:
-            self.plantuml_jar_var.set(file)
+            self.plantuml_jar_field.set(file)
             self.pandoc_service.plantuml_jar = Path(file)
             self.logger.info(self.i18n.t("plantuml_jar_selected", path=file))
 
@@ -647,10 +685,12 @@ class MainWindow(tk.Tk):
         state_jar = tk.NORMAL if is_jar else tk.DISABLED
         state_server = tk.DISABLED if is_jar else tk.NORMAL
 
-        self.java_path_entry.config(state=state_jar)
-        self.java_path_button.config(state=state_jar)
-        self.plantuml_jar_entry.config(state=state_jar)
-        self.plantuml_jar_button.config(state=state_jar)
+        self.java_path_field.entry.config(state=state_jar)
+        if hasattr(self.java_path_field, 'button'):
+            self.java_path_field.button.config(state=state_jar)
+        self.plantuml_jar_field.entry.config(state=state_jar)
+        if hasattr(self.plantuml_jar_field, 'button'):
+            self.plantuml_jar_field.button.config(state=state_jar)
         self.plantuml_server_url_entry.config(state=state_server)
 
     def _create_menu(self):
@@ -696,6 +736,113 @@ class MainWindow(tk.Tk):
         # 再起動が必要であることを通知
         messagebox.showinfo(self.i18n.t("language_settings"),
                             self.i18n.t("restart_required"))
+
+    def _ensure_data_dir_on_first_launch(self) -> bool:
+        """初回起動時のDATA_DIR設定を確定する.
+
+        Returns
+        -------
+        bool
+            起動を継続する場合True。キャンセル終了の場合False。
+        """
+        default_data_dir = get_default_data_dir()
+        settings_path = get_settings_file()
+
+        settings_data = {}
+        if settings_path.exists():
+            try:
+                with open(settings_path, "r", encoding="utf-8-sig") as f:
+                    settings_data = json.load(f)
+            except (OSError, ValueError, json.JSONDecodeError):
+                settings_data = {}
+
+        configured_data_dir = settings_data.get("data_dir")
+        if configured_data_dir:
+            selected_data_dir = Path(configured_data_dir)
+        else:
+            selected_data_dir = self._prompt_initial_data_dir(default_data_dir)
+            if selected_data_dir is None:
+                return False
+
+            settings_data["data_dir"] = str(selected_data_dir)
+            try:
+                settings_path.parent.mkdir(parents=True, exist_ok=True)
+                with open(settings_path, "w", encoding="utf-8") as f:
+                    json.dump(settings_data, f, indent=2, ensure_ascii=False)
+            except OSError as e:
+                messagebox.showerror(
+                    "Pandoc GUI",
+                    f"Failed to save setting.json: {e}",
+                )
+                return False
+
+        if not selected_data_dir.exists():
+            if not self._confirm_data_dir_creation(selected_data_dir,
+                                                   default_data_dir):
+                return False
+
+            try:
+                selected_data_dir.mkdir(parents=True, exist_ok=True)
+            except OSError as e:
+                messagebox.showerror(
+                    "Pandoc GUI",
+                    f"Failed to create data directory: {e}",
+                )
+                return False
+
+        globals()["DATA_DIR"] = selected_data_dir
+        set_data_dir(selected_data_dir)
+        return True
+
+    def _prompt_initial_data_dir(self, default_data_dir: Path):
+        """初回起動時のデータディレクトリをユーザーに確認する."""
+        use_default = messagebox.askyesno(
+            "Pandoc GUI",
+            "Use the default data folder?\n\n"
+            f"{default_data_dir}\n\n"
+            "Yes: Use this folder\n"
+            "No: Select a parent folder",
+        )
+        if use_default:
+            return default_data_dir
+
+        # 一時的なTkウィンドウを作成してから親にする
+        temp_root = tk.Tk()
+        temp_root.withdraw()  # ウィンドウを非表示にする
+
+        try:
+            while True:
+                initial_parent = default_data_dir.parent
+                selected_parent = filedialog.askdirectory(
+                    title="Select parent folder for PandocGUI data",
+                    initialdir=str(initial_parent),
+                    mustexist=True,
+                )
+                if selected_parent:
+                    return Path(selected_parent) / "PandocGUI"
+
+                # フォルダが選択されなかった場合、再度選択を促す
+                # (ユーザーがキャンセルした場合でもループを続ける)
+        finally:
+            temp_root.destroy()
+
+    def _confirm_data_dir_creation(self, selected_data_dir: Path,
+                                   default_data_dir: Path) -> bool:
+        """DATA_DIR作成前に確認ダイアログを表示する."""
+        try:
+            is_default = (
+                selected_data_dir.resolve() == default_data_dir.resolve())
+        except OSError:
+            is_default = False
+
+        if is_default:
+            message = ("The data folder does not exist yet.\n\n"
+                       f"Create it now?\n{selected_data_dir}")
+        else:
+            message = ("The selected data folder does not exist yet.\n\n"
+                       f"Create it now?\n{selected_data_dir}")
+
+        return messagebox.askyesno("Pandoc GUI", message)
 
     def show_about(self):
         """バージョン情報を表示する.
@@ -986,13 +1133,13 @@ class MainWindow(tk.Tk):
 
         # Java/PlantUML設定を読み込む
         if self.pandoc_service.java_path:
-            self.java_path_var.set(str(self.pandoc_service.java_path))
+            self.java_path_field.set(str(self.pandoc_service.java_path))
         else:
-            self.java_path_var.set("")
+            self.java_path_field.set("")
         if self.pandoc_service.plantuml_jar:
-            self.plantuml_jar_var.set(str(self.pandoc_service.plantuml_jar))
+            self.plantuml_jar_field.set(str(self.pandoc_service.plantuml_jar))
         else:
-            self.plantuml_jar_var.set("")
+            self.plantuml_jar_field.set("")
 
         # PlantUMLサーバ設定を読み込む
         if hasattr(self.pandoc_service, 'plantuml_use_server'):
@@ -1115,8 +1262,8 @@ class MainWindow(tk.Tk):
                                text=msg, fg="#FF9800"))
 
             # PandocServiceを使用して変換
-            java_path_override = self.java_path_var.get().strip()
-            plantuml_jar_override = self.plantuml_jar_var.get().strip()
+            java_path_override = self.java_path_field.get().strip()
+            plantuml_jar_override = self.plantuml_jar_field.get().strip()
 
             _success_count, _fail_count, _errors = (
                 self.pandoc_service.convert_folder(input_folder, output_folder,
@@ -1150,8 +1297,8 @@ class MainWindow(tk.Tk):
             self.logger.info(self.i18n.t("pandoc_process_starting"))
 
             # PandocServiceを使用して変換
-            java_path_override = self.java_path_var.get().strip()
-            plantuml_jar_override = self.plantuml_jar_var.get().strip()
+            java_path_override = self.java_path_field.get().strip()
+            plantuml_jar_override = self.plantuml_jar_field.get().strip()
 
             success, _stdout, _stderr, _returncode = (
                 self.pandoc_service.convert_file(input_file, output_file,

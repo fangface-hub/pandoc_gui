@@ -15,7 +15,7 @@
 
 ## 系统要求
 
-- Python 3.8+
+- Python 3.14+
 - Pandoc（添加到PATH）
 - Mermaid需要：`mmdc`（mermaid-cli）
 - PlantUML需要：`plantuml.jar`和Java（jdk/jre）
@@ -23,11 +23,37 @@
 
 ## 运行方法
 
-1. 安装所需工具（Pandoc、Node/mmdc、Java等）
-2. 从仓库根目录运行：
+### 使用 uv 进行本地开发
+
+1. 安装 uv（如未安装）：
 
     ```powershell
-    python main_window.py
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    ```
+
+2. 同步依赖：
+
+    ```powershell
+    uv sync --group build
+    ```
+
+3. 运行应用：
+
+    ```powershell
+    uv run python main_window.py
+    ```
+
+4. 运行测试：
+
+    ```powershell
+    uv run python -m unittest discover -v
+    ```
+
+5. 安装所需工具（Pandoc、Node/mmdc、Java等）
+6. 从仓库根目录运行：
+
+    ```powershell
+    uv run python main_window.py
     ```
 
 ## 指定PlantUML / Java路径
@@ -91,48 +117,59 @@ java_path: C:\path\to\java.exe
 
 ## 创建分发包
 
-### 使用PyInstaller创建文件夹分发
+### 使用Nuitka创建文件夹分发
 
-1. 安装PyInstaller：
+1. 安装Nuitka：
 
     ```powershell
-    pip install pyinstaller
+    uv tool install nuitka
     ```
 
 2. 创建可执行文件：
 
-    **注意**：仓库中包含`PandocGUI.spec`，已配置构建后处理，将`filters/`和`locales/`放置在`_internal/`之外。
+    **注意**：仓库中包含`main_window.py`，已配置构建后处理，将`filters/`和`locales/`放置在`main_window.dist/`之外。
 
     ```powershell
-    python -m PyInstaller PandocGUI.spec
+    uv run python -m nuitka --standalone --output-dir=dist --output-filename=PandocGUI --include-data-dir=filters=filters --include-data-dir=locales=locales --include-data-dir=stylesheets=stylesheets --include-data-dir=help=help --include-data-dir=profiles=profiles --include-data-dir=mermaid=mermaid --include-data-dir=LICENSES=LICENSES main_window.py
     ```
 
-    仅在需要重新生成`.spec`文件时（通常不需要）：
+    仅在需要重新生成`Nuitka`文件时（通常不需要）：
 
     ```powershell
-    pyinstaller --noconsole --onedir --name "PandocGUI" `
-      --add-data "locales;locales" `
-      --add-data "filters;filters" `
-      --add-data "stylesheets;stylesheets" `
-      main_window.py
+    uv run python -m nuitka --standalone --clang --msvc=latest --windows-console-mode=disable --output-dir=dist --output-filename=PandocGUI.exe --include-data-dir=filters=filters --include-data-dir=locales=locales --include-data-dir=stylesheets=stylesheets --include-data-dir=help=help --include-data-dir=profiles=profiles --include-data-dir=mermaid=mermaid --include-data-dir=LICENSES=LICENSES main_window.py
     ```
 
-    **重要**：必须手动将构建后处理添加到上述命令生成的`.spec`文件中。
+    **重要**：必须手动将构建后处理添加到上述命令生成的`Nuitka`文件中。
 
-3. 构建输出位于`dist/PandocGUI/`：
+3. 构建输出位于`dist/main_window.dist/`：
 
     ```text
-    dist/PandocGUI/
+    dist/main_window.dist/
     ├── PandocGUI.exe        # 可执行文件
     ├── filters/             # Lua过滤器
     ├── locales/             # 翻译文件
     ├── stylesheets/         # CSS样式表
     ├── help/                # 帮助文件（HTML）
     ├── profiles/            # 配置文件（运行时创建）
-    └── _internal/           # Python依赖项
+    └── *.dll / *.pyd ...  # Runtime dependencies
     ```
 
-    `.spec`文件中的构建后处理将`filters/`、`locales/`和`stylesheets/`放置在`_internal/`之外
+    `Nuitka`文件中的构建后处理将`filters/`、`locales/`和`stylesheets/`放置在`main_window.dist/`之外
+
+### 更新版本号
+
+在仓库根目录使用以下脚本：
+
+- `./bump_patch.ps1`: `X.Y.Z` -> `X.Y.(Z+1)`
+- `./bump_minor.ps1`: `X.Y.Z` -> `X.(Y+1).0`
+- `./bump_major.ps1`: `X.Y.Z` -> `(X+1).0.0`
+
+当你提升高位版本时，低位版本会重置为 0。
+所有脚本会同时更新以下文件：
+
+- `pyproject.toml`
+- `__version__.py`
+- `AppxManifest.xml`
 
 ### 使用MSIX Packaging Tool创建Windows安装程序
 
@@ -152,7 +189,7 @@ java_path: C:\path\to\java.exe
 
 5. 选择安装程序：
 
-    - 点击"Browse"并选择`dist/PandocGUI/PandocGUI.exe`
+    - 点击"Browse"并选择`dist/main_window.dist/PandocGUI.exe`
     - Installation location：`C:\Program Files\PandocGUI`
 
 6. 执行安装并捕获：

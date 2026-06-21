@@ -51,7 +51,7 @@ def get_app_dir() -> Path:
 
     Get application root directory.
 
-    PyInstallerでビルドされた場合は実行ファイルのディレクトリ、
+    Nuitkaなどで実行ファイル化した場合は実行ファイルのディレクトリ、
     開発環境ではスクリプトのディレクトリを返します。
 
     Returns
@@ -60,30 +60,80 @@ def get_app_dir() -> Path:
         アプリケーションのルートディレクトリ
     """
     if getattr(sys, 'frozen', False):
-        # PyInstallerでビルドされた場合
+        # 実行ファイル化ビルド時
         return Path(sys.executable).parent
     else:
         # 通常のPythonスクリプトとして実行される場合
         return Path(__file__).parent
 
 
-def get_data_dir() -> Path:
+def get_data_dir(create_if_missing: bool = True) -> Path:
     """データディレクトリを取得 / Get data directory.
 
-    プラットフォームごとに適切な場所を返します。
-    Returns appropriate location for each platform:
-    - Windows: %LOCALAPPDATA%\\PandocGUI
-    - macOS: ~/Library/Application Support/PandocGUI
-    - Linux: ~/.local/share/PandocGUI (XDG Base Directory)
+    起動時に設定ファイル(setting.json)を確認し、data_dirを読み込みます。
+    初回起動時は setting.json を作成し、既定の data_dir を保存します。
 
     Returns
     -------
     Path
         データディレクトリ / Data directory path
     """
+    default_data_dir = get_default_data_dir()
+    settings_path = get_settings_file()
+
+    try:
+        settings_path.parent.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        return default_data_dir
+
+    settings_data = {}
+    if settings_path.exists():
+        try:
+            with open(settings_path, "r", encoding="utf-8-sig") as f:
+                settings_data = json.load(f)
+        except (OSError, ValueError, json.JSONDecodeError):
+            settings_data = {}
+
+    configured_data_dir = settings_data.get("data_dir")
+    if configured_data_dir:
+        was_corrected = False
+        configured_path = Path(configured_data_dir)
+        # setting.json の格納先を DATA_DIR として扱わないように保護する。
+        try:
+            if configured_path.resolve() == settings_path.parent.resolve():
+                configured_path = default_data_dir
+                settings_data["data_dir"] = str(default_data_dir)
+                was_corrected = True
+        except OSError:
+            configured_path = default_data_dir
+            settings_data["data_dir"] = str(default_data_dir)
+            was_corrected = True
+
+        if was_corrected:
+            try:
+                with open(settings_path, "w", encoding="utf-8") as f:
+                    json.dump(settings_data, f, indent=2, ensure_ascii=False)
+            except OSError:
+                pass
+
+        return configured_path
+
+    if create_if_missing:
+        # 初回起動時、または設定欠損時に data_dir を保存する。
+        settings_data["data_dir"] = str(default_data_dir)
+        try:
+            with open(settings_path, "w", encoding="utf-8") as f:
+                json.dump(settings_data, f, indent=2, ensure_ascii=False)
+        except OSError:
+            pass
+
+    return default_data_dir
+
+
+def get_default_data_dir() -> Path:
+    """既定のデータディレクトリを取得 / Get default data directory."""
     if platform.system() == "Windows":
-        return Path(os.getenv("LOCALAPPDATA",
-                              os.path.expanduser("~"))) / "PandocGUI"
+        return Path.home() / "Documents" / "PandocGUI"
 
     if platform.system() == "Darwin":
         return Path.home() / "Library" / "Application Support" / "PandocGUI"
@@ -93,11 +143,40 @@ def get_data_dir() -> Path:
                           Path.home() / ".local" / "share")) / "PandocGUI"
 
 
-# PyInstallerビルド時のパス解決
+def get_settings_file() -> Path:
+    """設定ファイル(setting.json)のパスを取得.
+
+    Get setting.json path.
+    """
+    if platform.system() == "Windows":
+        local_appdata = os.getenv("LOCALAPPDATA")
+        if local_appdata:
+            return Path(local_appdata) / "PandocGUI" / "setting.json"
+        return Path.home() / "AppData" / "Local" / "PandocGUI" / "setting.json"
+
+    if platform.system() == "Darwin":
+        return (Path.home() / "Library" / "Preferences" / "PandocGUI" /
+                "setting.json")
+
+    config_home = Path(os.getenv("XDG_CONFIG_HOME", Path.home() / ".config"))
+    return config_home / "PandocGUI" / "setting.json"
+
+
+def set_data_dir(data_dir: Path):
+    """実行中のDATA_DIRを更新する.
+
+    Update runtime DATA_DIR/PROFILE_DIR.
+    """
+    resolved_data_dir = Path(data_dir)
+    globals()["DATA_DIR"] = resolved_data_dir
+    globals()["PROFILE_DIR"] = resolved_data_dir / "profiles"
+
+
+# Nuitka/実行ファイル化ビルド時のパス解決
 SCRIPT_DIR = get_app_dir()
 
 # データディレクトリ（プラットフォームごとに適切な場所を使用）
-DATA_DIR = get_data_dir()
+DATA_DIR = get_data_dir(create_if_missing=False)
 
 # プロファイルディレクトリ（DATA_DIR配下）
 PROFILE_DIR = DATA_DIR / "profiles"
