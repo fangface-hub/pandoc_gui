@@ -77,6 +77,52 @@ def _init_data_folders():
             shutil.copy2(filter_file, dest_file)
 
 
+class PathEntryField(tk.Frame):
+    """パス入力フィールド（Entry + ボタン）のカスタムウィジェット."""
+
+    def __init__(self, parent, label_text="", button_command=None, **kwargs):
+        """初期化.
+
+        Parameters
+        ----------
+        parent : tk.Widget
+            親ウィジェット
+        label_text : str
+            ラベルテキスト
+        button_command : callable
+            ボタン押下時のコールバック
+        """
+        super().__init__(parent, **kwargs)
+
+        # ラベル
+        if label_text:
+            tk.Label(self, text=label_text, width=18,
+                     anchor=tk.W).pack(side=tk.LEFT, padx=2)
+
+        # StringVar
+        self.var = tk.StringVar()
+
+        # Entry
+        self.entry = tk.Entry(self, textvariable=self.var, width=40)
+        self.entry.pack(side=tk.LEFT, padx=2, fill=tk.X, expand=True)
+
+        # ボタン
+        if button_command:
+            self.button = tk.Button(self,
+                                    text="...",
+                                    command=button_command,
+                                    width=3)
+            self.button.pack(side=tk.LEFT, padx=2)
+
+    def get(self):
+        """入力値を取得."""
+        return self.var.get()
+
+    def set(self, value):
+        """入力値を設定."""
+        self.var.set(value if value else "")
+
+
 class MainWindow(tk.Tk):
     """Pandoc GUIアプリケーションのメインクラス.
 
@@ -151,14 +197,15 @@ class MainWindow(tk.Tk):
                     self.i18n.t("pandoc_not_installed_warning")))
 
         # 環境変数の初期値をログ出力
-        env_java = os.getenv("JAVA_PATH") or ""
+        self.detected_java_path = os.getenv("JAVA_PATH") or ""
         # JAVA_PATH が設定されていない場合、java コマンドが利用可能かを確認
-        if not env_java:
+        if not self.detected_java_path:
             java_cmd = shutil.which("java")
             if java_cmd:
-                env_java = java_cmd
+                self.detected_java_path = java_cmd
         env_plantuml = os.getenv("PLANTUML_JAR") or ""
-        self.logger.info(self.i18n.t("startup_java_path_env", path=env_java))
+        self.logger.info(
+            self.i18n.t("startup_java_path_env", path=self.detected_java_path))
         self.logger.info(
             self.i18n.t("startup_plantuml_jar_env", path=env_plantuml))
 
@@ -235,43 +282,18 @@ class MainWindow(tk.Tk):
                            side=tk.LEFT, padx=10)
 
         # Java Path
-        java_frame = tk.Frame(plantuml_frame)
-        java_frame.pack(fill=tk.X, pady=2)
-        tk.Label(java_frame,
-                 text=self.i18n.t("java_path"),
-                 width=18,
-                 anchor=tk.W).pack(side=tk.LEFT, padx=2)
-        self.java_path_var = tk.StringVar()
-        self.java_path_entry = tk.Entry(java_frame,
-                                        textvariable=self.java_path_var,
-                                        width=40)
-        self.java_path_entry.pack(side=tk.LEFT, padx=2, fill=tk.X, expand=True)
-        self.java_path_button = tk.Button(java_frame,
-                                          text="...",
-                                          command=self.select_java_path,
-                                          width=3)
-        self.java_path_button.pack(side=tk.LEFT, padx=2)
+        self.java_path_field = PathEntryField(
+            plantuml_frame,
+            label_text=self.i18n.t("java_path"),
+            button_command=self.select_java_path)
+        self.java_path_field.pack(fill=tk.X, pady=2)
 
         # PlantUML JAR
-        jar_frame = tk.Frame(plantuml_frame)
-        jar_frame.pack(fill=tk.X, pady=2)
-        tk.Label(jar_frame,
-                 text=self.i18n.t("plantuml_jar"),
-                 width=18,
-                 anchor=tk.W).pack(side=tk.LEFT, padx=2)
-        self.plantuml_jar_var = tk.StringVar()
-        self.plantuml_jar_entry = tk.Entry(jar_frame,
-                                           textvariable=self.plantuml_jar_var,
-                                           width=40)
-        self.plantuml_jar_entry.pack(side=tk.LEFT,
-                                     padx=2,
-                                     fill=tk.X,
-                                     expand=True)
-        self.plantuml_jar_button = tk.Button(jar_frame,
-                                             text="...",
-                                             command=self.select_plantuml_jar,
-                                             width=3)
-        self.plantuml_jar_button.pack(side=tk.LEFT, padx=2)
+        self.plantuml_jar_field = PathEntryField(
+            plantuml_frame,
+            label_text=self.i18n.t("plantuml_jar"),
+            button_command=self.select_plantuml_jar)
+        self.plantuml_jar_field.pack(fill=tk.X, pady=2)
 
         # PlantUML Server URL
         server_frame = tk.Frame(plantuml_frame)
@@ -415,6 +437,10 @@ class MainWindow(tk.Tk):
 
         # ウィンドウクローズで子プロセスを終了させる
         self.protocol("WM_DELETE_WINDOW", self.on_close)
+
+        # 取得した Java パスを pandoc_service に設定
+        if self.detected_java_path:
+            self.pandoc_service.java_path = self.detected_java_path
 
         # デフォルトプロファイルが存在する場合、起動時に自動ロード
         self._load_default_profile_on_startup()
@@ -585,14 +611,16 @@ class MainWindow(tk.Tk):
         self.format_var.set(self.pandoc_service.output_format)
 
         # Java/PlantUML設定を読み込む
-        if self.pandoc_service.java_path:
-            self.java_path_var.set(str(self.pandoc_service.java_path))
+        # プロファイルから Java パスが設定されていない場合は、検出されたパスを使用
+        java_path = self.pandoc_service.java_path or self.detected_java_path
+        if java_path:
+            self.java_path_field.set(str(java_path))
         else:
-            self.java_path_var.set("")
+            self.java_path_field.set("")
         if self.pandoc_service.plantuml_jar:
-            self.plantuml_jar_var.set(str(self.pandoc_service.plantuml_jar))
+            self.plantuml_jar_field.set(str(self.pandoc_service.plantuml_jar))
         else:
-            self.plantuml_jar_var.set("")
+            self.plantuml_jar_field.set("")
 
         # PlantUMLサーバ設定を読み込む
         if hasattr(self.pandoc_service, 'plantuml_use_server'):
@@ -626,7 +654,7 @@ class MainWindow(tk.Tk):
                                                      ("All files", "*.*")],
                                           initialdir=str(self.last_input_dir))
         if file:
-            self.java_path_var.set(file)
+            self.java_path_field.set(file)
             self.pandoc_service.java_path = Path(file)
             self.logger.info(self.i18n.t("java_path_selected", path=file))
 
@@ -640,7 +668,7 @@ class MainWindow(tk.Tk):
             filetypes=[("JAR files", "*.jar"), ("All files", "*.*")],
             initialdir=str(self.last_input_dir))
         if file:
-            self.plantuml_jar_var.set(file)
+            self.plantuml_jar_field.set(file)
             self.pandoc_service.plantuml_jar = Path(file)
             self.logger.info(self.i18n.t("plantuml_jar_selected", path=file))
 
@@ -657,10 +685,12 @@ class MainWindow(tk.Tk):
         state_jar = tk.NORMAL if is_jar else tk.DISABLED
         state_server = tk.DISABLED if is_jar else tk.NORMAL
 
-        self.java_path_entry.config(state=state_jar)
-        self.java_path_button.config(state=state_jar)
-        self.plantuml_jar_entry.config(state=state_jar)
-        self.plantuml_jar_button.config(state=state_jar)
+        self.java_path_field.entry.config(state=state_jar)
+        if hasattr(self.java_path_field, 'button'):
+            self.java_path_field.button.config(state=state_jar)
+        self.plantuml_jar_field.entry.config(state=state_jar)
+        if hasattr(self.plantuml_jar_field, 'button'):
+            self.plantuml_jar_field.button.config(state=state_jar)
         self.plantuml_server_url_entry.config(state=state_server)
 
     def _create_menu(self):
@@ -1103,13 +1133,13 @@ class MainWindow(tk.Tk):
 
         # Java/PlantUML設定を読み込む
         if self.pandoc_service.java_path:
-            self.java_path_var.set(str(self.pandoc_service.java_path))
+            self.java_path_field.set(str(self.pandoc_service.java_path))
         else:
-            self.java_path_var.set("")
+            self.java_path_field.set("")
         if self.pandoc_service.plantuml_jar:
-            self.plantuml_jar_var.set(str(self.pandoc_service.plantuml_jar))
+            self.plantuml_jar_field.set(str(self.pandoc_service.plantuml_jar))
         else:
-            self.plantuml_jar_var.set("")
+            self.plantuml_jar_field.set("")
 
         # PlantUMLサーバ設定を読み込む
         if hasattr(self.pandoc_service, 'plantuml_use_server'):
@@ -1232,8 +1262,8 @@ class MainWindow(tk.Tk):
                                text=msg, fg="#FF9800"))
 
             # PandocServiceを使用して変換
-            java_path_override = self.java_path_var.get().strip()
-            plantuml_jar_override = self.plantuml_jar_var.get().strip()
+            java_path_override = self.java_path_field.get().strip()
+            plantuml_jar_override = self.plantuml_jar_field.get().strip()
 
             _success_count, _fail_count, _errors = (
                 self.pandoc_service.convert_folder(input_folder, output_folder,
@@ -1267,8 +1297,8 @@ class MainWindow(tk.Tk):
             self.logger.info(self.i18n.t("pandoc_process_starting"))
 
             # PandocServiceを使用して変換
-            java_path_override = self.java_path_var.get().strip()
-            plantuml_jar_override = self.plantuml_jar_var.get().strip()
+            java_path_override = self.java_path_field.get().strip()
+            plantuml_jar_override = self.plantuml_jar_field.get().strip()
 
             success, _stdout, _stderr, _returncode = (
                 self.pandoc_service.convert_file(input_file, output_file,
