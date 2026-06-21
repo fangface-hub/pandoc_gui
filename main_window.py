@@ -152,6 +152,11 @@ class MainWindow(tk.Tk):
 
         # 環境変数の初期値をログ出力
         env_java = os.getenv("JAVA_PATH") or ""
+        # JAVA_PATH が設定されていない場合、java コマンドが利用可能かを確認
+        if not env_java:
+            java_cmd = shutil.which("java")
+            if java_cmd:
+                env_java = java_cmd
         env_plantuml = os.getenv("PLANTUML_JAR") or ""
         self.logger.info(self.i18n.t("startup_java_path_env", path=env_java))
         self.logger.info(
