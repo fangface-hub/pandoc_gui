@@ -1,10 +1,9 @@
-# build_nuitka_msix_signed.ps1 - Build with Nuitka, create MSIX, sign, and verify
+# build_nuitka_msix_signed.ps1 - Orchestrate building, packaging, and signing MSIX
 #
 # Default flow:
-# 1) Build dist/PandocGUI.exe with Nuitka onefile
+# 1) Build dist/PandocGUI.exe with Nuitka (using build_nuitka.ps1)
 # 2) Create MSIX package using build_msix.ps1
-# 3) Create a self-signed test certificate (unless disabled)
-# 4) Sign and verify MSIX using sign_code.ps1
+# 3) Sign and verify MSIX using sign_msix.ps1
 #
 # Usage examples:
 #   ./build_nuitka_msix_signed.ps1
@@ -37,16 +36,15 @@ param(
     [switch]$SkipNuitkaBuild,
     [switch]$SkipSigning,
     [switch]$SkipTestCertificateCreation,
-    [switch]$SkipUvSync,
-    [switch]$UseClang
+    [switch]$SkipUvSync
 )
 
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
+$buildNuitkaScript = Join-Path $root 'build_nuitka.ps1'
 $buildMsixScript = Join-Path $root 'build_msix.ps1'
-$createCertScript = Join-Path $root 'create_test_certificate.ps1'
-$signScript = Join-Path $root 'sign_code.ps1'
+$signMsixScript = Join-Path $root 'sign_msix.ps1'
 
 function Remove-PathIfExists {
     param([Parameter(Mandatory = $true)][string]$Path)
@@ -57,7 +55,7 @@ function Remove-PathIfExists {
     }
 }
 
-foreach ($required in @($buildMsixScript, $createCertScript, $signScript)) {
+foreach ($required in @($buildNuitkaScript, $buildMsixScript, $signMsixScript)) {
     if (-not (Test-Path -LiteralPath $required)) {
         throw ('Required script not found: ' + $required)
     }
@@ -94,50 +92,22 @@ try {
     }
 
     if (-not $SkipNuitkaBuild) {
-        Write-Host 'Step 1/4: Build with Nuitka'
+        Write-Host 'Step 1/3: Build with Nuitka'
 
-        if (-not $SkipUvSync) {
-            & uv sync --group build
-            if ($LASTEXITCODE -ne 0) {
-                throw ('uv sync failed with exit code ' + $LASTEXITCODE)
-            }
-        }
+        & $buildNuitkaScript `
+            -EntryScript $EntryScript `
+            -OutputDir $OutputDir `
+            -OutputFileName $OutputFileName `
+            -SkipUvSync:$SkipUvSync
 
-        if ($UseClang) {
-            $env:CC = 'clang-cl'
-            $env:CXX = 'clang-cl'
-        }
-
-        $nuitkaOptions = @(
-            '--onefile',
-            '--windows-console-mode=disable',
-            '--enable-plugin=tk-inter',
-            "--output-dir=$OutputDir",
-            "--output-filename=$OutputFileName",
-            '--include-data-dir=filters=filters',
-            '--include-data-dir=locales=locales',
-            '--include-data-dir=stylesheets=stylesheets',
-            '--include-data-dir=help=help',
-            '--include-data-dir=profiles=profiles',
-            '--include-data-dir=mermaid=mermaid',
-            '--include-data-dir=LICENSES=LICENSES',
-            $EntryScript
-        )
-
-        if ($UseClang) {
-            $nuitkaOptions = @('--clang', '--msvc=latest') + $nuitkaOptions
-        }
-
-        $nuitkaArgs = @('-m', 'nuitka') + $nuitkaOptions
-        & uv run python @nuitkaArgs
         if ($LASTEXITCODE -ne 0) {
             throw ('Nuitka build failed with exit code ' + $LASTEXITCODE)
         }
     } else {
-        Write-Host 'Step 1/4: Skip Nuitka build'
+        Write-Host 'Step 1/3: Skip Nuitka build'
     }
 
-    Write-Host 'Step 2/4: Create MSIX package'
+    Write-Host 'Step 2/3: Create MSIX package'
 
     & $buildMsixScript `
         -InputDistPath $inputDistPath `
@@ -155,62 +125,25 @@ try {
     }
 
     if ($SkipSigning) {
-        Write-Host 'Step 3/4: Skip signing certificate preparation'
-        Write-Host 'Step 4/4: Skip signing and verification'
+        Write-Host 'Step 3/3: Skip signing and verification'
         Write-Host ''
         Write-Host 'MSIX package was created successfully (unsigned).'
         Write-Host ('MSIX: ' + (Join-Path $root $OutputMsixPath))
         return
     }
 
-    Write-Host 'Step 3/4: Prepare signing certificate'
-    if ($PfxPath) {
-        if (-not (Test-Path -LiteralPath $PfxPath)) {
-            throw ('PFX file not found: ' + $PfxPath)
-        }
-        if (-not $PfxPassword) {
-            throw 'PfxPassword is required when PfxPath is specified.'
-        }
-        Write-Host ('Using PFX: ' + $PfxPath)
-    } else {
-        if ($Thumbprint) {
-            Write-Host ('Using certificate thumbprint: ' + $Thumbprint)
-        } else {
-            if (-not $SkipTestCertificateCreation) {
-                & $createCertScript -Subject $PublisherCN
-                if ($LASTEXITCODE -ne 0) {
-                    throw ('Test certificate creation failed with exit code ' + $LASTEXITCODE)
-                }
-            } else {
-                Write-Host 'Skip test certificate creation. Existing certificate is expected in store.'
-            }
-        }
-    }
+    Write-Host 'Step 3/3: Sign and verify MSIX'
 
-    Write-Host 'Step 4/4: Sign and verify MSIX'
-    if ($PfxPath) {
-        & $signScript `
-            -FilePath $OutputMsixPath `
-            -PfxPath $PfxPath `
-            -PfxPassword $PfxPassword `
-            -ExportCerPath $ExportCerPath `
-            -TimestampServer $TimestampServer `
-            -SignToolPath $SignToolPath
-    } elseif ($Thumbprint) {
-        & $signScript `
-            -FilePath $OutputMsixPath `
-            -Thumbprint $Thumbprint `
-            -ExportCerPath $ExportCerPath `
-            -TimestampServer $TimestampServer `
-            -SignToolPath $SignToolPath
-    } else {
-        & $signScript `
-            -FilePath $OutputMsixPath `
-            -Subject $PublisherCN `
-            -ExportCerPath $ExportCerPath `
-            -TimestampServer $TimestampServer `
-            -SignToolPath $SignToolPath
-    }
+    & $signMsixScript `
+        -FilePath $OutputMsixPath `
+        -PfxPath $PfxPath `
+        -PfxPassword $PfxPassword `
+        -Thumbprint $Thumbprint `
+        -PublisherCN $PublisherCN `
+        -ExportCerPath $ExportCerPath `
+        -TimestampServer $TimestampServer `
+        -SignToolPath $SignToolPath `
+        -SkipTestCertificateCreation:$SkipTestCertificateCreation
 
     if ($LASTEXITCODE -ne 0) {
         throw ('Signing/verification failed with exit code ' + $LASTEXITCODE)
